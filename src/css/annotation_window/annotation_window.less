@@ -1,0 +1,104 @@
+.mr_annotation_window {
+  position: absolute;
+  //display: flex;
+  //flex-direction: column;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 0 5px;
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll; // to show the menu-tag selector when it gets too big
+  background-color: #efefef;
+  
+  a {
+    &:link, &:visited {
+      color: @blue;
+    }
+    &:hover, &:active {
+      color: @light-blue;
+    }
+  }
+}
+
+.mr_annotation_window.fixed_height_cells {
+  .annowin_anno > .normal_view {
+    height: 120px;
+    overflow-y: scroll;
+  }
+}
+
+.annowin_header {
+  margin: 0;
+  padding: 5px 0 5px 0;
+}
+
+.mirador-viewer .mirador-icon-window-menu.annowin_window_menu {
+  margin: 0 10px 0 0;
+  font-size: 0.8rem;
+}
+
+.annowin_window_menu .dropdown li {
+  font-size: 0.8rem;
+}
+
+.annowin_remove_slot {
+  float: right !important;
+}
+
+.annowin_remove_slot:hover {
+  color: red;
+}
+
+.annowin_menu_tag_row, 
+.annowin_layer_row,
+.annowin_temp_row {
+  padding: 2px @annowin-h-padding;
+}
+
+.annowin_temp_row {
+  display: none;
+}
+
+.annowin_list {
+  position: relative; /* required to make the div "positioned" so the child elements' positions to be obtained and scroll levels adjusted accordingly. */
+  //position: absolute;
+  //top: @annowin-header-height;
+  //bottom: 17px; // XXX a kludge until someone can figure out why the whole div is not showing unless this bottom value is set.
+  left: 0;
+  right: 0;
+  margin: 0;
+  overflow-y: visible;
+}
+
+.annotation_editor {
+  background-color: white;
+  border: solid 3px #0072c4;
+  padding: 5px;
+}
+
+/* Icon for link to the annotation target, shown in the annotation editor. */
+.anno_target_icon {
+  color: #b0b0b0;
+}
+
+/* When the annotation target is set for a canvas segment. */
+.anno_target_icon.anno_on_canvas {
+  color: #4684cc;
+}
+
+/* When the annotation target is set for another annotation. */
+.anno_target_icon.anno_on_anno {
+  color: #1f995a;
+}
+
+.annotation_editor .bottom_row {
+  min-height: 25px;
+}
+
+.placeholder {
+  padding: 5px;
+}
+
+.item_menu_dropdown {
+  right: 0px;
+}

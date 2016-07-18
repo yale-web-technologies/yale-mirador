@@ -1,0 +1,38 @@
+{
+  "name": "yale-mirador",
+  "version": "1.0.0",
+  "description": "Yale Extension of Mirador",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/yale-web-technologies/yale-mirador.git"
+  },
+  "author": "Seong-June Kim",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yale-web-technologies/yale-mirador/issues"
+  },
+  "homepage": "https://github.com/yale-web-technologies/yale-mirador#readme",
+  "devDependencies": {
+    "babel-core": "^6.10.4",
+    "babel-loader": "^6.2.4",
+    "babel-preset-es2015": "^6.9.0",
+    "cookie-parser": "^1.4.3",
+    "css-loader": "^0.23.1",
+    "express": "^4.14.0",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "less": "^2.7.1",
+    "less-loader": "^2.2.3",
+    "style-loader": "^0.13.1",
+    "webpack": "^1.13.1"
+  },
+  "dependencies": {
+    "babel-polyfill": "^6.9.1",
+    "golden-layout": "^1.5.1",
+    "js-cookie": "^2.1.2",
+    "semantic-ui": "^2.2.2"
+  }
+}

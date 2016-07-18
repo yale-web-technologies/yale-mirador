@@ -1,0 +1,26 @@
+// Overwriting some styles of Mirador proper.
+
+.no_close .ui-dialog-titlebar-close {
+  display: none;
+}
+
+.ui-dialog-titlebar {
+  display: block !important;
+}
+
+.qtip-content {
+  overflow: visible !important; // to show the whole dropdown menu for annotation editor
+}
+
+#mirador_header {
+  top: 0px;
+  height: @mirador-header-height;
+}
+#viewer {
+  display: block !important;
+  position: absolute !important;
+  width: 100%;
+  top: 0;
+  bottom: 0;
+}
+

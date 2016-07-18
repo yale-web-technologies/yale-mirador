@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <title>Yale Mirador Example</title>
+    <link rel="stylesheet" type="text/css" href="../lib/semantic/dist/semantic.min.css" />
+    <link rel="stylesheet" type="text/css" href="../lib/goldenlayout/goldenlayout-base.css" />
+    <link rel="stylesheet" type="text/css" href="../lib/goldenlayout/goldenlayout-light-theme.css" />
+    <link rel="stylesheet" type="text/css" href="../dist/mirador/css/mirador-combined.min.css" />
+    <link rel="stylesheet" type="text/css" href="../dist/yale-mirador/yale-mirador.bundle.css" />
+    <script type="text/javascript" src="../dist/mirador/mirador.js"></script>
+    <script type="text/javascript" src="../lib/js.cookie.js"></script>
+    <script type="text/javascript" src="../lib/semantic/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="../lib/goldenlayout/goldenlayout.min.js"></script>
+    <script type="text/javascript" src="../dist/yale-mirador/yale-mirador.bundle.js"></script>
+  </head>
+  <body>
+    <div id="mirador_header">
+      <div class="ui small menu">
+        <div class="ui dropdown item">
+          Window <i style="margin-left: 5px" class="caret down icon"></i>
+          <div class="menu">
+            <div id="mr_menu_add_window" class="item">Add annotation window</div>
+          </div>
+        </div>
+        <div class="ui dropdown item">
+          View <i style="margin-left: 5px" class="caret down icon"></i>
+          <div class="menu">
+            <div id="mr_menu_anno_height" class="item">
+              Annotation cell - fixed height
+              <i class="checkmark icon"></i>
+            </div>
+          </div>
+        </div>
+        <a target="blank" class="item" href="https://github.com/yale-web-technologies/mirador-project/wiki/User-Guide---Mirador-@Yale">Help</a>
+      </div>
+    </div>
+    
+    <div id="mr_grid"></div>
+
+    <div id="mr_annotation_dialog">
+    </div>
+
+    <div id="viewer_template">
+      <div id="{{id}}" data-manifest-url="https%3A%2F%2Fs3.amazonaws.com%2Ftempmanifests%2Ften_thousand_rooms%2FHZGZ.json"
+        endpoint_url="<%= @endpoint_url %>" room_id="<%= @room_id %>">
+      </div>
+    </div>
+  </body>
+</html>
