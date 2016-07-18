@@ -1,4 +1,6 @@
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
+var VersionFile = require('webpack-version-file-plugin');
+var path = require('path');
 
 module.exports = {
   debug: true,
@@ -22,6 +24,11 @@ module.exports = {
     }]
   },
   plugins: [
-    new ExtractTextPlugin('yale-mirador.bundle.css', { allChunks: true })
+    new ExtractTextPlugin('yale-mirador.bundle.css', { allChunks: true }),
+    new VersionFile({
+      packageFile: path.join(__dirname, 'package.json'),
+      template: path.join(__dirname, 'src', 'template', 'version.ejs'),
+      outputFile: path.join(__dirname, 'dist', 'yale-mirador', 'version.json')
+    })
   ]
 };
