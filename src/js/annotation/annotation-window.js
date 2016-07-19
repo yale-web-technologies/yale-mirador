@@ -39,10 +39,12 @@ let annotationTemplate = Handlebars.compile([
   '              <div class="delete item"><i class="fa fa-times fa-fw"></i> {{t "delete"}}</div>',
   '            </div>',
   '          </div>',
-  '          <div class="right menu">',
-  '            <i class="caret down icon"></i>',
-  '            <i class="caret up icon"></i>',
-  '          </div>',
+  '          {{#if orderable}}',
+  '            <div class="right menu">',
+  '              <i class="caret down icon"></i>',
+  '              <i class="caret up icon"></i>',
+  '            </div>',
+  '          {{/if}}',
   '        </div>',
   '      </div>',
   '    {{/if}}',
@@ -172,6 +174,7 @@ export default class {
     if (this.endpoint.parsed) {
       menuTags = this.menuTagSelector.val().split('|');
     }
+    var isCompleteList = (menuTags[0] === 'all'); // true if current window will show all annotations of a sortable list.
     var layerId  = this.layerSelector.val();
     var parsed = this.endpoint.parsed;
 
@@ -185,7 +188,7 @@ export default class {
         if (layerId === value.layerId) {
           if (menuTags[0] === 'all' || parsed.matchHierarchy(value, menuTags)) {
             ++count;
-            _this.addAnnotation(value);
+            _this.addAnnotation(value, isCompleteList);
           }
         }
       } catch (e) {
@@ -200,7 +203,7 @@ export default class {
     }
   }
   
-  addAnnotation(annotation) {
+  addAnnotation(annotation, isCompleteList) {
     //console.log('AnnotationWindow#addAnnotation:');
     //console.dir(annotation);
     var content = annoUtil.getAnnotationText(annotation);
@@ -210,7 +213,8 @@ export default class {
     var annoHtml = annotationTemplate({
       content: content,
       tags: tagsHtml,
-      isEditor: session.isEditor()
+      isEditor: session.isEditor(),
+      orderable: isCompleteList
     });
     var annoElem = jQuery(annoHtml);
     var infoDiv = annoElem.find('.info_view');
