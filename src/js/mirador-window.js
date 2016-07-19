@@ -58,7 +58,7 @@ class MiradorWindow {
       config.extension.tagHierarchy = this.tagHierarchy;
     }
     
-    if (this.serverSettings.firebase.endpoint === 'firebase') {
+    if (this.serverSettings.endpointUrl === 'firebase') {
       config.annotationEndpoint = {
         name: 'Yale (Firebase) Annotations',
         module: 'YaleDemoEndpoint',
@@ -79,9 +79,14 @@ class MiradorWindow {
   
   fetchServerSettings() {
     var dfd = jQuery.Deferred();
-    var roomId = jQuery('#viewer').attr('room_id');
+    var viewerElem = jQuery('#viewer');
+    var settingsUrl = viewerElem.attr('data-settings-url');
+    var roomId = viewerElem.attr('data-room-id');
+    
+    console.log('settingsUrl: ' + settingsUrl);
+    
     jQuery.ajax({
-      url: '/api/settings?room_id=' + roomId,
+      url: settingsUrl + '?room_id=' + roomId,
       success: function(data) {
         dfd.resolve(data);
       },

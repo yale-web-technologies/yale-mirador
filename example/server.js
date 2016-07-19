@@ -21,6 +21,7 @@ app.get('/api/settings', function (req, res) {
   };
   res.setHeader('Content-Type', 'application/json');
   res.cookie('isEditor', 'true');
+  res.cookie('settingsUrl', '');
   res.send(JSON.stringify(obj));
 });
 
