@@ -345,6 +345,22 @@ export default class {
       });
   }
   
+  fadeUp(elem, onComplete) {
+    elem.transition({ 
+      animation: 'fade up', 
+      duration: '0.3s',
+      onComplete: onComplete
+    });
+  }
+  
+  fadeDown(elem, onComplete) {
+    elem.transition({ 
+      animation: 'fade down', 
+      duration: '0.3s',
+      onComplete: onComplete
+    });
+  }
+  
   bindEvents() {
     var _this = this;
     
@@ -463,17 +479,25 @@ export default class {
     annoElem.find('.up.icon').click(function(event) {
       var sibling = annoElem.prev();
       if (sibling.size() > 0) {
-        annoElem.after(sibling);
+        _this.fadeDown(annoElem, function() {
+          annoElem.after(sibling);
+          _this.fadeUp(annoElem, function() {
+            _this.tempMenuRow.show();
+          });
+        });
       }
-      _this.tempMenuRow.show();
     });
     
     annoElem.find('.down.icon').click(function(event) {
       var sibling = annoElem.next();
       if (sibling.size() > 0) {
-        annoElem.before(sibling);
+        _this.fadeUp(annoElem, function() {
+          annoElem.before(sibling);
+          _this.fadeDown(annoElem, function() {
+            _this.tempMenuRow.show();
+          });
+        });
       }
-      _this.tempMenuRow.show();
     });
     
     infoElem.click(function(event) {
