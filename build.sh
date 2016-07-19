@@ -16,5 +16,12 @@ function buildYaleMirador {
   webpack
 }
 
-buildMirador
-buildYaleMirador
+if [ "$1" == "mirador" ]; then
+  buildMirador
+elif [ "$1" == "yale-mirador" ]; then
+  buildYaleMirador
+else
+  buildMirador
+  buildYaleMirador
+fi
+
