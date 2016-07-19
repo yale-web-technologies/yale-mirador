@@ -10,12 +10,21 @@
   overflow-y: scroll; // to show the menu-tag selector when it gets too big
   background-color: #efefef;
   
-  a {
+  a { // for links in annotations
     &:link, &:visited {
       color: @blue;
     }
     &:hover, &:active {
       color: @light-blue;
+    }
+  }
+  
+  .caret.icon {
+    color: @black;
+    opacity: 0.6;
+    &:hover {
+      opacity: 0.95;
+      font-size: 1.5em;
     }
   }
 }
@@ -39,14 +48,6 @@
 
 .annowin_window_menu .dropdown li {
   font-size: 0.8rem;
-}
-
-.annowin_remove_slot {
-  float: right !important;
-}
-
-.annowin_remove_slot:hover {
-  color: red;
 }
 
 .annowin_menu_tag_row, 
