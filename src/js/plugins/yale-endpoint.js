@@ -1,6 +1,7 @@
 import ParsedAnnotations from '../annotation/parsed-annotations';
+import session from '../session';
 
-(function ($, YM) {
+(function ($) {
 
   $.YaleEndpoint = function (options) {
     jQuery.extend(this, {
@@ -263,7 +264,7 @@ import ParsedAnnotations from '../annotation/parsed-annotations';
     },
 
     userAuthorize: function (action, annotation) {
-      return YM.session.isEditor();
+      return session.isEditor();
     },
 
     // Convert Endpoint annotation to OA
@@ -322,4 +323,4 @@ import ParsedAnnotations from '../annotation/parsed-annotations';
 
   };
 
-})(window.Mirador, window.YM);
+})(window.Mirador);
