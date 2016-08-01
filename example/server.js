@@ -8,8 +8,12 @@ var app = express();
 app.use(cookieParser());
 app.use(serveStatic('../'));
 
+app.set('view engine', 'pug');
+app.set('views', './views');
+
 app.get('/', function (req, res) {
-  res.redirect('example/index.html');
+  //res.redirect('example/index.html');
+  res.render('index');
 });
 
 app.get('/api/settings', function (req, res) {
