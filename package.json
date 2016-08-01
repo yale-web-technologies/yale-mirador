@@ -4,7 +4,14 @@
   "description": "Yale Extension of Mirador",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean:mirador": "rm -rf dist/mirador/*",
+    "prebuild:mirador": "mkdir -p dist/mirador",
+    "build:mirador": "npm run clean:mirador && npm run prebuild:mirador && cd submodules/mirador && grunt && cd - && npm run copy:mirador",
+    "clean:yale-mirador": "rm -rf dist/yale-mirador/*",
+    "prebuild:yale-mirador": "mkdir -p dist/yale-mirador",
+    "build:yale-mirador": "npm run clean:yale-mirador && npm run prebuild:yale-mirador && webpack",
+    "build": "npm run build:mirador && npm run build:yale-mirador",
+    "test": "karma start --singleRun"
   },
   "repository": {
     "type": "git",
