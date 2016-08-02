@@ -89,6 +89,8 @@ import session from '../session';
       
       var annotation = this.getAnnotationInEndpoint(oaAnnotation);
       var fbKey = this.fbKeyMap[annotation['@id']];
+      console.log('update key: ' + fbKey);
+      
       var ref = firebase.database().ref('/annotations/' + fbKey);
       
       ref.update({ annotation: annotation }, function (error) {

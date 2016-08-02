@@ -23,19 +23,35 @@ project, under `submodules/mirador`.
 ## Bulid
 
 ```
-build.sh
+npm run build
 ```
-It runs `grunt` for "Yale Core" and `webpack` for "Yale
-Mirador", and
+It runs `grunt` for "Mirador" and `webpack` for "Yale Mirador", and
 creates output files in `dist/`. 
+
+To build them separately,
+```
+npm run build:mirador
+npm run build:yale-mirador
+```
 
 ## Running the example
 ```
-cd example
-./server.sh
+npm run start
 ```
 
 Then open `http://localhost:3000` from a web browser.
+
+## Test
+
+Install `karma-cli` globally so the `karma` command becomes available.
+```
+npm install -g karma-cli
+```
+
+Make sure to build first to populate the `dist` folder, and
+```
+npm run test
+```
 
 ## Deploy
 

@@ -6,12 +6,14 @@
   "scripts": {
     "clean:mirador": "rm -rf dist/mirador/*",
     "prebuild:mirador": "mkdir -p dist/mirador",
+    "copy:mirador": "cp -r submodules/mirador/build/mirador/* dist/mirador/",
     "build:mirador": "npm run clean:mirador && npm run prebuild:mirador && cd submodules/mirador && grunt && cd - && npm run copy:mirador",
     "clean:yale-mirador": "rm -rf dist/yale-mirador/*",
     "prebuild:yale-mirador": "mkdir -p dist/yale-mirador",
     "build:yale-mirador": "npm run clean:yale-mirador && npm run prebuild:yale-mirador && webpack",
     "build": "npm run build:mirador && npm run build:yale-mirador",
-    "test": "karma start --singleRun"
+    "test": "karma start --singleRun",
+    "start": "cd example; NODE_PATH=.. node server.js"
   },
   "repository": {
     "type": "git",
@@ -31,8 +33,16 @@
     "css-loader": "^0.23.1",
     "express": "^4.14.0",
     "extract-text-webpack-plugin": "^1.0.1",
+    "karma": "^1.1.2",
+    "karma-chrome-launcher": "^1.0.1",
+    "karma-coverage": "^1.1.1",
+    "karma-mocha": "^1.1.1",
+    "karma-phantomjs-launcher": "^1.0.1",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-webpack": "^1.7.0",
     "less": "^2.7.1",
     "less-loader": "^2.2.3",
+    "mocha": "^3.0.0",
     "style-loader": "^0.13.1",
     "webpack": "^1.13.1",
     "webpack-version-file-plugin": "^0.2.2"
