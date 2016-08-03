@@ -54,6 +54,11 @@ let annotationTemplate = Handlebars.compile([
   '</div>'
 ].join(''));
 
+let headerTemplate = Handlebars.compile([
+  '<div class="annowin_group_header">{{text}}',
+  '</div>'
+].join(''));
+
 let infoTemplate = Handlebars.compile([
   '<div class="info_view">',
   '  <span class="anno_info_label">On:<span>',
@@ -173,6 +178,7 @@ export default class {
     var menuTags = ['all'];
     if (this.endpoint.parsed) {
       menuTags = this.menuTagSelector.val().split('|');
+      annotationsList = this.endpoint.parsed.sortedAnnosWithHeaders(annotationsList);
     }
     var isCompleteList = (menuTags[0] === 'all'); // true if current window will show all annotations of a sortable list.
     var layerId  = this.layerSelector.val();

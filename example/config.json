@@ -1,0 +1,11 @@
+{
+  "tagHierarchy": {},
+  "endpointUrl": "http://mirador-annotations-lotb.herokuapp.com",
+  "_endpointUrl": "firebase",
+  "firebase": {
+    "apiKey": "AIzaSyAmsETcxLRWXpkGd4r-EFpyBGk1Q5ejuHc",
+    "authDomain": "ydc-annotations.firebaseapp.com",
+    "databaseUrl": "https://ydc-annotations.firebaseio.com",
+    "storageBuket": "ydc-annotations.appspot.com"
+  }
+}

@@ -8,7 +8,7 @@ export default class {
     this.tagWeights = {}; // for sorting
     this.annoHierarchy = null;
     this.annoToNodeMap = {}; // key: annotation ID, value: node in annoHierarchy;
-    this.init(); 
+    this.init();
   }
   
   init(annotations) {
@@ -185,5 +185,10 @@ export default class {
       }
     });
     return matched;
+  }
+  
+  sortedAnnosWithHeaders(annotations) {
+    alert('sortedAnnosWithHeaders');
+    return annotations;
   }
 }

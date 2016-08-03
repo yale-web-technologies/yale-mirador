@@ -5,6 +5,8 @@ var serveStatic = require('serve-static');
 
 var app = express();
 
+var config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
+
 app.use(cookieParser());
 app.use(serveStatic('../'));
 
@@ -18,9 +20,9 @@ app.get('/', function(req, res) {
 app.get('/api/settings', function(req, res) {
   var obj = {
     buildPath: '/dist/mirador',
-    tagHierarchy: {},
-    endpointUrl: 'http://mirador-annotations-lotb.herokuapp.com',
-    firebase: {}
+    tagHierarchy: config.tagHierarchy,
+    endpointUrl: config.endpointUrl,
+    firebase: config.firebase
   };
   res.setHeader('Content-Type', 'application/json');
   res.cookie('isEditor', 'true');
