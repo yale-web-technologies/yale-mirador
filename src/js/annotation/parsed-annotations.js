@@ -188,7 +188,9 @@ export default class {
   }
   
   sortedAnnosWithHeaders(annotations) {
-    alert('sortedAnnosWithHeaders');
+    console.log('XXXXXXXXX');
+    console.log('XXXXXXXXX sortedAnnosWithHeaders');
+    console.log('XXXXXXXXX');
     return annotations;
   }
 }
