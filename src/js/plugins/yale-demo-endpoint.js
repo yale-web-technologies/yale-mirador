@@ -15,7 +15,6 @@ import session from '../session';
       prefix: null
     }, options);
 
-    console.log('YaleDemoEndpoint dfd: ' + this.dfd);
     this.init();
   };
 
@@ -89,8 +88,6 @@ import session from '../session';
       
       var annotation = this.getAnnotationInEndpoint(oaAnnotation);
       var fbKey = this.fbKeyMap[annotation['@id']];
-      console.log('update key: ' + fbKey);
-      
       var ref = firebase.database().ref('/annotations/' + fbKey);
       
       ref.update({ annotation: annotation }, function (error) {
@@ -98,12 +95,11 @@ import session from '../session';
           console.log('Update failed.');
         } else {
           console.log('Update succeeded.');
+          if (typeof successCallback === 'function') {
+            successCallback(oaAnnotation);
+          }
         }
       });
-      
-      if (typeof successCallback === 'function') {
-        successCallback(oaAnnotation);
-      }
     },
 
     deleteAnnotation: function (annotationId, successCallback, errorCallback) {
@@ -134,7 +130,7 @@ import session from '../session';
       ref.once('value', function (snapshot) {
         var data = snapshot.val();
         
-        console.log('DATA: ' + JSON.stringify(data, null, 2));
+        console.log('Layers: ' + JSON.stringify(data, null, 2));
         
         var layers = [];
         
@@ -149,8 +145,6 @@ import session from '../session';
     },
     
     updateOrder: function(canvasId, layerId, annoIds, successCallback, errorCallback) {
-      console.log('canvasId: ' + canvasId);
-      console.log('layerId: ' + layerId);
       jQuery.each(annoIds, function(index, value) {
         console.log(value);
       });
@@ -183,13 +177,16 @@ import session from '../session';
       var dfd = jQuery.Deferred();
       var ref =  firebase.database().ref('annotations');
       var fbAnnos = {};
+      var fbKeys = {};
       var annoInfos = [];
       
       ref.once('value', function(snapshot) {
         var data = snapshot.val() || [];
         jQuery.each(data, function(key, value) {
           if (value.canvasId === canvasId) {
-            fbAnnos[value.annotation['@id']] = value.annotation;
+            var annoId = value.annotation['@id'];
+            fbKeys[annoId] = key;
+            fbAnnos[annoId] = value.annotation;
           }
         });
         var listsRef = firebase.database().ref('lists');
@@ -199,10 +196,12 @@ import session from '../session';
             if (listObj.canvasId === canvasId) {
               var annotationIds = listObj.annotationIds || [];
               jQuery.each(annotationIds, function(index, annotationId) {
+                var fbKey = fbKeys[annotationId];
                 var anno = fbAnnos[annotationId];
                 if (anno) {
                   annoInfos.push({
-                    annotation: fbAnnos[annotationId],
+                    fbKey: fbKey,
+                    annotation: anno,
                     layerId: listObj.layerId
                   });
                 } else {
@@ -252,10 +251,9 @@ import session from '../session';
           query.once('child_added', function(snapshot, prevChildKey) {
             var data = snapshot.val();
             var ref = snapshot.ref;
-            data.annotationIds = data.annotationIds || []
+            data.annotationIds = data.annotationIds || [];
             if (jQuery.inArray(annoId, data.annotationIds) === -1) {
               data.annotationIds.push(annoId);
-              console.log('UPD');
               ref.update({ annotationIds: data.annotationIds});
             }
           });
