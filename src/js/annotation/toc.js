@@ -2,16 +2,18 @@ import getMiradorWindow from '../mirador-window';
 import annoUtil from './anno-util';
 
 /**
- * Builds a tree-like structure (annoHiercrchy) of annotations
+ * A tag based table-of-contents structure for annotations.
+ *
+ * Builds a structure (annoHiercrchy) of annotations
  * so they can be accessed and manipulated
- * according to the pre-defined TOC tags hierarchy (tagHierarchy).
+ * according to the pre-defined TOC tags hierarchy (spec).
  */
-export default class ParsedAnnotations {
+export default class Toc {
   constructor(annotations) {
     this.annotations = annotations;
 
     /*
-     * tagHierarchy is a JSON passed from outside (an array of arrays).
+     * Spec is a JSON passed from outside (an array of arrays).
      * It defines the tags to be used to define the hiearchy.
      * It is different from "ranges" because 
      * it is used to define a strucutre of annotations in a single canvas 
@@ -19,13 +21,13 @@ export default class ParsedAnnotations {
      * For example, the first array could list tags for sections of a story
      * and the second one could list tags for sub-sections.
      */
-    this.tagHierarchy = [];
+    this.spec = [];
     
     this.tagWeights = {}; // for sorting
     
     /**
      * This can be considered the output of parse,
-     * while "this.tagHierarchy" and "annotations" are the input.
+     * while "this.spec" and "annotations" are the input.
      * 
      * Each node is an object:
      * {
@@ -45,10 +47,10 @@ export default class ParsedAnnotations {
   }
   
   init(annotations) {
-    this.tagHierarchy = getMiradorWindow().getConfig().extension.tagHierarchy;
+    this.spec = getMiradorWindow().getConfig().extension.tagHierarchy;
    
-    console.log('ParsedAnnotations#init tagHierarchy: ');
-    console.dir(this.tagHierarchy);
+    console.log('ParsedAnnotations#init spec: ');
+    console.dir(this.spec);
     
     this.annoHierarchy = this.newNode(null, true); // root node
     
@@ -61,7 +63,7 @@ export default class ParsedAnnotations {
    */
   initTagWeights() {
     var _this = this;
-    jQuery.each(this.tagHierarchy, function(rowIndex, row) {
+    jQuery.each(this.spec, function(rowIndex, row) {
       jQuery.each(row, function(tagIndex, tagObj) {
         _this.tagWeights[tagObj.tag] = tagIndex;
       });
@@ -118,10 +120,10 @@ export default class ParsedAnnotations {
     //console.log('ParsedAnnotations#buildNode rowIndex: ' + rowIndex + ', anno:');
     //console.dir(annotation);
     
-    var tagHierarchy = this.tagHierarchy;
+    var spec = this.spec;
     var currentNode = null;
 
-    if (rowIndex >= tagHierarchy.length) { // no more levels to explore in the TOC structure
+    if (rowIndex >= spec.length) { // no more levels to explore in the TOC structure
       if (parent.isRoot) { // The root is not a TOC node
         return false;
       } else { // Assign the annotation to parent (a TOC node)
@@ -131,7 +133,7 @@ export default class ParsedAnnotations {
       }
     }
     
-    var tagObj = this.tagInList(tags, tagHierarchy[rowIndex]);
+    var tagObj = this.tagInList(tags, spec[rowIndex]);
     
     if (tagObj) { // one of the tags belongs to the corresponding level of the pre-defined tag hierarchy
       var tag = tagObj.tag;

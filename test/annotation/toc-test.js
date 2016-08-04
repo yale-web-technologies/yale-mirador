@@ -1,14 +1,14 @@
-import ParsedAnnotations from '../../src/js/annotation/parsed-annotations';
+import Toc from '../../src/js/annotation/toc';
 import util from '../test-util';
 
 var expect = require('chai').expect;
 
-describe('ParsedAnnotations', function() {
+describe('TOC', function() {
   
-  var tagHierarchy = null;
+  var spec = null;
   
   beforeEach(function() {
-    tagHierarchy = [
+    spec = [
       [ { "label": "Chapter 1", "tag" : "chapter1" }, 
         { "label": "Chapter 2", "tag" : "chapter2" } ],
       [ { "label": "Scene 1", "tag" : "scene1" }, 
