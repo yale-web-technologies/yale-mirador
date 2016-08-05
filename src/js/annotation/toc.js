@@ -1,4 +1,3 @@
-import getMiradorWindow from '../mirador-window';
 import annoUtil from './anno-util';
 
 /**
@@ -9,9 +8,7 @@ import annoUtil from './anno-util';
  * according to the pre-defined TOC tags hierarchy (spec).
  */
 export default class Toc {
-  constructor(annotations) {
-    this.annotations = annotations;
-
+  constructor(spec, annotations) {
     /*
      * Spec is a JSON passed from outside (an array of arrays).
      * It defines the tags to be used to define the hiearchy.
@@ -21,8 +18,9 @@ export default class Toc {
      * For example, the first array could list tags for sections of a story
      * and the second one could list tags for sub-sections.
      */
-    this.spec = [];
+    this.spec = spec;
     
+    this.annotations = annotations;
     this.tagWeights = {}; // for sorting
     
     /**
@@ -47,9 +45,7 @@ export default class Toc {
   }
   
   init(annotations) {
-    this.spec = getMiradorWindow().getConfig().extension.tagHierarchy;
-   
-    console.log('ParsedAnnotations#init spec: ');
+    console.log('Toc#init spec: ' + this.spec);
     console.dir(this.spec);
     
     this.annoHierarchy = this.newNode(null, true); // root node
@@ -59,11 +55,26 @@ export default class Toc {
   }
   
   /**
+   * Find the node corresponding to the sequence of tags.
+   * @param {...string} tags
+   * @returns {object} a TOC node
+   */
+  getNode() {
+    var args = Array.from(arguments);
+    var node = this.annoHierarchy;
+    for (var i = 0; i < args.length; ++i) {
+      var tag = args[i];
+      var node = node.childNodes[tag];
+    }
+    return node;
+  }
+  
+  /**
    * Assign weights to tags according to their position in the array.
    */
   initTagWeights() {
     var _this = this;
-    jQuery.each(this.spec, function(rowIndex, row) {
+    jQuery.each(this.spec.nodeSpecs, function(rowIndex, row) {
       jQuery.each(row, function(tagIndex, tagObj) {
         _this.tagWeights[tagObj.tag] = tagIndex;
       });
@@ -120,10 +131,9 @@ export default class Toc {
     //console.log('ParsedAnnotations#buildNode rowIndex: ' + rowIndex + ', anno:');
     //console.dir(annotation);
     
-    var spec = this.spec;
     var currentNode = null;
 
-    if (rowIndex >= spec.length) { // no more levels to explore in the TOC structure
+    if (rowIndex >= this.spec.nodeSpecs.length) { // no more levels to explore in the TOC structure
       if (parent.isRoot) { // The root is not a TOC node
         return false;
       } else { // Assign the annotation to parent (a TOC node)
@@ -133,7 +143,7 @@ export default class Toc {
       }
     }
     
-    var tagObj = this.tagInList(tags, spec[rowIndex]);
+    var tagObj = this.tagInSpecs(tags, this.spec.nodeSpecs[rowIndex]);
     
     if (tagObj) { // one of the tags belongs to the corresponding level of the pre-defined tag hierarchy
       var tag = tagObj.tag;
@@ -149,8 +159,6 @@ export default class Toc {
         return false;
       } else {
         parent.annotation = annotation;
-        console.log('INSERT ANNO!');
-        console.dir(parent);
         this.annoToNodeMap[annotation['@id']] = parent;
         return true;
       }
@@ -160,16 +168,16 @@ export default class Toc {
   /**
    * A tag object is an object in this.tagHierarcy that represents a tag.
    *
-   * @param {tags} Array of tags
-   * @param {tagObjectList} Array of tag objects
-   * @return The tag object if one of the objects in tagObjectList represents one of the tags; null if not.
+   * @param {string[]} tags List of tags
+   * @param {object[]} nodeSpecs List of node specs
+   * @return {object} The "node spec" object if one of the objects in nodeSpecs represents one of the tags; null if not.
    */
-  tagInList(tags, tagObjectList) {
+  tagInSpecs(tags, nodeSpecs) {
     var match = null;
     jQuery.each(tags, function(index, tag) {
-      jQuery.each(tagObjectList, function(listIndex, tagObj) {
-        if (tag === tagObj.tag) {
-          match = tagObj;
+      jQuery.each(nodeSpecs, function(listIndex, nodeSpec) {
+        if (tag === nodeSpec.tag) {
+          match = nodeSpec;
           return false;
         }
       });
@@ -188,8 +196,7 @@ export default class Toc {
       };
     } else {
       return {
-        label: tagObj.label,
-        tag: tagObj.tag,
+        spec: tagObj,
         weight: this.tagWeights[tagObj.tag],
         annotation: null,
         childNodes: {},
@@ -211,7 +218,6 @@ export default class Toc {
   }
   
   matchHierarchy(annotation, tags) {
-    console.log('tags: ' + tags);
     var node = this.getNodeFromTags(tags);
     return node ? this.matchNode(annotation, node) : false;
   }

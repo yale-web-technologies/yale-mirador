@@ -5,68 +5,6 @@ import annoUtil from './anno-util';
 import session from '../session';
 import { getState, setState } from '../state.js';
 
-let template = Handlebars.compile([
-  '<div class="mr_annotation_window">',
-  '  <div class="annowin_header">',
-  '    <div class="annowin_menu_tag_row">',
-  '      <span class="menu_tag_selector_container"></span>',
-  '    </div>',
-  '    <div class="annowin_layer_row">', 
-  '      <span class="layer_selector_container"></span>',
-  '    </div>',
-  '    <div class="annowin_temp_row">',
-  '      <div class="fluid ui small orange button mr_button">Click to save order</div>',
-  '    </div>',
-  '  </div>',
-  '  <div class="placeholder"></div>',
-  '  <div class="annowin_list">',
-  '  </div>',
-  '</div>'
-].join(''));
-
-let annotationTemplate = Handlebars.compile([
-  '<div class="annowin_anno" draggable="true">',
-  '  <div class="info_view"></div>',
-  '  <div class="normal_view">',
-  '    {{#if isEditor}}',
-  '      <div class="menu_bar">',
-  '        <div class="ui text menu">',
-  '          <div class="ui dropdown item">',
-  '            Action<i class="dropdown icon"></i>',
-  '            <div class="menu">',
-  '              <div class="annotate item"><i class="fa fa-hand-o-left fa-fw"></i> Annotate</div>',
-  '              <div class="edit item"><i class="fa fa-edit fa-fw"></i> {{t "edit"}}</div>',
-  '              <div class="delete item"><i class="fa fa-times fa-fw"></i> {{t "delete"}}</div>',
-  '            </div>',
-  '          </div>',
-  '          {{#if orderable}}',
-  '            <div class="right menu">',
-  '              <i class="caret down icon"></i>',
-  '              <i class="caret up icon"></i>',
-  '            </div>',
-  '          {{/if}}',
-  '        </div>',
-  '      </div>',
-  '    {{/if}}',
-  '    <div class="content">{{{content}}}</div>',
-  '    <div class="tags">{{{tags}}}</div>',
-  '  </div>',
-  '</div>'
-].join(''));
-
-let headerTemplate = Handlebars.compile([
-  '<div class="annowin_group_header">{{text}}',
-  '</div>'
-].join(''));
-
-let infoTemplate = Handlebars.compile([
-  '<div class="info_view">',
-  '  <span class="anno_info_label">On:<span>',
-  '  <span class="anno_info_value">{{{on}}}</span>',
-  '</div>'
-].join(''));
-
-
 export default class {
   constructor(options) {
     jQuery.extend(this, {
@@ -74,7 +12,8 @@ export default class {
       appnedTo: null,
       element: null,
       canvasWindow: null, // window that contains the canvas for the annotations
-      endpoint: null
+      endpoint: null,
+      annotationListRenderer: null
     }, options);
 
     this.init();
@@ -119,7 +58,7 @@ export default class {
       parent: this.element.find('.layer_selector_container'),
       endpoint: this.endpoint,
       changeCallback: function(value, text) {
-        var layerId = value;
+        _this.currentLayerId = value;
         _this.updateList();
       }
     });
@@ -140,7 +79,7 @@ export default class {
     var canvas = this.getCurrentCanvas();
     this.element.find('.title').text(canvas.label);
     
-    if (this.endpoint.parsed) {
+    if (this.endpoint.getCanvasToc()) {
       //this.listElem.css('top', 60);
       this.initMenuTagSelector();
       this.element.find('.annowin_menu_tag_row').show();
@@ -159,7 +98,7 @@ export default class {
       layerDfd = jQuery.Deferred().reject();
     }
     
-    if (this.endpoint.parsed) {
+    if (this.endpoint.getCanvasToc()) {
       menuTagDfd = this.menuTagSelector.reload();
     } else {
       menuTagDfd = jQuery.Deferred().resolve();
@@ -172,78 +111,31 @@ export default class {
   
   updateList() {
     console.log('AnnotationWindow#updateList');
-    var _this = this;
-    var annotationsList = this.canvasWindow.annotationsList;
-    
-    var menuTags = ['all'];
-    if (this.endpoint.parsed) {
-      menuTags = this.menuTagSelector.val().split('|');
-      annotationsList = this.endpoint.parsed.sortedAnnosWithHeaders(annotationsList);
-    }
-    var isCompleteList = (menuTags[0] === 'all'); // true if current window will show all annotations of a sortable list.
-    var layerId  = this.layerSelector.val();
-    var parsed = this.endpoint.parsed;
+    const _this = this;
+    const options = {};
 
-    this.currentLayerId = layerId;
+    options.isEditor = session.isEditor();
+    options.listElem = this.listElem;
+    options.annotationsList = this.canvasWindow.annotationsList;
+    options.toc = this.endpoint.getCanvasToc();
+    options.tocTags = ['all'];
+    if (this.endpoint.getCanvasToc()) {
+      options.tocTags = this.menuTagSelector.val().split('|');
+    }
+    options.layerId  = this.layerSelector.val();
+    options.bindAnnoElemEventsCallback = function(annoElem, annotation) {
+      _this.bindAnnotationItemEvents(annoElem, annotation);
+    };
+    
+    const [newListElem, count] = this.annotationListRenderer.render(options);
+
     this.listElem.empty();
-    
-    var count = 0;
-    
-    jQuery.each(annotationsList, function(index, value) {
-      try {
-        if (layerId === value.layerId) {
-          if (menuTags[0] === 'all' || parsed.matchHierarchy(value, menuTags)) {
-            ++count;
-            _this.addAnnotation(value, isCompleteList);
-          }
-        }
-      } catch (e) {
-        console.log('ERROR AnnotationWindow#updateList ' + e);
-      }
-    });
-    
+    this.listElem.html(newListElem.html());
+  
     if (count === 0) {
       this.placeholder.text('No annotations found.').show();
     } else {
       this.placeholder.hide();
-    }
-  }
-  
-  addAnnotation(annotation, isCompleteList) {
-    //console.log('AnnotationWindow#addAnnotation:');
-    //console.dir(annotation);
-    var content = annoUtil.getAnnotationText(annotation);
-    var tags = annoUtil.getTags(annotation);
-    var tagsHtml = this.getTagsHtml(tags);
-    
-    var annoHtml = annotationTemplate({
-      content: content,
-      tags: tagsHtml,
-      isEditor: session.isEditor(),
-      orderable: isCompleteList
-    });
-    var annoElem = jQuery(annoHtml);
-    var infoDiv = annoElem.find('.info_view');
-    
-    annoElem.data('annotationId', annotation['@id']);
-    annoElem.find('.ui.dropdown').dropdown();
-    if (annotation.on['@type'] == 'oa:Annotation') { // annotation of annotation
-      annoElem.find('.menu_bar').addClass('targeting_anno');
-    } else {
-      annoElem.find('.menu_bar').removeClass('targeting_anno');
-    }
-    this.setAnnotationItemInfo(annoElem, annotation);
-    this.bindAnnotationItemEvents(annoElem, annotation);
-    infoDiv.hide();
-    this.listElem.append(annoElem);
-  }
-  
-  setAnnotationItemInfo(annoElem, annotation) {
-    var infoElem = annoElem.find('.annowin_info');
-    if (annotation.on['@type'] == 'oa:Annotation') { // target: annotation
-      infoElem.addClass('anno_on_anno');
-    } else {
-      infoElem.removeClass('anno_on_anno');
     }
   }
   
@@ -323,14 +215,6 @@ export default class {
       };
     });
     return hasOne;
-  }
-  
-  getTagsHtml(tags) {
-    var html = '';
-    jQuery.each(tags, function(index, value) {
-      html += '<span class="tag">' + value + '</span>';
-    });
-    return html;
   }
   
   saveOrder() {
@@ -516,4 +400,24 @@ export default class {
       }
     });
   }
-};
+}
+
+const template = Handlebars.compile([
+  '<div class="mr_annotation_window">',
+  '  <div class="annowin_header">',
+  '    <div class="annowin_menu_tag_row">',
+  '      <span class="menu_tag_selector_container"></span>',
+  '    </div>',
+  '    <div class="annowin_layer_row">', 
+  '      <span class="layer_selector_container"></span>',
+  '    </div>',
+  '    <div class="annowin_temp_row">',
+  '      <div class="fluid ui small orange button mr_button">Click to save order</div>',
+  '    </div>',
+  '  </div>',
+  '  <div class="placeholder"></div>',
+  '  <div class="annowin_list">',
+  '  </div>',
+  '</div>'
+].join(''));
+

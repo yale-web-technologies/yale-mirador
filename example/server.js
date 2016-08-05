@@ -6,6 +6,8 @@ var serveStatic = require('serve-static');
 var app = express();
 
 var config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
+console.log('manifest: ' + config.manifestUrl);
+console.log('endpoint: ' + config.endpointUrl);
 
 app.use(cookieParser());
 app.use(serveStatic('../'));
@@ -14,7 +16,7 @@ app.set('view engine', 'pug');
 app.set('views', './views');
 
 app.get('/', function(req, res) {
-  res.render('index'); // serve index.pug
+  res.render('index', { manifestUrl: encodeURIComponent(config.manifestUrl) }); // serve index.pug
 });
 
 app.get('/api/settings', function(req, res) {

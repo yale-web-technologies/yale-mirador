@@ -1,4 +1,5 @@
 import getMiradorProxy from './mirador-proxy';
+import AnnotationListRenderer from './annotation/annotation-list-renderer';
 import AnnotationWindow from './annotation/annotation-window';
 
 export default class {
@@ -10,6 +11,7 @@ export default class {
     console.log('Grid#init');
     this.element = jQuery('#mr_grid');
     this.miradorProxy = getMiradorProxy();
+    this.annotationListRenderer = new AnnotationListRenderer();
     this.initLayout();
     this.bindEvents();
   }
@@ -77,7 +79,8 @@ export default class {
       componentState: { windowId: windowId }
     };
     this.layout.root.contentItems[0].addChild(itemConfig);
-    new AnnotationWindow({ appendTo: jQuery('#' + windowId) });
+    new AnnotationWindow({ appendTo: jQuery('#' + windowId),
+      annotationListRenderer: this.annotationListRenderer });
   }
   
   bindEvents() {

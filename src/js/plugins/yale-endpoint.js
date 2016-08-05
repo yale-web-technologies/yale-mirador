@@ -1,7 +1,9 @@
-import ParsedAnnotations from '../annotation/parsed-annotations';
 import session from '../session';
+import CanvasToc from '../annotation/toc';
+import getMiradorWindow from '../mirador-window';
 
 (function ($) {
+  'use strict';
 
   $.YaleEndpoint = function (options) {
     jQuery.extend(this, {
@@ -11,7 +13,7 @@ import session from '../session';
       imagesList: null,
       prefix: null,
       windowID: null,
-      parsed: null
+      canvasToc: null
     }, options);
     
     this.init();
@@ -20,6 +22,10 @@ import session from '../session';
   $.YaleEndpoint.prototype = {
 
     init: function() {
+    },
+    
+    getCanvasToc: function() {
+      return this.canvasToc;
     },
     
     search: function(options, successCallback, errorCallback) {
@@ -316,9 +322,10 @@ import session from '../session';
     },
     
     parseAnnotations: function() {
-      this.parsed = new ParsedAnnotations(this.annotationsList);
-      console.log('PARSED:');
-      console.dir(this.parsed.annoHierarchy);
+      var spec = getMiradorWindow().getConfig().extension.tagHierarchy;
+      this.canvasToc = new CanvasToc(spec, this.annotationsList);
+      console.log('YaleEndpoint#parseAnnotations canvasToc:');
+      console.dir(this.canvasToc.annoHierarchy);
     }
 
   };

@@ -2,7 +2,7 @@ let template = Handlebars.compile([
   '<div class="basic tiny ui button mr_button dropdown">',
   '  <input name="selection" type="hidden" />',
   '  <div class="default text"></div>',
-  '  <i class="dropdown icon"></i>',
+  '  <i class="ym dropdown icon"></i>',
   '  <div class="menu">',
   '  </div>',
   '</div>'

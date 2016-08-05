@@ -30,7 +30,8 @@ export default class {
   reload() {
     var _this = this;
     var dfd = jQuery.Deferred();
-    var annoHierarchy = this.endpoint.parsed ? this.endpoint.parsed.annoHierarchy : null;
+    var toc = this.endpoint.getCanvasToc();
+    var annoHierarchy = toc ? toc.annoHierarchy : null;
     
     if (!annoHierarchy) {
       dfd.reject();
@@ -42,7 +43,7 @@ export default class {
     var layers = [];
     
     var menu = this.buildMenu(annoHierarchy);
-    console.log('MENU: ' + JSON.stringify(menu, null, 2));
+    console.log('MenuTagSelector menu: ' + JSON.stringify(menu, null, 2));
     
     this.selector.setItems(menu);
     
@@ -61,16 +62,23 @@ export default class {
    * node: an annoHierarchy node
    */
   buildMenu(node, parentItem) {
-    var _this = this;
-    var children = util.getValues(node.childNodes)
+    const _this = this;
+    const children = util.getValues(node.childNodes)
       .sort(function(a, b) {
         return a.weight - b.weight;
       });
       
-    var label = parentItem ? parentItem.label + ', ' + node.label : node.label;
-    var value = parentItem ? parentItem.value + '|' + node.tag : node.tag;
-    var item = { label: label, value: value, children: [] };
+    let item = { children: [] };
     
+    console.log('node:');
+    console.dir(node);
+      
+    if (!node.isRoot) {
+      var label = parentItem ? parentItem.label + ', ' + node.spec.label : node.spec.label;
+      var value = parentItem ? parentItem.value + '|' + node.spec.tag : node.spec.tag;
+      item.label = label;
+      item.value = value;
+    }
     if (children.length > 0) {
       jQuery.each(children, function(key, childNode) {
         item.children.push(_this.buildMenu(childNode, node.isRoot ? null : item));

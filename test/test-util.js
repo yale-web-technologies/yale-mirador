@@ -21,6 +21,11 @@ export default {
     if (options.chars) {
       anno.resource[0].chars = options.chars;
     }
+    if (options.tags) {
+      for (var i = 0; i < options.tags.length; ++i) {
+        anno.resource.push(this.createTag(options.tags[i]));
+      }
+    }
     return anno;
   },
   
@@ -41,6 +46,14 @@ export default {
       }
     };
     return on;
+  },
+  
+  createTag: function(value) {
+    var tag = {
+      "@type": "oa:Tag",
+      chars: value
+    };
+    return tag;
   }
 
 };
