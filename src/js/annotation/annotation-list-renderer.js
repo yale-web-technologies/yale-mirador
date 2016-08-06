@@ -21,7 +21,7 @@ export default class AnnotationListRenderer {
         if (options.layerId === annotation.layerId) {
           if (options.tocTags[0] === 'all' || options.toc.matchHierarchy(annotation, options.tocTags)) {
             ++count;
-            const annoElem = _this.addAnnotation(annotation, listElem, options);
+            const annoElem = _this.createAnnoElem(annotation, listElem, options);
             listElem.append(annoElem);
           }
         }
@@ -34,7 +34,7 @@ export default class AnnotationListRenderer {
     return [listElem, count];
   }
   
-  addAnnotation(annotation, listElem, options) {
+  createAnnoElem(annotation, listElem, options) {
     //console.log('AnnotationWindow#addAnnotation:');
     //console.dir(annotation);
     const content = annoUtil.getAnnotationText(annotation);
