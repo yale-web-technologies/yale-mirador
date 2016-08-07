@@ -37,7 +37,7 @@ export default class {
     
     setTimeout(function() {
       if (layers.length > 0) {
-        _this.selector.val(layers[0]['@id']);
+        _this.selector.val(layers[0]['@id'], true);
         _this._isLoaded = true;
       }
       dfd.resolve();
@@ -59,6 +59,6 @@ export default class {
       if (typeof _this.changeCallback === 'function') {
         _this.changeCallback(value, text);
       }
-    }
+    };
   }
 }

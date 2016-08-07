@@ -27,9 +27,10 @@ export default class {
     this.appendTo.append(this.element);
     this.element.dropdown({
       onChange: function(value, text) {
-        if (typeof _this.changeCallback === 'function') {
+        if (typeof _this.changeCallback === 'function' && !_this.skipNotify) {
           _this.changeCallback(value, text);
         }
+        this.skipNotify = false;
       },
       action: function(text, value) {
         _this.element.dropdown('set selected', value);
@@ -67,7 +68,7 @@ export default class {
       .addClass('menu')
       .css('overflow', 'hidden');
     item.append(jQuery('<i class="dropdown icon"></i>'));
-    item.append(menu)
+    item.append(menu);
     parent.append(item);
     return menu;
   }
@@ -86,7 +87,7 @@ export default class {
     this.element.find('.menu').empty();
   }
   
-  val(value) {
+  val(value, skipNotify) {
     if (value === undefined) {
       return this.element.dropdown('get value');
     } else {

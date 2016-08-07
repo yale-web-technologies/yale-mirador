@@ -47,6 +47,7 @@ export default class {
       parent: this.element.find('.menu_tag_selector_container'),
       endpoint: this.endpoint,
       changeCallback: function(value, text) {
+        console.log('Change/updateList from TOC selector');
         _this.updateList();
       }
     });
@@ -58,6 +59,7 @@ export default class {
       parent: this.element.find('.layer_selector_container'),
       endpoint: this.endpoint,
       changeCallback: function(value, text) {
+        console.log('Change/updateList from Layer selector');
         _this.currentLayerId = value;
         _this.updateList();
       }
@@ -65,6 +67,7 @@ export default class {
   }
 
   reload() {
+    console.log('AnnotationWindow#reload');
     var _this = this;
     var layerDfd = null, menuTagDfd = null;
 
@@ -80,11 +83,9 @@ export default class {
     this.element.find('.title').text(canvas.label);
     
     if (this.endpoint.getCanvasToc()) {
-      //this.listElem.css('top', 60);
       this.initMenuTagSelector();
       this.element.find('.annowin_menu_tag_row').show();
     } else {
-      //this.listElem.css('top', 35);
       this.element.find('.annowin_menu_tag_row').hide();
     }
 
@@ -114,24 +115,20 @@ export default class {
     const _this = this;
     const options = {};
 
+    options.parentElem = this.listElem;
+    options.annotationWindow = this;
     options.isEditor = session.isEditor();
-    options.listElem = this.listElem;
     options.annotationsList = this.canvasWindow.annotationsList;
     options.toc = this.endpoint.getCanvasToc();
     options.tocTags = ['all'];
     if (this.endpoint.getCanvasToc()) {
       options.tocTags = this.menuTagSelector.val().split('|');
     }
+    options.isCompleteList = (options.tocTags[0] === 'all'); // true if current window will show all annotations of a sortable list.
     options.layerId  = this.layerSelector.val();
-    options.bindAnnoElemEventsCallback = function(annoElem, annotation) {
-      _this.bindAnnotationItemEvents(annoElem, annotation);
-    };
     
-    const [newListElem, count] = this.annotationListRenderer.render(options);
-
-    this.listElem.empty();
-    this.listElem.html(newListElem.html());
-  
+    const count = this.annotationListRenderer.render(options);
+    
     if (count === 0) {
       this.placeholder.text('No annotations found.').show();
     } else {
@@ -290,118 +287,8 @@ export default class {
       _this.placeholder.text('Loading...').show();
     });
   }
-  
-  bindAnnotationItemEvents(annoElem, annotation) {
-    var _this = this;
-    var infoElem = annoElem.find('.annowin_info');
-    var finalTargetAnno = annoUtil.findFinalTargetAnnotation(annotation, 
-      this.canvasWindow.annotationsList);
-    
-    annoElem.click(function(event) {
-      _this.clearHighlights();
-      _this.highlightFocusedAnnotation(annotation);
-      _this.miradorProxy.publish('ANNOTATION_FOCUSED', [_this.id, finalTargetAnno]);
-      jQuery.publish('ANNOTATION_FOCUSED', [_this.id, annotation]);
-    });
-    
-    annoElem.find('.annotate').click(function (event) {
-      var dialogElement = jQuery('#mr_annotation_dialog');
-      var editor = new Mirador.AnnotationEditor({
-        parent: dialogElement,
-        canvasWindow: _this.canvasWindow,
-        mode: 'create',
-        targetAnnotation: annotation,
-        endpoint: _this.endpoint,
-        saveCallback: function(annotation) {
-          dialogElement.dialog('close');
-          _this.canvasWindow.annotationsList.push(annotation);
-          _this.miradorProxy.publish('ANNOTATIONS_LIST_UPDATED', 
-            { windowId: _this.canvasWindow.id, annotationsList: _this.canvasWindow.annotationsList });
-        },
-        cancelCallback: function() {
-          dialogElement.dialog('close');
-        }
-      });
-      dialogElement.dialog({
-        title: 'Create annotation',
-        modal: true,
-        draggable: true,
-        dialogClass: 'no_close',
-        width: 400
-      });
-      editor.show();
-    });
-    
-    annoElem.find('.edit').click(function(event) {
-      var editor = new Mirador.AnnotationEditor({
-        parent: annoElem,
-        canvasWindow: _this.canvasWindow,
-        mode: 'update',
-        endpoint: _this.endpoint,
-        annotation: annotation,
-        saveCallback: function(annotation, content) {
-          if (_this.currentLayerId === annotation.layerId) {
-            var normalView = annoElem.find('.normal_view');
-            normalView.find('.content').html(content);
-            normalView.show();
-            annoElem.data('editing', false);
-          } else {
-            annoElem.remove();
-          }
-        },
-        cancelCallback: function() {
-          annoElem.find('.normal_view').show();
-          annoElem.data('editing', false);
-        }
-      });
-      
-      annoElem.data('editing', true);
-      annoElem.find('.normal_view').hide();
-      editor.show();
-    });
-    
-    annoElem.find('.delete').click(function(event) {
-      if (window.confirm('Do you really want to delete the annotation?')) {
-        _this.miradorProxy.publish('annotationDeleted.' + _this.canvasWindow.id, [annotation['@id']]);
-      }
-    });
-    
-    annoElem.find('.up.icon').click(function(event) {
-      var sibling = annoElem.prev();
-      if (sibling.size() > 0) {
-        _this.fadeDown(annoElem, function() {
-          annoElem.after(sibling);
-          _this.fadeUp(annoElem, function() {
-            _this.tempMenuRow.show();
-          });
-        });
-      }
-    });
-    
-    annoElem.find('.down.icon').click(function(event) {
-      var sibling = annoElem.next();
-      if (sibling.size() > 0) {
-        _this.fadeUp(annoElem, function() {
-          annoElem.before(sibling);
-          _this.fadeDown(annoElem, function() {
-            _this.tempMenuRow.show();
-          });
-        });
-      }
-    });
-    
-    infoElem.click(function(event) {
-      var infoDiv = annoElem.find('.info_view');
-      if (infoDiv.css('display') === 'none') {
-        infoDiv.replaceWith(_this.createInfoDiv(annotation));
-        infoDiv.show();
-      } else {
-        infoDiv.hide();
-      }
-    });
-  }
 }
-
+  
 const template = Handlebars.compile([
   '<div class="mr_annotation_window">',
   '  <div class="annowin_header">',

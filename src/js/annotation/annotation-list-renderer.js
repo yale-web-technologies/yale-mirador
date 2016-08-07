@@ -5,15 +5,21 @@ import annoUtil from './anno-util';
  * depending on the context.
  */
 export default class AnnotationListRenderer {
-  constructor(listElem) {
-    this.listElem = listElem;
+  constructor() {
   }
-  
+
+  /*
+   * Creates a div that contains annotation elements.
+   * @param {object} options
+   */
   render(options) {
     console.log('AnnotationListRenderer#render');
+    options.parentElem.empty();
+    return this.renderDefault(options);
+  }
+  
+  renderDefault(options) {
     const _this = this;
-    const listElem = jQuery('<div/>').addClass('annowin_list');
-    const tocTagsteList = (options.tocTags[0] === 'all'); // true if current window will show all annotations of a sortable list.
     let count = 0;
     
     jQuery.each(options.annotationsList, function(index, annotation) {
@@ -21,8 +27,8 @@ export default class AnnotationListRenderer {
         if (options.layerId === annotation.layerId) {
           if (options.tocTags[0] === 'all' || options.toc.matchHierarchy(annotation, options.tocTags)) {
             ++count;
-            const annoElem = _this.createAnnoElem(annotation, listElem, options);
-            listElem.append(annoElem);
+            const annoElem = _this.createAnnoElem(annotation, options);
+            options.parentElem.append(annoElem);
           }
         }
       } catch (e) {
@@ -30,11 +36,17 @@ export default class AnnotationListRenderer {
         throw e;
       }
     });
-    
-    return [listElem, count];
+    return count;
   }
   
-  createAnnoElem(annotation, listElem, options) {
+  /**
+   * Consult the table of contents structure to populate the annotations list.
+   */
+  renderFromToc(options) {
+    
+  }
+  
+  createAnnoElem(annotation, options) {
     //console.log('AnnotationWindow#addAnnotation:');
     //console.dir(annotation);
     const content = annoUtil.getAnnotationText(annotation);
@@ -60,7 +72,7 @@ export default class AnnotationListRenderer {
     this.setAnnotationItemInfo(annoElem, annotation);
     infoDiv.hide();
     
-    options.bindAnnoElemEventsCallback(annoElem, annotation);
+    this.bindAnnotationItemEvents(annoElem, annotation, options);
     return annoElem;
   }
   
@@ -80,8 +92,118 @@ export default class AnnotationListRenderer {
       infoElem.removeClass('anno_on_anno');
     }
   }
-}
+
+  bindAnnotationItemEvents(annoElem, annotation, options) {
+    let annoWin = options.annotationWindow;
+    let infoElem = annoElem.find('.annowin_info');
+    let finalTargetAnno = annoUtil.findFinalTargetAnnotation(annotation, 
+      options.annotationsList);
+    
+    annoElem.click(function(event) {
+      annoWin.clearHighlights();
+      annoWin.highlightFocusedAnnotation(annotation);
+      annoWin.miradorProxy.publish('ANNOTATION_FOCUSED', [annoWin.id, finalTargetAnno]);
+      jQuery.publish('ANNOTATION_FOCUSED', [annoWin.id, annotation]);
+    });
+    
+    annoElem.find('.annotate').click(function (event) {
+      var dialogElement = jQuery('#mr_annotation_dialog');
+      var editor = new Mirador.AnnotationEditor({
+        parent: dialogElement,
+        canvasWindow: annoWin.canvasWindow,
+        mode: 'create',
+        targetAnnotation: annotation,
+        endpoint: annoWin.endpoint,
+        saveCallback: function(annotation) {
+          dialogElement.dialog('close');
+          annoWin.canvasWindow.annotationsList.push(annotation);
+          annoWin.miradorProxy.publish('ANNOTATIONS_LIST_UPDATED', 
+            { windowId: annoWin.canvasWindow.id, annotationsList: annoWin.canvasWindow.annotationsList });
+        },
+        cancelCallback: function() {
+          dialogElement.dialog('close');
+        }
+      });
+      dialogElement.dialog({
+        title: 'Create annotation',
+        modal: true,
+        draggable: true,
+        dialogClass: 'no_close',
+        width: 400
+      });
+      editor.show();
+    });
+    
+    annoElem.find('.edit').click(function(event) {
+      var editor = new Mirador.AnnotationEditor({
+        parent: annoElem,
+        canvasWindow: annoWin.canvasWindow,
+        mode: 'update',
+        endpoint: annoWin.endpoint,
+        annotation: annotation,
+        saveCallback: function(annotation, content) {
+          if (annoWin.currentLayerId === annotation.layerId) {
+            var normalView = annoElem.find('.normal_view');
+            normalView.find('.content').html(content);
+            normalView.show();
+            annoElem.data('editing', false);
+          } else {
+            annoElem.remove();
+          }
+        },
+        cancelCallback: function() {
+          annoElem.find('.normal_view').show();
+          annoElem.data('editing', false);
+        }
+      });
+      
+      annoElem.data('editing', true);
+      annoElem.find('.normal_view').hide();
+      editor.show();
+    });
+    
+    annoElem.find('.delete').click(function(event) {
+      if (window.confirm('Do you really want to delete the annotation?')) {
+        annoWin.miradorProxy.publish('annotationDeleted.' + annoWin.canvasWindow.id, [annotation['@id']]);
+      }
+    });
+    
+    annoElem.find('.up.icon').click(function(event) {
+      var sibling = annoElem.prev();
+      if (sibling.size() > 0) {
+        annoWin.fadeDown(annoElem, function() {
+          annoElem.after(sibling);
+          annoWin.fadeUp(annoElem, function() {
+            annoWin.tempMenuRow.show();
+          });
+        });
+      }
+    });
+
+    annoElem.find('.down.icon').click(function(event) {
+      var sibling = annoElem.next();
+      if (sibling.size() > 0) {
+        annoWin.fadeUp(annoElem, function() {
+          annoElem.before(sibling);
+          annoWin.fadeDown(annoElem, function() {
+            annoWin.tempMenuRow.show();
+          });
+        });
+      }
+    });
   
+    infoElem.click(function(event) {
+      var infoDiv = annoElem.find('.info_view');
+      if (infoDiv.css('display') === 'none') {
+        infoDiv.replaceWith(annoWin.createInfoDiv(annotation));
+        infoDiv.show();
+      } else {
+        infoDiv.hide();
+      }
+    });
+  }
+}
+
 const annotationTemplate = Handlebars.compile([
   '<div class="annowin_anno" draggable="true">',
   '  <div class="info_view"></div>',
