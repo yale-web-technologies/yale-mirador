@@ -45,7 +45,7 @@ import session from '../session';
       this.annotationsList = [];
 
       dfd.done(function(annoInfos) {
-        console.log('annoInfos: ');
+        console.log('YaleDemoEndpoint#_search annoInfos: ');
         console.dir(annoInfos);
         jQuery.each(annoInfos, function(index, annoInfo) {
           var oaAnnotation = _this.getAnnotationInOA(annoInfo.annotation);
@@ -86,14 +86,20 @@ import session from '../session';
       console.log('YaleDemoEndpoint#update oaAnnotation:');
       console.dir(oaAnnotation);
       
+      var _this = this;
+      var canvasId = this._getTargetCanvasId(oaAnnotation);
+      var layerId = oaAnnotation.layerId;
       var annotation = this.getAnnotationInEndpoint(oaAnnotation);
       var fbKey = this.fbKeyMap[annotation['@id']];
       var ref = firebase.database().ref('/annotations/' + fbKey);
       
-      ref.update({ annotation: annotation }, function (error) {
+      ref.update({ annotation: annotation, layerId: layerId }, function (error) {
         if (error) {
           console.log('Update failed.');
         } else {
+          // Delete from all lists except for this canvas/layer.
+          _this._fbDeleteAnnoFromListExcludeCanvasLayer(annotation, canvasId, layerId);
+          _this._fbAddAnnoToList(annotation, canvasId, layerId);
           console.log('Update succeeded.');
           if (typeof successCallback === 'function') {
             successCallback(oaAnnotation);
@@ -280,6 +286,29 @@ import session from '../session';
       });
     },
     
+    _fbDeleteAnnoFromListExcludeCanvasLayer: function(annotation, canvasId, layerId) {
+      console.log('YaleDemoEndpoint#_fbDeleteAnnoFromListExcludeCanvasLayer');
+      var annoId = annotation['@id'];
+      var combinedId = canvasId + layerId;
+      var ref = firebase.database().ref('lists');
+      
+      ref.once('value', function(snapshot) {
+        var data = snapshot.val() || [];
+        snapshot.forEach(function(childSnapshot) {
+          var childRef = childSnapshot.ref;
+          var childKey = childSnapshot.key;
+          var childData = childSnapshot.val();
+          if (childData.combinedId !== combinedId) {
+            var index = childData.annotationIds ? childData.annotationIds.indexOf(annoId) : -1;
+            if (index > -1) {
+              childData.annotationIds.splice(index, 1);
+              childRef.update({ annotationIds: childData.annotationIds });
+            }
+          }
+        });
+      });
+    },
+
     _getTargetCanvasId: function(annotation) {
       var targetAnno = null;
       
