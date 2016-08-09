@@ -1,7 +1,7 @@
 {
   "__manifestUrl": "https://s3.amazonaws.com/tempmanifests/ten_thousand_rooms/HZGZ.json",
   "manifestUrl": "https://s3.amazonaws.com/tempmanifests/life_of_the_buddha/LOTB.json",
-  "__endpointUrl": "http://mirador-annotations-lotb.herokuapp.com",
+  "__endpointUrl": "http://mirador-annotations-lotb-stg.herokuapp.com",
   "endpointUrl": "firebase",
   "__firebase": {},
   "firebase": {
