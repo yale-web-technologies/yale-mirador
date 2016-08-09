@@ -29,16 +29,22 @@ export default class Toc {
      * 
      * Each node is an object:
      * {
-     *   label: A_STRING, // label for display
-     *   tag: A_STRING, // value of the tag
-     *   weight: A_NUMBER, // for sorting
+     *   spec: AN_OBJECT, // spec object from this.spec, with label, short, tag attributes
      *   annotation: AN_OBJECT, // annotation
+     *   layerIds: A_SET, // set of layer IDs for annotations that belong to this node or its children
+     *   cumulativeLabel: A_STRING, // concatenation of short labels inherited from the parent nodes 
      *   childNodes: AN_OBJECT, // child TOC nodes as a hashmap on tags
      *   childAnnotations: AN_ARRAY, // non-TOC-node annotations that targets this node
      *   isRoot: A_BOOL, // true if the node is the root
+     *   weight: A_NUMBER // for sorting
      * }
      */
     this.annoHierarchy = null;
+    
+    /**
+     * Annotations that do not belong to the ToC structure.
+     */
+    this._unassigned = [];
     
     this.annoToNodeMap = {}; // key: annotation ID, value: node in annoHierarchy;
     this.init();
@@ -66,7 +72,7 @@ export default class Toc {
       var tag = args[i];
       var node = node.childNodes[tag];
     }
-    return node;
+    return (node === this.annoHierarchy) ? null : node;
   }
   
   /**
@@ -114,18 +120,26 @@ export default class Toc {
         var node = _this.annoToNodeMap[targetAnno['@id']];
         if (targetAnno && node) {
           node.childAnnotations.push(annotation);
+          _this.registerLayerWithNode(node, annotation.layerId);
+        } else {
+          console.log('WARNING ParsedAnnotations#addRemainingAnnotations not covered by ToC');
+          _this._unassigned.push(annotation);
         }
       } else {
-        console.log('WARNING ParsedAnnotations#addRemainingAnnotations not added anywhere: ');
+        console.log('WARNING ParsedAnnotations#addRemainingAnnotations orphan');
         console.dir(annotation);
+        _this._unassigned.push(annotation);
       }
     });
   }
   
   /**
    * Recursively builds the TOC structure.
-   * @param {rowIndex} index of this.annoHierarchy
-   * @return true if the annotation was set to be a TOC node, false if not.
+   * @param {object} annotation Annotation to be assigned to the parent node
+   * @param {string[]} tags 
+   * @param {number} rowIndex Index of this.annoHierarchy
+   * @param {object} parent Parent node
+   * @return {boolean} true if the annotation was set to be a TOC node, false if not.
    */
   buildChildNodes(annotation, tags, rowIndex, parent) {
     //console.log('ParsedAnnotations#buildNode rowIndex: ' + rowIndex + ', anno:');
@@ -139,6 +153,7 @@ export default class Toc {
       } else { // Assign the annotation to parent (a TOC node)
         parent.annotation = annotation;
         this.annoToNodeMap[annotation['@id']] = parent;
+        this.registerLayerWithNode(parent, annotation.layerId);
         return true;
       }
     }
@@ -153,12 +168,19 @@ export default class Toc {
         parent.childNodes[tag] = this.newNode(tagObj);
       }
       currentNode = parent.childNodes[tag];
+      if (parent.isRoot) {
+        currentNode.cumulativeLabel = currentNode.spec.short;
+      } else {
+        currentNode.cumulativeLabel = parent.cumulativeLabel +
+          this.spec.shortLabelSeparator + currentNode.spec.short;
+      }
       return this.buildChildNodes(annotation, tags, rowIndex+1, currentNode);
-    } else {
-      if (parent.isRoot) { // no matching tags so far
+    } else { // no matching tags so far
+      if (parent.isRoot) {
         return false;
       } else {
         parent.annotation = annotation;
+        this.registerLayerWithNode(parent, annotation.layerId);
         this.annoToNodeMap[annotation['@id']] = parent;
         return true;
       }
@@ -187,7 +209,7 @@ export default class Toc {
     });
     return match;
   }
-  
+
   newNode(tagObj, isRoot) {
     if (isRoot) {
       return {
@@ -197,10 +219,12 @@ export default class Toc {
     } else {
       return {
         spec: tagObj,
-        weight: this.tagWeights[tagObj.tag],
         annotation: null,
+        layerIds: new Set(),
+        cumulativeLabel: '',
         childNodes: {},
-        childAnnotations: []
+        childAnnotations: [],
+        weight: this.tagWeights[tagObj.tag]
       };
     }
   }
@@ -247,10 +271,37 @@ export default class Toc {
     return matched;
   }
   
-  sortedAnnosWithHeaders(annotations) {
-    console.log('XXXXXXXXX');
-    console.log('XXXXXXXXX sortedAnnosWithHeaders');
-    console.log('XXXXXXXXX');
-    return annotations;
+  registerLayerWithNode(node, layerId) {
+    let curNode = node;
+    while (curNode) {
+      curNode.layerIds.add(layerId);
+      curNode = node.parentNode;
+    }
   }
+  
+  unassigned() {
+    return this._unassigned;
+  }
+  
+  numUnassigned() {
+    return this._unassigned.length;
+  }
+  
+  /**
+   * Traverses the Toc structure and calls visitCallback() for each node.
+   * @param {function} visitCallback
+   */
+  walk(visitCallback) {
+    this.visit(this.annoHierarchy, visitCallback);
+  }
+  
+  visit(node, callback) {
+    let _this = this;
+    
+    jQuery.each(node.childNodes, function(tag, node) {
+      callback(node);
+      _this.visit(node, callback);
+    });
+  }
+  
 }

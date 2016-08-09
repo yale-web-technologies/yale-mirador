@@ -70,9 +70,6 @@ export default class {
       
     let item = { children: [] };
     
-    console.log('node:');
-    console.dir(node);
-      
     if (!node.isRoot) {
       var label = parentItem ? parentItem.label + ', ' + node.spec.label : node.spec.label;
       var value = parentItem ? parentItem.value + '|' + node.spec.tag : node.spec.tag;

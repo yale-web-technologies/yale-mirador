@@ -297,6 +297,7 @@ import getMiradorWindow from '../mirador-window';
         //permissions: annotation.permissions,
         endpoint: this
       };
+
       //console.log('YaleEndpoint#getAnnotationInOA oaAnnotation:');
       //console.dir(oaAnnotation);
       return oaAnnotation;

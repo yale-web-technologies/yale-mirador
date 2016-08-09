@@ -15,7 +15,11 @@ export default class AnnotationListRenderer {
   render(options) {
     console.log('AnnotationListRenderer#render');
     options.parentElem.empty();
-    return this.renderDefault(options);
+    if (options.toc) {
+      return this.renderWithToc(options);
+    } else {
+      return this.renderDefault(options);
+    }
   }
   
   renderDefault(options) {
@@ -42,8 +46,56 @@ export default class AnnotationListRenderer {
   /**
    * Consult the table of contents structure to populate the annotations list.
    */
-  renderFromToc(options) {
+  renderWithToc(options) {
+    var _this = this;
+    const parent = options.parentElem;
+    const layerId = options.layerId;
+    const toc = options.toc;
     
+    toc.walk(function(node) {
+      if (node.isRoot) {
+        return;
+      }
+      const headerElem = _this.createHeaderElem(node);
+      const numChildNodes = Object.keys(node.childNodes).length;
+      
+      if ((node.layerIds.has(layerId) && numChildNodes === 0) ||
+        (numChildNodes > 0 && node.annotation.layerId === layerId)) {
+        parent.append(headerElem);
+      }
+      if (layerId === node.annotation.layerId &&
+        (options.tocTags[0] === 'all' || toc.matchHierarchy(node.annotation, options.tocTags)))
+      {
+        parent.append(_this.createAnnoElem(node.annotation, options));
+      }
+      jQuery.each(node.childAnnotations, function(index, annotation) {
+        if (layerId === annotation.layerId &&
+          (options.tocTags[0] === 'all' || options.toc.matchHierarchy(annotation, options.tocTags)))
+        {
+          parent.append(_this.createAnnoElem(annotation, options));
+        }
+      });
+    });
+    if (toc.numUnassigned() > 0) {
+      let unassignedHeader = jQuery(headerTemplate({ text: 'Unassigned' }));
+      let count = 0;
+      parent.append(unassignedHeader);
+      jQuery.each(toc.unassigned(), function(index, annotation) {
+        if (layerId === annotation.layerId) {
+          parent.append(_this.createAnnoElem(annotation, options));
+          ++count;
+        }
+      });
+      if (count === 0) {
+        unassignedHeader.hide();
+      }
+    }
+  }
+  
+  createHeaderElem(node) {
+    const text = node.cumulativeLabel;
+    const headerHtml = headerTemplate({ text: text });
+    return jQuery(headerHtml);
   }
   
   createAnnoElem(annotation, options) {
