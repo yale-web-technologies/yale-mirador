@@ -62,12 +62,24 @@ export default class AnnotationListRenderer {
   
   appendHeader(node, options) {
     const layerId = options.layerId;
-    const showAll = (options.selectedTags[0] === 'all'); // show all chapters/scenes if true
     const numChildNodes = Object.keys(node.childNodes).length;
+    
+    // We are distinguishing between leaf and non-leaf nodes to ensure
+    // only one header will show over any set of annotations.
+    
+    // True if node is a non-leaf and there are annotations to show under the header
+    function nonLeafHasAnnotationsToShow() {
+      return numChildNodes > 0 && // non-leaf
+       (node.annotation.layerId === layerId || // the annotation for this node matches the current layer so it will show
+        node.childAnnotations.length > 0); // there are annotations that target this non-leaf node directly
+    }
 
-    if ((node.layerIds.has(layerId) && numChildNodes === 0) ||
-      (numChildNodes > 0 && node.annotation.layerId === layerId))
-    {
+    // True if node is a leaf and there are annotations to show under the header
+    function leafHasAnnotationsToShow() {
+      return numChildNodes === 0 && node.layerIds.has(layerId); // node is a leaf and there are annotations with matching layer
+    }
+    
+    if (nonLeafHasAnnotationsToShow() || leafHasAnnotationsToShow()) {
       const headerElem = this.createHeaderElem(node);
       options.parentElem.append(headerElem);
     }
@@ -76,7 +88,7 @@ export default class AnnotationListRenderer {
   appendAnnotationForTocNode(node, options) {
     const layerId = options.layerId;
     const selectedTags = options.selectedTags;
-    const showAll = (selectedTags[0] === 'all');
+    const showAll = (selectedTags[0] === 'all'); // show all chapters/scenes if true
     
     if (layerId === node.annotation.layerId &&
       (showAll || options.toc.matchHierarchy(node.annotation, selectedTags)))
