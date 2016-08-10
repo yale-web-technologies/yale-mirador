@@ -29,7 +29,7 @@ export default class AnnotationListRenderer {
     jQuery.each(options.annotationsList, function(index, annotation) {
       try {
         if (options.layerId === annotation.layerId) {
-          if (options.tocTags[0] === 'all' || options.toc.matchHierarchy(annotation, options.tocTags)) {
+          if (options.selectedTags[0] === 'all' || options.toc.matchHierarchy(annotation, options.selectedTags)) {
             ++count;
             const annoElem = _this.createAnnoElem(annotation, options);
             options.parentElem.append(annoElem);
@@ -47,42 +47,70 @@ export default class AnnotationListRenderer {
    * Consult the table of contents structure to populate the annotations list.
    */
   renderWithToc(options) {
-    var _this = this;
-    const parent = options.parentElem;
-    const layerId = options.layerId;
-    const toc = options.toc;
+    const _this = this;
     
-    toc.walk(function(node) {
+    options.toc.walk(function(node) {
       if (node.isRoot) {
-        return;
+        return; // do nothing with root node
       }
-      const headerElem = _this.createHeaderElem(node);
-      const numChildNodes = Object.keys(node.childNodes).length;
-      
-      if ((node.layerIds.has(layerId) && numChildNodes === 0) ||
-        (numChildNodes > 0 && node.annotation.layerId === layerId)) {
-        parent.append(headerElem);
-      }
-      if (layerId === node.annotation.layerId &&
-        (options.tocTags[0] === 'all' || toc.matchHierarchy(node.annotation, options.tocTags)))
-      {
-        parent.append(_this.createAnnoElem(node.annotation, options));
-      }
-      jQuery.each(node.childAnnotations, function(index, annotation) {
-        if (layerId === annotation.layerId &&
-          (options.tocTags[0] === 'all' || options.toc.matchHierarchy(annotation, options.tocTags)))
-        {
-          parent.append(_this.createAnnoElem(annotation, options));
-        }
-      });
+      _this.appendHeader(node, options);
+      _this.appendAnnotationForTocNode(node, options);
+      _this.appendAnnotationsForChildNodes(node, options);
     });
-    if (toc.numUnassigned() > 0) {
-      let unassignedHeader = jQuery(headerTemplate({ text: 'Unassigned' }));
+    _this.appendUnattachedAnnotations(options);
+  }
+  
+  appendHeader(node, options) {
+    const layerId = options.layerId;
+    const showAll = (options.selectedTags[0] === 'all'); // show all chapters/scenes if true
+    const numChildNodes = Object.keys(node.childNodes).length;
+
+    if ((node.layerIds.has(layerId) && numChildNodes === 0) ||
+      (numChildNodes > 0 && node.annotation.layerId === layerId))
+    {
+      const headerElem = this.createHeaderElem(node);
+      options.parentElem.append(headerElem);
+    }
+  }
+  
+  appendAnnotationForTocNode(node, options) {
+    const layerId = options.layerId;
+    const selectedTags = options.selectedTags;
+    const showAll = (selectedTags[0] === 'all');
+    
+    if (layerId === node.annotation.layerId &&
+      (showAll || options.toc.matchHierarchy(node.annotation, selectedTags)))
+    {
+      options.parentElem.append(this.createAnnoElem(node.annotation, options));
+    }
+  }
+  
+  appendAnnotationsForChildNodes(node, options) {
+    const _this = this;
+    const layerId = options.layerId;
+    const selectedTags = options.selectedTags;
+    const showAll = (selectedTags[0] === 'all');
+    
+    jQuery.each(node.childAnnotations, function(index, annotation) {
+      if (layerId === annotation.layerId &&
+        (showAll || options.toc.matchHierarchy(annotation, selectedTags)))
+      {
+        options.parentElem.append(_this.createAnnoElem(annotation, options));
+      }
+    });
+  }
+  
+  appendUnattachedAnnotations(options) {
+    const _this = this;
+    const layerId = options.layerId;
+    
+    if (options.toc.numUnassigned() > 0) {
+      const unassignedHeader = jQuery(headerTemplate({ text: 'Unassigned' }));
       let count = 0;
-      parent.append(unassignedHeader);
-      jQuery.each(toc.unassigned(), function(index, annotation) {
+      options.parentElem.append(unassignedHeader);
+      jQuery.each(options.toc.unassigned(), function(index, annotation) {
         if (layerId === annotation.layerId) {
-          parent.append(_this.createAnnoElem(annotation, options));
+          options.parentElem.append(_this.createAnnoElem(annotation, options));
           ++count;
         }
       });
@@ -129,7 +157,7 @@ export default class AnnotationListRenderer {
   }
   
   getTagsHtml(tags) {
-    var html = '';
+    let html = '';
     jQuery.each(tags, function(index, value) {
       html += '<span class="tag">' + value + '</span>';
     });
@@ -137,7 +165,7 @@ export default class AnnotationListRenderer {
   }
   
   setAnnotationItemInfo(annoElem, annotation) {
-    var infoElem = annoElem.find('.annowin_info');
+    const infoElem = annoElem.find('.annowin_info');
     if (annotation.on['@type'] == 'oa:Annotation') { // target: annotation
       infoElem.addClass('anno_on_anno');
     } else {
@@ -146,9 +174,9 @@ export default class AnnotationListRenderer {
   }
 
   bindAnnotationItemEvents(annoElem, annotation, options) {
-    let annoWin = options.annotationWindow;
-    let infoElem = annoElem.find('.annowin_info');
-    let finalTargetAnno = annoUtil.findFinalTargetAnnotation(annotation, 
+    const annoWin = options.annotationWindow;
+    const infoElem = annoElem.find('.annowin_info');
+    const finalTargetAnno = annoUtil.findFinalTargetAnnotation(annotation, 
       options.annotationsList);
     
     annoElem.click(function(event) {
@@ -159,8 +187,8 @@ export default class AnnotationListRenderer {
     });
     
     annoElem.find('.annotate').click(function (event) {
-      var dialogElement = jQuery('#mr_annotation_dialog');
-      var editor = new Mirador.AnnotationEditor({
+      const dialogElement = jQuery('#mr_annotation_dialog');
+      const editor = new Mirador.AnnotationEditor({
         parent: dialogElement,
         canvasWindow: annoWin.canvasWindow,
         mode: 'create',
@@ -187,7 +215,7 @@ export default class AnnotationListRenderer {
     });
     
     annoElem.find('.edit').click(function(event) {
-      var editor = new Mirador.AnnotationEditor({
+      const editor = new Mirador.AnnotationEditor({
         parent: annoElem,
         canvasWindow: annoWin.canvasWindow,
         mode: 'update',
@@ -195,7 +223,7 @@ export default class AnnotationListRenderer {
         annotation: annotation,
         saveCallback: function(annotation, content) {
           if (annoWin.currentLayerId === annotation.layerId) {
-            var normalView = annoElem.find('.normal_view');
+            const normalView = annoElem.find('.normal_view');
             normalView.find('.content').html(content);
             normalView.show();
             annoElem.data('editing', false);
@@ -221,7 +249,7 @@ export default class AnnotationListRenderer {
     });
     
     annoElem.find('.up.icon').click(function(event) {
-      var sibling = annoElem.prev();
+      const sibling = annoElem.prev();
       if (sibling.size() > 0) {
         annoWin.fadeDown(annoElem, function() {
           annoElem.after(sibling);
@@ -233,7 +261,7 @@ export default class AnnotationListRenderer {
     });
 
     annoElem.find('.down.icon').click(function(event) {
-      var sibling = annoElem.next();
+      const sibling = annoElem.next();
       if (sibling.size() > 0) {
         annoWin.fadeUp(annoElem, function() {
           annoElem.before(sibling);
@@ -245,7 +273,7 @@ export default class AnnotationListRenderer {
     });
   
     infoElem.click(function(event) {
-      var infoDiv = annoElem.find('.info_view');
+      const infoDiv = annoElem.find('.info_view');
       if (infoDiv.css('display') === 'none') {
         infoDiv.replaceWith(annoWin.createInfoDiv(annotation));
         infoDiv.show();

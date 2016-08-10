@@ -120,11 +120,11 @@ export default class {
     options.isEditor = session.isEditor();
     options.annotationsList = this.canvasWindow.annotationsList;
     options.toc = this.endpoint.getCanvasToc();
-    options.tocTags = ['all'];
+    options.selectedTags = ['all'];
     if (this.endpoint.getCanvasToc()) {
-      options.tocTags = this.menuTagSelector.val().split('|');
+      options.selectedTags = this.menuTagSelector.val().split('|');
     }
-    options.isCompleteList = (options.tocTags[0] === 'all'); // true if current window will show all annotations of a sortable list.
+    options.isCompleteList = (options.selectedTags[0] === 'all'); // true if current window will show all annotations of a sortable list.
     options.layerId  = this.layerSelector.val();
     
     const count = this.annotationListRenderer.render(options);
