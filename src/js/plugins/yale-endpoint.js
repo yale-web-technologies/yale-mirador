@@ -1,4 +1,5 @@
 import session from '../session';
+import getMiradorProxy from '../mirador-proxy';
 import CanvasToc from '../annotation/toc';
 import getMiradorWindow from '../mirador-window';
 
@@ -323,6 +324,7 @@ import getMiradorWindow from '../mirador-window';
     },
     
     parseAnnotations: function() {
+      this.annotationsList = getMiradorProxy().getFirstWindow().annotationsList;
       var spec = getMiradorWindow().getConfig().extension.tagHierarchy;
       this.canvasToc = new CanvasToc(spec, this.annotationsList);
       console.log('YaleEndpoint#parseAnnotations canvasToc:');

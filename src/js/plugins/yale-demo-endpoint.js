@@ -120,13 +120,12 @@ import session from '../session';
             errorCallback();
           }
         } else {
-            _this._fbDeleteAnnoFromList(annotationId);
+          _this._fbDeleteAnnoFromList(annotationId);
           if (typeof successCallback === 'function') {
             successCallback();
           }
         }
       });
-      successCallback();
     },
 
     getLayers: function (successCallback, errorCallback) {

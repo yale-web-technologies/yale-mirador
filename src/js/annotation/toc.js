@@ -123,11 +123,11 @@ export default class Toc {
           node.childAnnotations.push(annotation);
           _this.registerLayerWithNode(node, annotation.layerId);
         } else {
-          console.log('WARNING ParsedAnnotations#addRemainingAnnotations not covered by ToC');
+          console.log('WARNING Toc#addRemainingAnnotations not covered by ToC');
           _this._unassigned.push(annotation);
         }
       } else {
-        console.log('WARNING ParsedAnnotations#addRemainingAnnotations orphan');
+        console.log('WARNING Toc#addRemainingAnnotations orphan');
         console.dir(annotation);
         _this._unassigned.push(annotation);
       }

@@ -23,6 +23,7 @@ export default class AnnotationListRenderer {
   }
   
   renderDefault(options) {
+    console.log('AnnotationListRenderer#renderDefault');
     const _this = this;
     let count = 0;
     
@@ -47,6 +48,7 @@ export default class AnnotationListRenderer {
    * Consult the table of contents structure to populate the annotations list.
    */
   renderWithToc(options) {
+    console.log('AnnotationListRenderer#renderWithToc');
     const _this = this;
     
     options.toc.walk(function(node) {
@@ -91,7 +93,7 @@ export default class AnnotationListRenderer {
         return false;
       }
       return numChildNodes > 0 && // non-leaf
-       (node.annotation.layerId === layerId || // the annotation for this node matches the current layer so it will show
+       (node.annotation && node.annotation.layerId === layerId || // the annotation for this node matches the current layer so it will show
         hasChildAnnotationsToShow()); // there are annotations that target this non-leaf node directly
     }
 
@@ -113,7 +115,7 @@ export default class AnnotationListRenderer {
     const selectedTags = options.selectedTags;
     const showAll = (selectedTags[0] === 'all'); // show all chapters/scenes if true
     
-    if (layerId === node.annotation.layerId &&
+    if (node.annotation && layerId === node.annotation.layerId &&
       (showAll || options.toc.matchHierarchy(node.annotation, selectedTags)))
     {
       options.parentElem.append(this.createAnnoElem(node.annotation, options));

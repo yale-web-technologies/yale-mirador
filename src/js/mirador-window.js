@@ -105,6 +105,7 @@ class MiradorWindow {
     });
 
     this.miradorProxy.subscribe('ANNOTATIONS_LIST_UPDATED', function(event, params) {
+      console.log('MiradorWindow#bindEvents received ANNOTATIONS_LIST_UPDATED');
       if (_this.tagHierarchy) {
         var endpoint = _this.miradorProxy.getEndPoint(params.windowId);
         endpoint.parseAnnotations();
