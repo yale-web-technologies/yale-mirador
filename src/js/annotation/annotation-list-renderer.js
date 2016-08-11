@@ -62,16 +62,37 @@ export default class AnnotationListRenderer {
   
   appendHeader(node, options) {
     const layerId = options.layerId;
+    const selectedTags = options.selectedTags;
     const numChildNodes = Object.keys(node.childNodes).length;
+    const showAll = (selectedTags[0] === 'all');
+
+    function arrayContains(a, b) {
+      if (a.length < b.length) { return false; }
+      for (let i = 0; i < b.length; ++i) {
+        if (a[i] !== b[i]) { return false; }
+      }
+      return true;
+    }
     
     // We are distinguishing between leaf and non-leaf nodes to ensure
     // only one header will show over any set of annotations.
     
     // True if node is a non-leaf and there are annotations to show under the header
     function nonLeafHasAnnotationsToShow() {
+      function hasChildAnnotationsToShow() {
+        const annos = node.childAnnotations;
+        const num = annos.length;
+        for (let i = 0; i < num; ++i) {
+          let anno = node.childAnnotations[i];
+          if (anno.layerId === layerId) {
+            return true;
+          }
+        }
+        return false;
+      }
       return numChildNodes > 0 && // non-leaf
        (node.annotation.layerId === layerId || // the annotation for this node matches the current layer so it will show
-        node.childAnnotations.length > 0); // there are annotations that target this non-leaf node directly
+        hasChildAnnotationsToShow()); // there are annotations that target this non-leaf node directly
     }
 
     // True if node is a leaf and there are annotations to show under the header
@@ -79,7 +100,9 @@ export default class AnnotationListRenderer {
       return numChildNodes === 0 && node.layerIds.has(layerId); // node is a leaf and there are annotations with matching layer
     }
     
-    if (nonLeafHasAnnotationsToShow() || leafHasAnnotationsToShow()) {
+    if ((showAll || arrayContains(node.cumulativeTags, selectedTags)) &&
+      (nonLeafHasAnnotationsToShow() || leafHasAnnotationsToShow()))
+    {
       const headerElem = this.createHeaderElem(node);
       options.parentElem.append(headerElem);
     }
@@ -115,8 +138,9 @@ export default class AnnotationListRenderer {
   appendUnattachedAnnotations(options) {
     const _this = this;
     const layerId = options.layerId;
+    const showAll = (options.selectedTags[0] === 'all');
     
-    if (options.toc.numUnassigned() > 0) {
+    if (showAll && options.toc.numUnassigned() > 0) {
       const unassignedHeader = jQuery(headerTemplate({ text: 'Unassigned' }));
       let count = 0;
       options.parentElem.append(unassignedHeader);

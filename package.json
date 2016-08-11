@@ -1,6 +1,6 @@
 {
   "name": "yale-mirador",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Yale Extension of Mirador",
   "main": "index.js",
   "scripts": {

@@ -33,6 +33,7 @@ export default class Toc {
      *   annotation: AN_OBJECT, // annotation
      *   layerIds: A_SET, // set of layer IDs for annotations that belong to this node or its children
      *   cumulativeLabel: A_STRING, // concatenation of short labels inherited from the parent nodes 
+     *   cumulativeTags: [], // list of tags for this node and its ancestors
      *   childNodes: AN_OBJECT, // child TOC nodes as a hashmap on tags
      *   childAnnotations: AN_ARRAY, // non-TOC-node annotations that targets this node
      *   isRoot: A_BOOL, // true if the node is the root
@@ -54,7 +55,7 @@ export default class Toc {
     console.log('Toc#init spec: ' + this.spec);
     console.dir(this.spec);
     
-    this.annoHierarchy = this.newNode(null, true); // root node
+    this.annoHierarchy = this.newNode(null, null); // root node
     
     this.initTagWeights();
     this.parse(this.annotations);
@@ -81,8 +82,8 @@ export default class Toc {
   initTagWeights() {
     var _this = this;
     jQuery.each(this.spec.nodeSpecs, function(rowIndex, row) {
-      jQuery.each(row, function(tagIndex, tagObj) {
-        _this.tagWeights[tagObj.tag] = tagIndex;
+      jQuery.each(row, function(index, nodeSpec) {
+        _this.tagWeights[nodeSpec.tag] = index;
       });
     });
   }
@@ -158,14 +159,14 @@ export default class Toc {
       }
     }
     
-    var tagObj = this.tagInSpecs(tags, this.spec.nodeSpecs[rowIndex]);
+    var nodeSpec = this.tagInSpecs(tags, this.spec.nodeSpecs[rowIndex]);
     
-    if (tagObj) { // one of the tags belongs to the corresponding level of the pre-defined tag hierarchy
-      var tag = tagObj.tag;
+    if (nodeSpec) { // one of the tags belongs to the corresponding level of the pre-defined tag hierarchy
+      var tag = nodeSpec.tag;
       var annoHierarchy = this.annoHierarchy;
       
       if (!parent.childNodes[tag]) {
-        parent.childNodes[tag] = this.newNode(tagObj);
+        parent.childNodes[tag] = this.newNode(nodeSpec, parent);
       }
       currentNode = parent.childNodes[tag];
       if (parent.isRoot) {
@@ -210,21 +211,24 @@ export default class Toc {
     return match;
   }
 
-  newNode(tagObj, isRoot) {
-    if (isRoot) {
+  newNode(nodeSpec, parent) {
+    if (!parent) { // root node
       return {
         isRoot: true,
         childNodes: {}
       };
     } else {
+      const tags = parent.isRoot ? [nodeSpec.tag] :
+        parent.cumulativeTags.concat([nodeSpec.tag]);
       return {
-        spec: tagObj,
+        spec: nodeSpec,
         annotation: null,
         layerIds: new Set(),
         cumulativeLabel: '',
+        cumulativeTags: tags,
         childNodes: {},
         childAnnotations: [],
-        weight: this.tagWeights[tagObj.tag]
+        weight: this.tagWeights[nodeSpec.tag]
       };
     }
   }
@@ -272,11 +276,7 @@ export default class Toc {
   }
   
   registerLayerWithNode(node, layerId) {
-    let curNode = node;
-    while (curNode) {
-      curNode.layerIds.add(layerId);
-      curNode = node.parentNode;
-    }
+    node.layerIds.add(layerId);
   }
   
   unassigned() {
