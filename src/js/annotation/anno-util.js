@@ -41,7 +41,6 @@ export default {
     for (let i = 0; i < tags.length; ++i) {
       let found = false;
       for (let j = 0; j < annoTags.length; ++j) {
-        console.log('COMP ' + tags[i] + ' TO ' + annoTags[j]);
         if (tags[i] === annoTags[j]) {
           found = true;
           break;
