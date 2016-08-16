@@ -10,7 +10,8 @@ export default class {
       selector: null,
       parent: null,
       endpoint: null,
-      changeCallback: null
+      changeCallback: null,
+      initialLayerId: null
     }, options);
   }
   
@@ -37,7 +38,7 @@ export default class {
     
     setTimeout(function() {
       if (layers.length > 0) {
-        _this.selector.val(layers[0]['@id'], true);
+        _this.selector.val(_this.initialLayerId || layers[0]['@id'], true);
         _this._isLoaded = true;
       }
       dfd.resolve();

@@ -15,49 +15,71 @@ class MiradorWindow {
     }, options);
     
     const _this = this;
+    const miradorProxy = getMiradorProxy();
     
     this.viewerElem = jQuery('#viewer');
-    this.miradorProxy = getMiradorProxy();
-    
+     
     const dfd = this._fetchServerSettings();
     
     dfd.done(function(data) {
-      _this.serverSettings = session.setServerSettings(data);
+      const serverSettings = session.setServerSettings(data);
+      const htmlOptions = _this._parseHtmlOptions();
+      _this._miradorConfig = _this._buildMiradorConfig(serverSettings, htmlOptions);
+      miradorProxy.setMirador(Mirador(_this._miradorConfig));
+      _this._handleLoadOptions(htmlOptions);
+      _this._bindEvents(serverSettings);
     });
     dfd.fail(function() {
-      console.log('ERROR failed to retrieve server settings');
-      });
-    dfd.always(function() {
-      _this._initMirador();
-      _this._bindEvents();
+      alert('ERROR failed to retrieve server settings');
     });
   }
 
   getConfig() {
-    return this.config;
+    return this._miradorConfig;
   }
   
-  _initMirador() {
+  /**
+   * Process parameters passed from the server via HTML.
+   */
+  _handleLoadOptions(htmlOptions) {
     const _this = this;
-    const serverSettings = this.serverSettings;
-    const htmlOptions = this._parseHtmlOptions();
-    this.config = this._buildMiradorConfig(serverSettings, htmlOptions);
-    const mirador = Mirador(this.config);
-    this.miradorProxy.setMirador(mirador);
+    const miradorProxy = getMiradorProxy();
     
-    if (htmlOptions.tocTags.length > 0) {
-      console.log('MiradorWindow#_initMirador has tocTags: ' + htmlOptions.tocTags);
-      this.miradorProxy.subscribe('ANNOTATIONS_LIST_UPDATED', function(event) {
-        const endpoint = _this.miradorProxy.getEndPoint();
+    jQuery.subscribe('MR_READY_TO_RELOAD_ANNO_WIN', function(event) { // after annotations have been loaded
+      if (_this._urlOptionsProcessed) {
+        return;
+      } else {
+        _this._urlOptionsProcessed = true;
+      }
+      let addAnnotationWindows = false;
+      
+      if (htmlOptions.tocTags.length > 0) {
+        console.log('MiradorWindow#_handleLoadOptions has tocTags: ' + htmlOptions.tocTags);
+
+        const endpoint = miradorProxy.getEndPoint();
+        const toc = endpoint.getCanvasToc();
+        const node = toc.getNode.apply(toc, htmlOptions.tocTags);
         const annotations = endpoint.annotationsList.filter(function(anno) {
           return annoUtil.hasTags(anno, htmlOptions.tocTags);
         });
-        _this.miradorProxy.publish('YM_DISPLAY_ON'); // display annotations
-        if (annotations.length > 0) {
-          _this.miradorProxy.publish('ANNOTATION_FOCUSED', ['', annotations[0]]);
+        miradorProxy.publish('YM_DISPLAY_ON'); // display annotations
+        if (node && node.annotation) {
+          miradorProxy.publish('ANNOTATION_FOCUSED', ['', node.annotation]);
         }
-      });
-    }
+        addAnnotationWindows = true;
+      }
+      if (htmlOptions.layerIds.length > 0) {
+        addAnnotationWindows = true;
+      }
+      if (addAnnotationWindows) {
+        for (let i = 0; i < htmlOptions.layerIds.length; ++i) {
+          jQuery.publish('MR_ADD_WINDOW', { 
+            tocTags: htmlOptions.tocTags,
+            layerId: htmlOptions.layerIds[i],
+          });
+        }
+      }
+    });
   }
   
   /**
@@ -135,17 +157,18 @@ class MiradorWindow {
     return dfd;
   }
 
-  _bindEvents() {
+  _bindEvents(serverSettings) {
     const _this = this;
+    const miradorProxy = getMiradorProxy();
     
     jQuery(window).resize(function() {
       _this.grid.resize();
     });
 
-    this.miradorProxy.subscribe('ANNOTATIONS_LIST_UPDATED', function(event, params) {
+    miradorProxy.subscribe('ANNOTATIONS_LIST_UPDATED', function(event, params) {
       console.log('MiradorWindow#bindEvents received ANNOTATIONS_LIST_UPDATED');
-      if (_this.tagHierarchy) {
-        const endpoint = _this.miradorProxy.getEndPoint(params.windowId);
+      if (serverSettings.tagHierarchy) {
+        const endpoint = miradorProxy.getEndPoint(params.windowId);
         endpoint.parseAnnotations();
       }
       jQuery.publish('MR_READY_TO_RELOAD_ANNO_WIN');

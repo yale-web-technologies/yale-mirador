@@ -13,7 +13,9 @@ export default class {
       element: null,
       canvasWindow: null, // window that contains the canvas for the annotations
       endpoint: null,
-      annotationListRenderer: null
+      annotationListRenderer: null,
+      initialLayerId: null,
+      initialTocTags: null
     }, options);
 
     this.init();
@@ -46,6 +48,7 @@ export default class {
     this.menuTagSelector = new MenuTagSelector({
       parent: this.element.find('.menu_tag_selector_container'),
       endpoint: this.endpoint,
+      initialTags: this.initialTocTags,
       changeCallback: function(value, text) {
         console.log('Change/updateList from TOC selector');
         _this.updateList();
@@ -58,6 +61,7 @@ export default class {
     this.layerSelector = new LayerSelector({
       parent: this.element.find('.layer_selector_container'),
       endpoint: this.endpoint,
+      initialLayerId: this.initialLayerId,
       changeCallback: function(value, text) {
         console.log('Change/updateList from Layer selector');
         _this.currentLayerId = value;
@@ -82,6 +86,7 @@ export default class {
     var canvas = this.getCurrentCanvas();
     this.element.find('.title').text(canvas.label);
     
+    console.log('XXXX ' + this.endpoint.getCanvasToc());
     if (this.endpoint.getCanvasToc()) {
       this.initMenuTagSelector();
       this.element.find('.annowin_menu_tag_row').show();

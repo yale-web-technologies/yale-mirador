@@ -48,7 +48,8 @@ export default class {
     this.selector.setItems(menu);
     
     setTimeout(function() {
-      _this.selector.val('all', true);
+      const value = (_this.initialTags && _this.initialTags.length > 0) ? _this.initialTags.join('|') : 'all';
+      _this.selector.val(value, true);
       dfd.resolve();
     }, 0);
     return dfd;

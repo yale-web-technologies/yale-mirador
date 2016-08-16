@@ -70,7 +70,7 @@ export default class {
     this.layout.updateSize();
   }
   
-  addWindow() {
+  addWindow(options) {
     console.log('Grid#addWindow');
     var windowId = Mirador.genUUID();
     var itemConfig = {
@@ -79,15 +79,20 @@ export default class {
       componentState: { windowId: windowId }
     };
     this.layout.root.contentItems[0].addChild(itemConfig);
+    
     new AnnotationWindow({ appendTo: jQuery('#' + windowId),
-      annotationListRenderer: this.annotationListRenderer });
+      annotationListRenderer: this.annotationListRenderer,
+      initialLayerId: options.layerId || null,
+      initialTocTags: options.tocTags
+    });
   }
   
   bindEvents() {
     var _this = this;
     
-    jQuery.subscribe('MR_ADD_WINDOW', function (event) {
-      _this.addWindow();
+    jQuery.subscribe('MR_ADD_WINDOW', function (event, options) {
+      console.log('OPTIONS: ' + JSON.stringify(options));
+      _this.addWindow(options);
     });
   }
 }
