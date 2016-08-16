@@ -9,7 +9,7 @@ class State {
   init() {
     this.localStorageAvailable = this.checkLocalStorage();
     this.store = {
-      ANNO_CELL_FIXED: false
+      ANNO_CELL_FIXED: true
     };
   }
   
