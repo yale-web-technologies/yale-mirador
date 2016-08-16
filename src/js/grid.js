@@ -83,7 +83,7 @@ export default class {
     new AnnotationWindow({ appendTo: jQuery('#' + windowId),
       annotationListRenderer: this.annotationListRenderer,
       initialLayerId: options.layerId || null,
-      initialTocTags: options.tocTags
+      initialTocTags: options.tocTags || null
     });
   }
   
@@ -91,8 +91,7 @@ export default class {
     var _this = this;
     
     jQuery.subscribe('MR_ADD_WINDOW', function (event, options) {
-      console.log('OPTIONS: ' + JSON.stringify(options));
-      _this.addWindow(options);
+      _this.addWindow(options || {});
     });
   }
 }

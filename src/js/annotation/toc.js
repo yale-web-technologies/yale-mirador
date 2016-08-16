@@ -67,11 +67,14 @@ export default class Toc {
    * @returns {object} a TOC node
    */
   getNode() {
-    var args = Array.from(arguments);
-    var node = this.annoHierarchy;
-    for (var i = 0; i < args.length; ++i) {
-      var tag = args[i];
-      var node = node.childNodes[tag];
+    const tags = Array.from(arguments);
+    let node = this.annoHierarchy;
+    
+    for (let tag of tags) {
+      if (!node) { 
+        break; 
+      }
+      node = node.childNodes[tag];
     }
     return (node === this.annoHierarchy) ? null : node;
   }
