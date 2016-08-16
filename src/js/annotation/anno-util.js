@@ -35,6 +35,25 @@ export default {
     return tags;
   },
   
+  hasTags: function(annotation, tags) {
+    const annoTags = this.getTags(annotation);
+    
+    for (let i = 0; i < tags.length; ++i) {
+      let found = false;
+      for (let j = 0; j < annoTags.length; ++j) {
+        console.log('COMP ' + tags[i] + ' TO ' + annoTags[j]);
+        if (tags[i] === annoTags[j]) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        return false;
+      }
+    }
+    return true;
+  },
+  
   // For an annotation of annotation,
   // follow the "on" relation until the eventual target annotation if found.
   findFinalTargetAnnotation: function(annotation, annotations) {

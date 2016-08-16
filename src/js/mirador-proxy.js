@@ -24,16 +24,22 @@ class MiradorProxy {
   }
   
   getEndPoint(windowId) {
-    var window = this.mirador.viewer.workspace.getWindowById(windowId);
+    const window = windowId ? this.mirador.viewer.workspace.getWindowById(windowId) : this.getFirstWindow();
     return window.endpoint;
   }
   
-  publish(eventName, arg) {
-    this.mirador.viewer.eventEmitter.publish(eventName, arg);
+  publish() {
+    const eventEmitter = this.mirador.viewer.eventEmitter;
+    let args = Array.from(arguments);
+    eventEmitter.publish.apply(eventEmitter, args);
   }
   
   subscribe(eventName, callback) {
     this.mirador.viewer.eventEmitter.subscribe(eventName, callback);
+  }
+  
+  unsubscribe(eventName) {
+    this.mirador.viewer.eventEmitter.unsubscribe(eventName);
   }
 }
 

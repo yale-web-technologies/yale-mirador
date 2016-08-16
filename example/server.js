@@ -16,7 +16,7 @@ app.set('view engine', 'pug');
 app.set('views', './views');
 
 app.get('/', function(req, res) {
-  res.render('index', { manifestUrl: encodeURIComponent(config.manifestUrl) }); // serve index.pug
+  res.render('index', { manifestUrl: config.manifestUrl }); // serve index.pug
 });
 
 app.get('/api/settings', function(req, res) {

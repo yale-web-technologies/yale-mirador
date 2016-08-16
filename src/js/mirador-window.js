@@ -1,6 +1,7 @@
 import session from './session';
-import config from './mirador-default-settings';
+import defaultConfig from './mirador-default-settings';
 import getMiradorProxy from './mirador-proxy';
+import annoUtil from './annotation/anno-util';
 
 // JavaScript code for the browser window that embeds Mirador.
 
@@ -13,75 +14,112 @@ class MiradorWindow {
       grid: null
     }, options);
     
-    var _this = this;
+    const _this = this;
     
-    this.miradorViewer = jQuery('#viewer');
+    this.viewerElem = jQuery('#viewer');
     this.miradorProxy = getMiradorProxy();
     
-    var dfd = this.fetchServerSettings();
+    const dfd = this._fetchServerSettings();
     
     dfd.done(function(data) {
       _this.serverSettings = session.setServerSettings(data);
-      if (data.tagHierarchy) {
-        _this.tagHierarchy = data.tagHierarchy;
-      } else {
-        _this.tagHierarchy = null;
-      }
     });
     dfd.fail(function() {
       console.log('ERROR failed to retrieve server settings');
-      _this.tagHierarchy = null;
-    });
+      });
     dfd.always(function() {
-      _this.initMirador();
-      _this.bindEvents();
+      _this._initMirador();
+      _this._bindEvents();
     });
   }
+
+  getConfig() {
+    return this.config;
+  }
   
-  initMirador() {
-    var serverSettings = this.serverSettings;
-    var viewer = this.miradorViewer;
-    var manifestUri = decodeURIComponent(viewer.attr('data-manifest-url'));
-    var endpointUrl = serverSettings.endpointUrl;
+  _initMirador() {
+    const _this = this;
+    const serverSettings = this.serverSettings;
+    const htmlOptions = this._parseHtmlOptions();
+    this.config = this._buildMiradorConfig(serverSettings, htmlOptions);
+    const mirador = Mirador(this.config);
+    this.miradorProxy.setMirador(mirador);
+    
+    if (htmlOptions.tocTags.length > 0) {
+      console.log('MiradorWindow#_initMirador has tocTags: ' + htmlOptions.tocTags);
+      this.miradorProxy.subscribe('ANNOTATIONS_LIST_UPDATED', function(event) {
+        const endpoint = _this.miradorProxy.getEndPoint();
+        const annotations = endpoint.annotationsList.filter(function(anno) {
+          return annoUtil.hasTags(anno, htmlOptions.tocTags);
+        });
+        _this.miradorProxy.publish('YM_DISPLAY_ON'); // display annotations
+        if (annotations.length > 0) {
+          _this.miradorProxy.publish('ANNOTATION_FOCUSED', ['', annotations[0]]);
+        }
+      });
+    }
+  }
+  
+  /**
+   * Sets up configuration parameters to pass to Mirador.
+   */
+  _buildMiradorConfig(serverSettings, htmlOptions) {
+    const config = jQuery.extend(true, {}, defaultConfig); // deep copy from defaultConfig
     
     config.buildPath = serverSettings.buildPath || '/';
+    config.data = [{ manifestUri: htmlOptions.manifestUri }];
+
+    const winObj = config.windowObjects[0];
+
+    winObj.loadedManifest = htmlOptions.manifestUri;
     
-    config.data = [{ manifestUri: manifestUri }];
-    config.windowObjects[0].loadedManifest = manifestUri;
-    if (! session.isEditor()) {
-      config.windowObjects[0].annotationCreation = false;
+    if (htmlOptions.canvasId) { // if instructed to load a specific canvas
+      winObj.canvasID = htmlOptions.canvasId;
     }
-    config.annotationEndpoint.options.prefix = endpointUrl;
-    config.autoHideControls = false;
-    
-    if (this.tagHierarchy) {
-      config.extension.tagHierarchy = this.tagHierarchy;
+    if (!session.isEditor()) {
+      winObj.annotationCreation = false;
     }
-    
-    if (this.serverSettings.endpointUrl === 'firebase') {
+    config.annotationEndpoint.options.prefix = serverSettings.endpointUrl;
+    config.autoHideControls = false; // autoHide is bad for touch-only devices
+
+    if (serverSettings.tagHierarchy) {
+      config.extension.tagHierarchy = serverSettings.tagHierarchy;
+    }
+    if (serverSettings.endpointUrl === 'firebase') {
       config.annotationEndpoint = {
         name: 'Yale (Firebase) Annotations',
         module: 'YaleDemoEndpoint',
         options: {}
       };
     }
-    
-    console.log(JSON.stringify(config, null, 2));
-    this.config = config;
-    
-    var mirador = Mirador(config);
-    this.miradorProxy.setMirador(mirador);
+    return config;
   }
   
-  getConfig() {
-    return this.config;
+  /**
+   * Retrieves parameters passed via HTML attributes.
+   */
+  _parseHtmlOptions() {
+    const viewer = this.viewerElem;
+    const options = {};
+    const tocTagsStr = viewer.attr('data-toc-tags') || '';
+    const layerIdsStr = viewer.attr('data-layer-ids') || '';
+    
+    options.manifestUri = viewer.attr('data-manifest-url');
+    options.canvasId = viewer.attr('data-canvas-id') || '';
+    options.tocTags = tocTagsStr ? tocTagsStr.split(',') : [];
+    options.layerIds = layerIdsStr ? layerIdsStr.split(',') : [];
+    
+    return options;
   }
   
-  fetchServerSettings() {
-    var dfd = jQuery.Deferred();
-    var viewerElem = jQuery('#viewer');
-    var settingsUrl = viewerElem.attr('data-settings-url');
-    var roomId = viewerElem.attr('data-room-id');
+  /**
+   * Retrieves settings from the server via a REST API.
+   */
+  _fetchServerSettings() {
+    const dfd = jQuery.Deferred();
+    const viewerElem = jQuery('#viewer');
+    const settingsUrl = viewerElem.attr('data-settings-url');
+    const roomId = viewerElem.attr('data-room-id');
     
     console.log('settingsUrl: ' + settingsUrl);
     
@@ -96,9 +134,9 @@ class MiradorWindow {
     });
     return dfd;
   }
-  
-  bindEvents() {
-    var _this = this;
+
+  _bindEvents() {
+    const _this = this;
     
     jQuery(window).resize(function() {
       _this.grid.resize();
@@ -107,7 +145,7 @@ class MiradorWindow {
     this.miradorProxy.subscribe('ANNOTATIONS_LIST_UPDATED', function(event, params) {
       console.log('MiradorWindow#bindEvents received ANNOTATIONS_LIST_UPDATED');
       if (_this.tagHierarchy) {
-        var endpoint = _this.miradorProxy.getEndPoint(params.windowId);
+        const endpoint = _this.miradorProxy.getEndPoint(params.windowId);
         endpoint.parseAnnotations();
       }
       jQuery.publish('MR_READY_TO_RELOAD_ANNO_WIN');
