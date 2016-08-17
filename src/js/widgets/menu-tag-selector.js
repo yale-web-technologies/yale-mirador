@@ -43,7 +43,7 @@ export default class {
     var layers = [];
     
     var menu = this.buildMenu(annoHierarchy);
-    console.log('MenuTagSelector menu: ' + JSON.stringify(menu, null, 2));
+    //console.log('MenuTagSelector menu: ' + JSON.stringify(menu, null, 2));
     
     this.selector.setItems(menu);
     

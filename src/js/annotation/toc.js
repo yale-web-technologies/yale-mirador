@@ -257,8 +257,8 @@ export default class Toc {
     var _this = this;
     var matched = false;
     
-    console.log('Node: ');
-    console.dir(node);
+    //console.log('Node: ');
+    //console.dir(node);
     
     if (node.annotation['@id'] === annotation['@id']) {
       return true;
