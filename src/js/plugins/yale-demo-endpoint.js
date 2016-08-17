@@ -38,13 +38,13 @@ import session from '../session';
       firebase.initializeApp(config);
     },
     
-    _search: function (options, successCallback, errorCallback) {
+    _search: function (options, dfd) {
       var _this = this;
       var canvasId = options.uri;
-      var dfd = this._fbGetAnnosByCanvasId(canvasId);
+      var fbDfd = this._fbGetAnnosByCanvasId(canvasId);
       this.annotationsList = [];
 
-      dfd.done(function(annoInfos) {
+      fbDfd.done(function(annoInfos) {
         console.log('YaleDemoEndpoint#_search annoInfos: ');
         console.dir(annoInfos);
         jQuery.each(annoInfos, function(index, annoInfo) {
@@ -56,7 +56,7 @@ import session from '../session';
         });
         console.log('_this.annotationsList: ');
         console.dir(_this.annotationsList);
-        _this.dfd.resolve(true);
+        dfd.resolve();
       });
     },
 
