@@ -299,11 +299,15 @@ export default class Toc {
   }
   
   visit(node, callback) {
-    let _this = this;
+    const _this = this;
+    const sortedTags = Object.keys(node.childNodes).sort(function(a, b) {
+      return _this.tagWeights[a] - _this.tagWeights[b];
+    });
     
-    jQuery.each(node.childNodes, function(tag, node) {
-      callback(node);
-      _this.visit(node, callback);
+    jQuery.each(sortedTags, function(index, tag) {
+      let childNode = node.childNodes[tag];
+      callback(childNode);
+      _this.visit(childNode, callback);
     });
   }
   
