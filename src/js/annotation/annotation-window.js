@@ -54,6 +54,7 @@ export default class {
         _this.updateList();
       }
     });
+    this.initialTocTags = null;
   }
   
   initLayerSelector() {
@@ -68,6 +69,7 @@ export default class {
         _this.updateList();
       }
     });
+    this.initialLayerId = null;
   }
 
   reload() {
