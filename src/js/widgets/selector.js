@@ -1,13 +1,3 @@
-let template = Handlebars.compile([
-  '<div class="basic tiny ui button mr_button dropdown">',
-  '  <input name="selection" type="hidden" />',
-  '  <div class="default text"></div>',
-  '  <i class="ym dropdown icon"></i>',
-  '  <div class="menu">',
-  '  </div>',
-  '</div>'
-].join(''));
-
 export default class {
   /**
    * A selector dropdown implemented with Semantic UI.
@@ -37,6 +27,7 @@ export default class {
         _this.element.dropdown('hide');
       }
     });
+    this.values = [];
   }
   
   setItems(itemsConfig) {
@@ -70,6 +61,7 @@ export default class {
     item.append(jQuery('<i class="dropdown icon"></i>'));
     item.append(menu);
     parent.append(item);
+    this.values.push(value);
     return menu;
   }
   
@@ -88,10 +80,15 @@ export default class {
   }
   
   val(value, skipNotify) {
+    const dd = this.element;
     if (value === undefined) {
-      return this.element.dropdown('get value');
+      return dd.dropdown('get value');
     } else {
-      this.element.dropdown('set selected', value);
+      if (dd.dropdown('get item', value)) {
+        dd.dropdown('set selected', value);
+      } else {
+        dd.dropdown('set selected', this.values[0]);
+      }
     }
   }
   
@@ -99,3 +96,13 @@ export default class {
     this.element.remove();
   }
 }
+
+const template = Handlebars.compile([
+  '<div class="basic tiny ui button mr_button dropdown">',
+  '  <input name="selection" type="hidden" />',
+  '  <div class="default text"></div>',
+  '  <i class="ym dropdown icon"></i>',
+  '  <div class="menu">',
+  '  </div>',
+  '</div>'
+].join(''));

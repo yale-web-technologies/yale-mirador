@@ -86,7 +86,6 @@ export default class {
     var canvas = this.getCurrentCanvas();
     this.element.find('.title').text(canvas.label);
     
-    console.log('XXXX ' + this.endpoint.getCanvasToc());
     if (this.endpoint.getCanvasToc()) {
       this.initMenuTagSelector();
       this.element.find('.annowin_menu_tag_row').show();

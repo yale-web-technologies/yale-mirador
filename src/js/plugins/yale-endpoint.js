@@ -2,6 +2,7 @@ import session from '../session';
 import getMiradorProxy from '../mirador-proxy';
 import CanvasToc from '../annotation/toc';
 import getMiradorWindow from '../mirador-window';
+import getModalAlert from '../widgets/modal-alert';
 
 (function ($) {
   'use strict';
@@ -31,30 +32,49 @@ import getMiradorWindow from '../mirador-window';
     
     search: function(options, successCallback, errorCallback) {
       console.log('YaleEndpoint#search options: ' + JSON.stringify(options));
-      var _this = this;
-      var dfd = jQuery.Deferred();
+      getModalAlert().show();
+      
+      const _this = this;
+      const layersDfd = jQuery.Deferred();
+      let annosDfd = jQuery.Deferred();
       
       if (this.annotationLayers.length < 1) {
         this.getLayers(function(layers) { // success
           _this.annotationLayers = layers;
-          dfd.resolve();
+          layersDfd.resolve();
         }, function() { // error
-          dfd.reject();
+          layersDfd.reject();
         });
       } else {
-        dfd.resolve();
+        layersDfd.resolve();
       }
       
-      dfd.done(function() {
-        _this._search(options, successCallback, errorCallback);
+      layersDfd.done(function() {
+        _this._search(options, annosDfd);
+      });
+      
+      annosDfd.done(function() {
+        _this.dfd.resolve(true);
+        if (typeof successCallback === 'function') {
+          successCallback();
+        }
+      });
+      annosDfd.fail(function() {
+        _this.dfd.reject();
+        if (typeof errorCallback === 'function') {
+          errorCallback();
+        }
+      });
+      annosDfd.always(function() {
+        getModalAlert().hide();
       });
     },
 
-    _search: function(options, successCallback, errorCallback) {
-      var _this = this;
-      var canvasId = options.uri;
-      //var url = this.prefix + '/getAnnotations?includeTargetingAnnos=true&canvas_id=' + encodeURIComponent(canvasId);
-      var url = this.prefix + '/getAnnotationsViaList?canvas_id=' + encodeURIComponent(canvasId);
+    _search: function(options, dfd) {
+      const _this = this;
+      const canvasId = options.uri;
+      //const url = this.prefix + '/getAnnotations?includeTargetingAnnos=true&canvas_id=' + encodeURIComponent(canvasId);
+      const url = this.prefix + '/getAnnotationsViaList?canvas_id=' + encodeURIComponent(canvasId);
       console.log('YaleEndpoint#_search url: ' + url);
       this.annotationsList = [];
 
@@ -76,12 +96,11 @@ import getMiradorWindow from '../mirador-window';
             oaAnnotation.layerId = value.layer_id;
             _this.annotationsList.push(oaAnnotation);
           });
-
-          _this.dfd.resolve(true);
+          dfd.resolve();
         },
         error: function (jqXHR, textStatus, errorThrown) {
           console.log('YaleEndpoint#search error searching');
-          _this.dfd.reject();
+          dfd.reject();
         }
       });
     },

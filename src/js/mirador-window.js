@@ -2,9 +2,9 @@ import session from './session';
 import defaultConfig from './mirador-default-settings';
 import getMiradorProxy from './mirador-proxy';
 import annoUtil from './annotation/anno-util';
+import getModalAlert from './widgets/modal-alert';
 
 // JavaScript code for the browser window that embeds Mirador.
-
 class MiradorWindow {
   constructor() {}
   
