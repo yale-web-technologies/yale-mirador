@@ -164,17 +164,17 @@ export default class {
   }
 
   highlightAnnotations(annotations, flag) {
-    var _this = this;
-    var klass = (flag == 'TARGETING' ? 'mr_anno_targeting' : 'mr_anno_targeted');
+    const _this = this;
+    const klass = (flag == 'TARGETING' ? 'mr_anno_targeting' : 'mr_anno_targeted');
+    let firstMatch = true;
     
     this.listElem.find('.annowin_anno').each(function(index, value) {
-      var annoElem = jQuery(value);
-      var annoId = annoElem.data('annotationId');
-      var matched = false;
-      var firstMatch = true;
+      const annoElem = jQuery(value);
+      const annoId = annoElem.data('annotationId');
+      let matched = false;
 
       jQuery.each(annotations, function(index, value) {
-        var targetAnnotationId = value['@id'];
+        const targetAnnotationId = value['@id'];
         if (annoId === targetAnnotationId) {
           matched = true;
           annoElem.addClass(klass);
