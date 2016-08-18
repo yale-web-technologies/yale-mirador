@@ -191,8 +191,13 @@ export default class {
   }
   
   scrollToElem(annoElem) {
-    this.listElem.animate({
-      scrollTop: annoElem.position().top + this.listElem.scrollTop()
+    console.log('annoElem.position().top: ' + annoElem.position().top);
+    console.log('element.scrollTop(): ' + this.element.scrollTop());
+    
+    //this.listElem.animate({
+    this.element.animate({
+      //scrollTop: annoElem.position().top + this.listElem.scrollTop()
+      scrollTop: annoElem.position().top + this.listElem.position().top + this.element.scrollTop()
     }, 250);
   }
   
@@ -268,16 +273,32 @@ export default class {
     });
     
     jQuery.subscribe('ANNOTATION_FOCUSED', function(event, annoWinId, annotation) {
-      console.log('Annotation window ' + _this.id + ' received annotation_focused event');
-      if (annoWinId !== _this.id) {
-        _this.clearHighlights();
-        var annotationsList = _this.canvasWindow.annotationsList;
-        var targeting = annoUtil.findTargetingAnnotations(annotationsList,
-          _this.currentLayerId, annotation);
-        var targeted = annoUtil.findTargetAnnotations(annotationsList,
-          _this.currentLayerId, annotation);
+      console.log('Annotation window ' + _this.id + ' received annotation_focused event from ' + annoWinId);
+      if (annoWinId === _this.id) {
+        return;
+      }
+      _this.clearHighlights();
+      
+      const annotationsList = _this.canvasWindow.annotationsList;
+      const layerId = _this.currentLayerId;
+      const toc = _this.endpoint.getCanvasToc();
+      
+      if (toc) {
+        const siblings = annoUtil.findTocSiblings(annotation, annotationsList, layerId, toc);
+        if (siblings.length > 0) {
+          _this.highlightAnnotations(siblings, 'SIBLING');
+          return;
+        }
+      }
+      const targeting = annoUtil.findTargetingAnnotations(annotation, annotationsList, layerId);
+      if (targeting.length > 0) {
         _this.highlightAnnotations(targeting, 'TARGETING');
+        return;
+      }
+      const targeted = annoUtil.findTargetAnnotations(annotation, annotationsList, layerId);
+      if (targeted.length > 0) {
         _this.highlightAnnotations(targeted, 'TARGET');
+        return;
       }
     });
     

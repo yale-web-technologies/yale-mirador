@@ -79,6 +79,11 @@ export default class Toc {
     return (node === this.annoHierarchy) ? null : node;
   }
   
+  findNodeForAnnotation(annotation) {
+    const targetAnno = annoUtil.findFinalTargetAnnotation(annotation, this.annotations);
+    return targetAnno ? this.annoToNodeMap[targetAnno['@id']] : null;
+  }
+  
   /**
    * Assign weights to tags according to their position in the array.
    */

@@ -89,7 +89,7 @@ export default {
    * Find annotations from "annotationsList" which this "annotation" annotates 
    * and which belong to the layer with "layerId".
    */
-  findTargetAnnotations: function(annotationsList, layerId, annotation) {
+  findTargetAnnotations: function(annotation, annotationsList, layerId) {
     var targetId = annotation.on.full;
     return annotationsList.filter(function(currentAnno) {
       return currentAnno.layerId === layerId && currentAnno['@id'] === targetId;
@@ -100,10 +100,23 @@ export default {
    * Find annotations from "annotationsList" which annotates this "annotation"
    * and which belong to the layer with "layerId".
    */
-  findTargetingAnnotations: function(annotationsList, layerId, annotation) {
+  findTargetingAnnotations: function(annotation, annotationsList, layerId) {
     return annotationsList.filter(function(currentAnno) {
       var targetId = currentAnno.on.full;
       return currentAnno.layerId === layerId && annotation['@id'] === targetId;
+    });
+  },
+  
+  /**
+   * Find annotations from "annotationsList" that belong to the same TOC node
+   * and which belong to the layer with "layerId".
+   */
+  findTocSiblings: function(annotation, annotationsList, layerId, toc) {
+    const node = toc.findNodeForAnnotation(annotation);
+    if (!node) { return []; }
+    return annotationsList.filter(function(currentAnno) {
+      return currentAnno.layerId === layerId &&
+        toc.findNodeForAnnotation(currentAnno) === node;
     });
   }
 };
