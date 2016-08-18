@@ -128,7 +128,7 @@ import session from '../session';
       });
     },
 
-    getLayers: function (successCallback, errorCallback) {
+    getLayers: function (dfd) {
       console.log('YaleDemoEndpoint#getLayers');
       var ref = firebase.database().ref('layers');
       
@@ -143,9 +143,7 @@ import session from '../session';
           layers.push(value);
         });
         
-        if (typeof successCallback === 'function') {
-          successCallback(layers);
-        }
+        dfd.resolve(layers);
       });
     },
     

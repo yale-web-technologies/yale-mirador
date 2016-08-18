@@ -8,8 +8,15 @@ export default function getModalAlert() {
 class ModalAlert {
   constructor(elem) {
     this.elem = elem;
+    elem.addClass('ui modal ym_modal');
     elem.html(template());
-    elem.modal({ closable: false});
+    elem.modal({ 
+      closable: false,
+      duration: 0,
+      dimmerSettings: {
+        opacity: 0.5
+      }
+    });
   }
   
   show() {

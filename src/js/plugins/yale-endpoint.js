@@ -3,6 +3,7 @@ import getMiradorProxy from '../mirador-proxy';
 import CanvasToc from '../annotation/toc';
 import getMiradorWindow from '../mirador-window';
 import getModalAlert from '../widgets/modal-alert';
+import getErrorDialog from '../widgets/error-dialog';
 
 (function ($) {
   'use strict';
@@ -38,19 +39,21 @@ import getModalAlert from '../widgets/modal-alert';
       const layersDfd = jQuery.Deferred();
       let annosDfd = jQuery.Deferred();
       
+      console.dir(this.annotationLayers);
       if (this.annotationLayers.length < 1) {
-        this.getLayers(function(layers) { // success
-          _this.annotationLayers = layers;
-          layersDfd.resolve();
-        }, function() { // error
-          layersDfd.reject();
-        });
+        this.getLayers(layersDfd);
       } else {
-        layersDfd.resolve();
+        layersDfd.resolve(null, true);
       }
       
-      layersDfd.done(function() {
+      layersDfd.done(function(layers, pass) {
+        if (!pass) {
+          _this.annotationLayers = layers;
+        }
         _this._search(options, annosDfd);
+      });
+      layersDfd.fail(function(xhr) {
+        getErrorDialog().show('layers');
       });
       
       annosDfd.done(function() {
@@ -60,6 +63,7 @@ import getModalAlert from '../widgets/modal-alert';
         }
       });
       annosDfd.fail(function() {
+        getErrorDialog().show('annotations');
         _this.dfd.reject();
         if (typeof errorCallback === 'function') {
           errorCallback();
@@ -215,7 +219,7 @@ import getModalAlert from '../widgets/modal-alert';
       }
     },
     
-    getLayers: function (successCallback, errorCallback) {
+    getLayers: function (dfd) {
       console.log('YaleEndpoint#getLayers');
       var _this = this;
       var url = this.prefix + '/layers';
@@ -228,15 +232,16 @@ import getModalAlert from '../widgets/modal-alert';
         success: function (data, textStatus, jqXHR) {
           console.log('YaleEndpoint#getLayers data: '); 
           console.dir(data);
-          successCallback(data);
+          dfd.resolve(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
           console.log('YaleEndpoint#search error retrieving layers:');
+          console.log('status code: ' + jqXHR.status);
           console.log('textStatus: ' + textStatus);
           console.log('errorThrown: ' + errorThrown);
           console.log('URL: ' + url);
           if (typeof errorCallback === 'function') {
-            errorCallback(jqXHR, textStatus, errorThrown);
+            dfd.reject(jqXHR, textStatus, errorThrown);
           }
         }
       });
