@@ -17,8 +17,6 @@ class ErrorDialog {
   }
   
   show(errorId) {
-    const _this = this;
-    
     switch (errorId) {
       case 'layers':
         this.elem.html(template({ message: MSG_LAYERS }));
