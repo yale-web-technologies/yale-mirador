@@ -317,7 +317,7 @@ export default class {
 }
   
 const template = Handlebars.compile([
-  '<div class="mr_annotation_window">',
+  '<div class="ym_annotation_window">',
   '  <div class="annowin_header">',
   '    <div class="annowin_menu_tag_row">',
   '      <span class="menu_tag_selector_container"></span>',

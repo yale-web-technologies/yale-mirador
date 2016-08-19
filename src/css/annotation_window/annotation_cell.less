@@ -20,6 +20,7 @@
     &:last-of-type {
       margin-bottom: 0;
     }
+    overflow-y: visible; // to make the dropdown visible
   }
 }
 
@@ -66,4 +67,12 @@
   margin: 0 2px;
   padding: 0.1rem 0.2rem;
   border-radius: 0.2rem;
+}
+
+// Fixed height mode
+.ym_annotation_window.fixed_height_cells {
+  .annowin_anno > .normal_view {
+    height: 100px;
+    overflow-y: scroll;
+  }
 }
