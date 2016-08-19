@@ -178,7 +178,6 @@ export default class AnnotationListRenderer {
       orderable: options.isCompleteList
     });
     const annoElem = jQuery(annoHtml);
-    const infoDiv = annoElem.find('.info_view');
     
     annoElem.data('annotationId', annotation['@id']);
     annoElem.find('.ui.dropdown').dropdown();
@@ -187,8 +186,6 @@ export default class AnnotationListRenderer {
     } else {
       annoElem.find('.menu_bar').removeClass('targeting_anno');
     }
-    this.setAnnotationItemInfo(annoElem, annotation);
-    infoDiv.hide();
     
     this.bindAnnotationItemEvents(annoElem, annotation, options);
     return annoElem;
@@ -202,18 +199,8 @@ export default class AnnotationListRenderer {
     return html;
   }
   
-  setAnnotationItemInfo(annoElem, annotation) {
-    const infoElem = annoElem.find('.annowin_info');
-    if (annotation.on['@type'] == 'oa:Annotation') { // target: annotation
-      infoElem.addClass('anno_on_anno');
-    } else {
-      infoElem.removeClass('anno_on_anno');
-    }
-  }
-
   bindAnnotationItemEvents(annoElem, annotation, options) {
     const annoWin = options.annotationWindow;
-    const infoElem = annoElem.find('.annowin_info');
     const finalTargetAnno = annoUtil.findFinalTargetAnnotation(annotation, 
       options.annotationsList);
     
@@ -225,7 +212,7 @@ export default class AnnotationListRenderer {
     });
     
     annoElem.find('.annotate').click(function (event) {
-      const dialogElement = jQuery('#mr_annotation_dialog');
+      const dialogElement = jQuery('#ym_annotation_dialog');
       const editor = new Mirador.AnnotationEditor({
         parent: dialogElement,
         canvasWindow: annoWin.canvasWindow,
@@ -309,22 +296,11 @@ export default class AnnotationListRenderer {
         });
       }
     });
-  
-    infoElem.click(function(event) {
-      const infoDiv = annoElem.find('.info_view');
-      if (infoDiv.css('display') === 'none') {
-        infoDiv.replaceWith(annoWin.createInfoDiv(annotation));
-        infoDiv.show();
-      } else {
-        infoDiv.hide();
-      }
-    });
   }
 }
 
 const annotationTemplate = Handlebars.compile([
   '<div class="annowin_anno" draggable="true">',
-  '  <div class="info_view"></div>',
   '  <div class="normal_view">',
   '    {{#if isEditor}}',
   '      <div class="menu_bar">',
@@ -354,13 +330,6 @@ const annotationTemplate = Handlebars.compile([
 
 const headerTemplate = Handlebars.compile([
   '<div class="annowin_group_header">{{text}}',
-  '</div>'
-].join(''));
-
-const infoTemplate = Handlebars.compile([
-  '<div class="info_view">',
-  '  <span class="anno_info_label">On:<span>',
-  '  <span class="anno_info_value">{{{on}}}</span>',
   '</div>'
 ].join(''));
 

@@ -1,7 +1,6 @@
 require('../css/main.less');
 
 import 'babel-polyfill';
-import './init';
 import Grid from './grid';
 import MainMenu from './widgets/main-menu';
 import getMiradorWindow from './mirador-window';
@@ -21,7 +20,7 @@ class App {
 
 jQuery(document).ready(function () {
   console.log('Yale Mirador Extension document ready');
-  if (jQuery('#mr_grid').size() > 0) {
+  if (jQuery('#ym_grid').size() > 0) {
     var app = new App();
   }
 });

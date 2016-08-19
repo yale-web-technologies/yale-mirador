@@ -1,73 +1,10 @@
 @import 'variables';
-@import 'mirador';
+@import '/override/semantic-ui-override';
+@import '/override/goldenlayout-override';
+@import '/override/mirador-override';
+@import 'global';
+@import 'dialog';
 @import 'grid';
 @import 'annotation_editor';
 @import 'annotation_window/annotation_window';
 @import 'annotation_window/annotation_cell';
-
-html, body, div, p {
-  margin: 0;
-}
-
-/* 
- * Overriding Semantic UI
- */
- 
- .ui.text.menu {
-   margin: 0;
-   min-height: 0;
- }
-
-.ui.dropdown {
-  padding: @annowin-v-padding @annowin-h-padding;
-  min-height: 1em;
-  //min-width: 125px;
-  
-  .menu > .item .dropdown.icon {
-    float: none; // to prevent the dropdown icon from line-wrapping
-  }
-  .ym.dropdown.icon {
-    margin-left: 0.3em;
-  }
-}
-
-/* 
- * Overriding GoldenLayout
- */
- 
- .lm_item_container {
-   position: relative;
- }
-
-/*
- *
- */
-
-.mr_float_right {
-  float: right;
-  
-  &::after {
-    content: "";
-    display: block;
-    clear: both;
-  }
-}
-
-.mr_button.small {
-  padding-top: 0.6em;
-  padding-bottom: 0.6em;
-}
-
-.mr_annotation_dialog {
-  overflow: visible; // to show the dropdown items
-}
-
-.ym_modal {
-  background-color: @gray;
-  padding: 20px;
-  font-size: 20px;
-  
-  .ym_link {
-    color: @light-blue;
-  }
-}

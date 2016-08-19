@@ -45,7 +45,7 @@ class MiradorWindow {
     const _this = this;
     const miradorProxy = getMiradorProxy();
     
-    jQuery.subscribe('MR_READY_TO_RELOAD_ANNO_WIN', function(event) { // after annotations have been loaded
+    jQuery.subscribe('YM_READY_TO_RELOAD_ANNO_WIN', function(event) { // after annotations have been loaded
       if (_this._urlOptionsProcessed) {
         return;
       } else {
@@ -73,7 +73,7 @@ class MiradorWindow {
       }
       if (addAnnotationWindows) {
         for (let i = 0; i < htmlOptions.layerIds.length; ++i) {
-          jQuery.publish('MR_ADD_WINDOW', { 
+          jQuery.publish('YM_ADD_WINDOW', { 
             tocTags: htmlOptions.tocTags,
             layerId: htmlOptions.layerIds[i],
           });
@@ -171,7 +171,7 @@ class MiradorWindow {
         const endpoint = miradorProxy.getEndPoint(params.windowId);
         endpoint.parseAnnotations();
       }
-      jQuery.publish('MR_READY_TO_RELOAD_ANNO_WIN');
+      jQuery.publish('YM_READY_TO_RELOAD_ANNO_WIN');
     });
   }
 }

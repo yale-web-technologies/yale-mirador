@@ -9,7 +9,7 @@ export default class {
   
   init() {
     console.log('Grid#init');
-    this.element = jQuery('#mr_grid');
+    this.element = jQuery('#ym_grid');
     this.miradorProxy = getMiradorProxy();
     this.annotationListRenderer = new AnnotationListRenderer();
     this.initLayout();
@@ -90,7 +90,7 @@ export default class {
   bindEvents() {
     var _this = this;
     
-    jQuery.subscribe('MR_ADD_WINDOW', function (event, options) {
+    jQuery.subscribe('YM_ADD_WINDOW', function (event, options) {
       _this.addWindow(options || {});
     });
   }

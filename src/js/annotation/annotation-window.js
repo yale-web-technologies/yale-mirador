@@ -156,16 +156,16 @@ export default class {
       var annoElem = jQuery(value);
       var annoID = annoElem.data('annotationId');
       if (annoID === annotation['@id']) {
-        annoElem.addClass('mr_anno_selected');
+        annoElem.addClass('ym_anno_selected');
       } else {
-        annoElem.removeClass('mr_anno_selected');
+        annoElem.removeClass('ym_anno_selected');
       }
     });
   }
 
   highlightAnnotations(annotations, flag) {
     const _this = this;
-    const klass = (flag == 'TARGETING' ? 'mr_anno_targeting' : 'mr_anno_targeted');
+    const klass = (flag == 'TARGETING' ? 'ym_anno_targeting' : 'ym_anno_targeted');
     let firstMatch = true;
     
     this.listElem.find('.annowin_anno').each(function(index, value) {
@@ -204,7 +204,7 @@ export default class {
   clearHighlights() {
     this.listElem.find('.annowin_anno').each(function(index, value) {
       jQuery(value).removeClass('annowin_targeted')
-        .removeClass('mr_anno_selected mr_anno_targeting mr_anno_targeted');
+        .removeClass('ym_anno_selected ym_anno_targeting ym_anno_targeted');
     });
   }
   
@@ -262,11 +262,11 @@ export default class {
   bindEvents() {
     var _this = this;
     
-    this.element.find('.annowin_temp_row .mr_button').click(function(event) {
+    this.element.find('.annowin_temp_row .ym_button').click(function(event) {
       _this.saveOrder();
     });
     
-    jQuery.subscribe('MR_READY_TO_RELOAD_ANNO_WIN', function(event) {
+    jQuery.subscribe('YM_READY_TO_RELOAD_ANNO_WIN', function(event) {
       if (! _this.hasOpenEditor()) {
         _this.reload();
       }
@@ -302,7 +302,7 @@ export default class {
       }
     });
     
-    jQuery.subscribe('MR_ANNO_HEIGHT_FIXED', function(event, fixedHeight) {
+    jQuery.subscribe('YM_ANNO_HEIGHT_FIXED', function(event, fixedHeight) {
       if (fixedHeight) {
         _this.element.addClass('fixed_height_cells');
       } else {
@@ -326,7 +326,7 @@ const template = Handlebars.compile([
   '      <span class="layer_selector_container"></span>',
   '    </div>',
   '    <div class="annowin_temp_row">',
-  '      <div class="fluid ui small orange button mr_button">Click to save order</div>',
+  '      <div class="fluid ui small orange button ym_button">Click to save order</div>',
   '    </div>',
   '  </div>',
   '  <div class="placeholder"></div>',

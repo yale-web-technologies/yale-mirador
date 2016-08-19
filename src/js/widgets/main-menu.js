@@ -16,7 +16,7 @@ export default class {
   }
   
   initAnnoHeightMenu() {
-    this.annoHeightMenu = jQuery('#mr_menu_anno_height');
+    this.annoHeightMenu = jQuery('#ym_menu_anno_height');
     if (getState('ANNO_CELL_FIXED') === 'true') {
       this.annoHeightMenu.find('.checkmark').show();
     } else {
@@ -27,19 +27,19 @@ export default class {
   bindEvents() {
     var _this = this;
     
-    jQuery('#mr_menu_add_window').click(function (event) {
-      jQuery.publish('MR_ADD_WINDOW');
+    jQuery('#ym_menu_add_window').click(function (event) {
+      jQuery.publish('YM_ADD_WINDOW');
     });
     
-    jQuery('#mr_menu_anno_height').click(function (event) {
+    jQuery('#ym_menu_anno_height').click(function (event) {
       if (getState('ANNO_CELL_FIXED') === 'true') {
         setState('ANNO_CELL_FIXED', false);
         _this.annoHeightMenu.find('.checkmark').hide();
-        jQuery.publish('MR_ANNO_HEIGHT_FIXED', false);
+        jQuery.publish('YM_ANNO_HEIGHT_FIXED', false);
       } else {
         setState('ANNO_CELL_FIXED', true);
         _this.annoHeightMenu.find('.checkmark').show();
-        jQuery.publish('MR_ANNO_HEIGHT_FIXED', true);
+        jQuery.publish('YM_ANNO_HEIGHT_FIXED', true);
       }
     });
   }

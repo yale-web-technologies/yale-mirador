@@ -284,14 +284,14 @@ import annoUtil from '../annotation/anno-util';
         }
       });
       
-      this.element.find('.mr_vertical_inc').click(function() {
+      this.element.find('.ym_vertical_inc').click(function() {
         var iframeId = _this.getEditor().id + '_ifr';
         var element = tinyMCE.DOM.get(iframeId);
         var height = parseInt(tinyMCE.DOM.getStyle(element, 'height'), 10);
         tinyMCE.DOM.setStyle(element, 'height', (height + 75) + 'px');
       });
       
-      this.element.find('.mr_vertical_dec').click(function() {
+      this.element.find('.ym_vertical_dec').click(function() {
         var iframeId = _this.getEditor().id + '_ifr';
         var element = tinyMCE.DOM.get(iframeId);
         var height = parseInt(tinyMCE.DOM.getStyle(element, 'height'), 10);
@@ -300,7 +300,7 @@ import annoUtil from '../annotation/anno-util';
     },
     
     template: Handlebars.compile([
-      '<div class="annotation_editor">',
+      '<div class="ym_anno_editor">',
       '  <div class="header">',
       '    <span class="layer_select"></span>',
       '  </div>',
@@ -310,9 +310,9 @@ import annoUtil from '../annotation/anno-util';
       '    <div class="bottom_row">',
       '        <button class="save">Save</button>',
       '        <button class="cancel">Cancel</button>',
-      '      <div class="mr_float_right">',
-      '        <i class="large caret up icon mr_vertical_dec"></i>',
-      '        <i class="large caret down icon mr_vertical_inc"></i>',
+      '      <div class="ym_float_right">',
+      '        <i class="large caret up icon ym_vertical_dec"></i>',
+      '        <i class="large caret down icon ym_vertical_inc"></i>',
       '      </div>',
       '    </div>',
       '  {{/unless}}',

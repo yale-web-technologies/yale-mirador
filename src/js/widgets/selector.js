@@ -98,7 +98,7 @@ export default class {
 }
 
 const template = Handlebars.compile([
-  '<div class="basic tiny ui button mr_button dropdown">',
+  '<div class="basic tiny ui button ym_button dropdown">',
   '  <input name="selection" type="hidden" />',
   '  <div class="default text"></div>',
   '  <i class="ym dropdown icon"></i>',
