@@ -83,7 +83,8 @@ import annoUtil from '../annotation/anno-util';
         selector: '#' + this.id + ' textarea',
         plugins: 'link paste',
         menubar: false,
-        toolbar: 'bold italic | bullist numlist | link | undo redo | removeformat',
+        toolbar: 'bold italic fontsizeselect | bullist numlist | link | undo redo | removeformat',
+        fontsize_formats: '10px 12px 14px 16px 18px',
         statusbar: false,
         toolbar_items_size: 'small',
         default_link_target: '_blank',
@@ -91,7 +92,12 @@ import annoUtil from '../annotation/anno-util';
         resize: true,
         height: '140',
         theme_advanced_resizing: true,
-        theme_advanced_statusbar_location: 'bottom'
+        theme_advanced_statusbar_location: 'bottom',
+        setup: function(ed) {
+          ed.on('init', function() {
+            this.getDoc().body.style.fontSize = '12px';
+          });
+        }
       });
     },
     
