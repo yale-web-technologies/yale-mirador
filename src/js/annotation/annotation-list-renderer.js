@@ -288,7 +288,7 @@ export default class AnnotationListRenderer {
     
     annoElem.find('.up.icon').click(function(event) {
       const sibling = annoElem.prev();
-      if (sibling.size() > 0) {
+      if (sibling.size() > 0 && sibling.hasClass('annowin_anno')) {
         annoWin.fadeDown(annoElem, function() {
           annoElem.after(sibling);
           annoWin.fadeUp(annoElem, function() {
@@ -300,7 +300,7 @@ export default class AnnotationListRenderer {
 
     annoElem.find('.down.icon').click(function(event) {
       const sibling = annoElem.next();
-      if (sibling.size() > 0) {
+      if (sibling.size() > 0 && sibling.hasClass('annowin_anno')) {
         annoWin.fadeUp(annoElem, function() {
           annoElem.before(sibling);
           annoWin.fadeDown(annoElem, function() {
