@@ -1,5 +1,4 @@
 import session from './session';
-import defaultConfig from './mirador-default-settings';
 import getMiradorProxy from './mirador-proxy';
 import annoUtil from './annotation/anno-util';
 import getModalAlert from './widgets/modal-alert';
@@ -86,34 +85,61 @@ class MiradorWindow {
    * Sets up configuration parameters to pass to Mirador.
    */
   _buildMiradorConfig(serverSettings, htmlOptions) {
-    const config = jQuery.extend(true, {}, defaultConfig); // deep copy from defaultConfig
+    const config = jQuery.extend(true, {}, Mirador.DEFAULT_SETTINGS); // deep copy from Mirador.DEFAULT_SETTINGS
+    let endpointConfig = null;
     
-    config.buildPath = serverSettings.buildPath || '/';
-    config.data = [{ manifestUri: htmlOptions.manifestUri }];
-
-    const winObj = config.windowObjects[0];
-
-    winObj.loadedManifest = htmlOptions.manifestUri;
-    
-    if (htmlOptions.canvasId) { // if instructed to load a specific canvas
-      winObj.canvasID = htmlOptions.canvasId;
-    }
-    if (!session.isEditor()) {
-      winObj.annotationCreation = false;
-    }
-    config.annotationEndpoint.options.prefix = serverSettings.endpointUrl;
-    config.autoHideControls = false; // autoHide is bad for touch-only devices
-
-    if (serverSettings.tagHierarchy) {
-      config.extension.tagHierarchy = serverSettings.tagHierarchy;
-    }
     if (serverSettings.endpointUrl === 'firebase') {
-      config.annotationEndpoint = {
+      endpointConfig = {
         name: 'Yale (Firebase) Annotations',
         module: 'YaleDemoEndpoint',
         options: {}
       };
+    } else {
+      endpointConfig = {
+        name: 'Yale Annotations',
+        module: 'YaleEndpoint',
+        options: { prefix: serverSettings.endpointUrl }
+      };
     }
+
+    const windowObject = {
+      loadedManifest: htmlOptions.manifestUri
+    };
+    if (htmlOptions.canvasId) { // if instructed to load a specific canvas
+      windowObject.canvasID = htmlOptions.canvasId;
+    }
+    
+    jQuery.extend(config, {
+      id: 'viewer',
+      buildPath: serverSettings.buildPath || '/',
+      i18nPath: '/locales/',
+      imagesPath: '/images/',
+      logosPath: '/images/logos/',
+      mainMenuSettings: { show: false },
+      data: [{ manifestUri: htmlOptions.manifestUri }],
+      windowObjects: [windowObject],
+      autoHideControls: false, // autoHide is bad for touch-only devices
+      annotationEndpoint: endpointConfig,
+      annotationBodyEditor: {
+        module: 'AnnotationEditor',
+        options: {
+          miradorDriven: true,
+          mode: 'create'
+        }
+      },
+      extension: {}
+    });
+    
+    config.windowSettings.displayLayout = false;
+    
+    if (!session.isEditor()) {
+      config.windowSettings.canvasControls.annotations.annotationCreation = false;
+    }
+
+    if (serverSettings.tagHierarchy) {
+      config.extension.tagHierarchy = serverSettings.tagHierarchy;
+    }
+    console.log('MiradorWindow config: ' + JSON.stringify(config, null, 2));
     return config;
   }
   
