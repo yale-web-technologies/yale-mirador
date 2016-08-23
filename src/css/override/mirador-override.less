@@ -22,5 +22,12 @@
   width: 100%;
   top: 0;
   bottom: 0;
+
+  * {
+    box-sizing: content-box; // To prevent Semantic UI from overriding * with "border-box".
+  }
 }
 
+#ym_modal {
+  bottom: auto; // overriding the value of 0 set by bootstrap for ".modal"
+}
