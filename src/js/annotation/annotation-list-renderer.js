@@ -180,7 +180,7 @@ export default class AnnotationListRenderer {
     const annoElem = jQuery(annoHtml);
     
     annoElem.data('annotationId', annotation['@id']);
-    annoElem.find('.ui.dropdown').dropdown();
+    annoElem.find('.ui.dropdown').dropdown({ direction: 'downward' });
     if (annotation.on['@type'] == 'oa:Annotation') { // annotation of annotation
       annoElem.find('.menu_bar').addClass('targeting_anno');
     } else {

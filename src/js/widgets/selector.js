@@ -16,6 +16,7 @@ export default class {
     this.element = jQuery(template());
     this.appendTo.append(this.element);
     this.element.dropdown({
+      direction: 'downward',
       onChange: function(value, text) {
         if (typeof _this.changeCallback === 'function' && !_this.skipNotify) {
           _this.changeCallback(value, text);
