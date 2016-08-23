@@ -8,6 +8,7 @@ import getMiradorWindow from './mirador-window';
 import './plugins/yale-endpoint';
 import './plugins/yale-demo-endpoint';
 import './plugins/annotation-editor';
+import './plugins/dialog-builder';
 
 class App {
   constructor() {
