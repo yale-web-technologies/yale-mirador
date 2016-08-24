@@ -10,6 +10,7 @@ export default class {
   }
   
   init() {
+    this.headerElement.html(template());
     this.headerElement.find('.ui.dropdown').dropdown();
     this.initAnnoHeightMenu();
     this.bindEvents();
@@ -44,3 +45,24 @@ export default class {
     });
   }
 }
+
+const template = Handlebars.compile([
+  '<div class="ui small menu">',
+  '  <div class="ui dropdown item">',
+  '    Window <i style="margin-left: 5px" class="caret down icon"></i>',
+  '    <div class="menu">',
+  '      <div id="ym_menu_add_window" class="item">Add annotation window</div>',
+  '    </div>',
+  '  </div>',
+  '  <div class="ui dropdown item">',
+  '    View <i style="margin-left: 5px" class="caret down icon"></i>',
+  '    <div class="menu">',
+  '      <div id="ym_menu_anno_height" class="item">',
+  '        Annotation cell - fixed height',
+  '        <i class="checkmark icon"></i>',
+  '      </div>',
+  '    </div>',
+  '  </div>',
+  '  <a target="blank" class="item" href="https://github.com/yale-web-technologies/mirador-project/wiki/User-Guide---Mirador-@Yale">Help</a>',
+  '</div>'
+].join(''));
