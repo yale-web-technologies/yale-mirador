@@ -7,6 +7,7 @@ import getMiradorWindow from './mirador-window';
 
 import './plugins/yale-endpoint';
 import './plugins/yale-demo-endpoint';
+import './plugins/yale-ext';
 import './plugins/annotation-editor';
 import './plugins/dialog-builder';
 
