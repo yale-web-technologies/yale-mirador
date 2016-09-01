@@ -343,7 +343,6 @@ import getErrorDialog from '../widgets/error-dialog';
     },
 
     userAuthorize: function (action, annotation) {
-      return false;
       if (action === 'create' || action === 'update' || action === 'delete') {
         return session.isEditor();
       } else {
