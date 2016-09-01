@@ -3,9 +3,9 @@ export default function getErrorDialog() {
     const id = 'ym_error_dialog';
     let elem = jQuery('#' + id);
     if (elem.size() === 0) {
-      elem = jQuery('<div/>').attr('id', 'ym_error_dialog')
-        .addClass('ui modal ym_modal');
-      jQuery('body').append(elem);
+      elem = jQuery('<div/>').attr('id', id)
+        .addClass('ui modal ym_modal')
+        .appendTo(jQuery('body'));
     }
     instance = new ErrorDialog(elem);
   }

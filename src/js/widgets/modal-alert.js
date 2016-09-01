@@ -1,6 +1,13 @@
 export default function getModalAlert() {
   if (!instance) {
-    instance = new ModalAlert(jQuery('#ym_modal'));
+    const id = 'ym_modal_alert';
+    let elem = jQuery('#' + id);
+    if (elem.size() === 0) {
+      elem = jQuery('<div/>').attr('id', id)
+        .addClass('ui modal ym_modal')
+        .appendTo(jQuery('body'));
+    }
+    instance = new ModalAlert(elem);
   }
   return instance;
 };
@@ -8,7 +15,6 @@ export default function getModalAlert() {
 class ModalAlert {
   constructor(elem) {
     this.elem = elem;
-    elem.addClass('ui modal ym_modal');
     elem.html(template());
     elem.modal({ 
       closable: false,
