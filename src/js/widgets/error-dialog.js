@@ -1,6 +1,13 @@
 export default function getErrorDialog() {
   if (!instance) {
-    instance = new ErrorDialog(jQuery('#ym_error_dialog'));
+    const id = 'ym_error_dialog';
+    let elem = jQuery('#' + id);
+    if (elem.size() === 0) {
+      elem = jQuery('<div/>').attr('id', 'ym_error_dialog')
+        .addClass('ui modal ym_modal');
+      jQuery('body').append(elem);
+    }
+    instance = new ErrorDialog(elem);
   }
   return instance;
 };
@@ -8,35 +15,28 @@ export default function getErrorDialog() {
 class ErrorDialog {
   constructor(elem) {
     this.elem = elem;
-    elem.addClass('ui modal ym_modal');
     elem.modal({
       onHidden: function() {
         elem.modal('hide dimmer');
       }
     });
+    this.messageMap = {
+      layers: '<p>Sorry, there was a problem retrieving the annotation layers.</p>' + MSG_TRY_LATER,
+      annotations: '<p>Sorry, there was a problem retrieving the annotations.</p>' + MSG_TRY_LATER,
+      authz_create: '<p>Sorry, you are not authorized to create annotations.</p>',
+      authz_update: '<p>Sorry, you are not authorized to update data.</p>',
+      authz_delete: '<p>Sorry, you are not authorized to delete data.</p>'
+    };
   }
   
   show(errorId) {
-    switch (errorId) {
-      case 'layers':
-        this.elem.html(template({ message: MSG_LAYERS }));
-        break;
-      case 'annotations':
-        this.elem.html(template({ message: MSG_ANNOTATIONS }));
-        break;
-      default:
-        console.log('ErrorDialog#show invalid errorId: ' + errorId);
-        return;
-    }
+    const message = this.messageMap[errorId] || 'Undefined error.';
+    this.elem.html(template({ message: message }));
     this.elem.modal('show');
   }
   
   hide() {
     this.elem.modal('hide');
-  }
-  
-  _errorGettingLayers() {
-    
   }
 }
 
@@ -46,8 +46,7 @@ const template = Handlebars.compile([
   '<div class="header">Error</div>',
   '<div class="content">',
   '  <div class="description">',
-  '    <p>{{message}}</p>',
-  '    <p>Please try again a bit later, or if problem persists, create an issue at <a class="ym_link" target="_blank" href="https://github.com/yale-web-technologies/mirador-project/issues">GitHub</a>.</p>',
+  '    {{{message}}}',
   '  </div>',
   '</div>',
   '<div class="actions">',
@@ -55,5 +54,4 @@ const template = Handlebars.compile([
   '</div>'
 ].join(''));
 
-const MSG_LAYERS = 'Sorry, there was a problem retrieving the annotation layers.';
-const MSG_ANNOTATIONS = 'Sorry, there was a problem retrieving the annotations.';
+const MSG_TRY_LATER = '<p>Please try again a bit later, or if problem persists, create an issue at <a class="ym_link" target="_blank" href="https://github.com/yale-web-technologies/mirador-project/issues">GitHub</a>.</p>';

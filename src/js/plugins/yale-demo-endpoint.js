@@ -60,8 +60,8 @@ import session from '../session';
       });
     },
 
-    create: function (oaAnnotation, successCallback, errorCallback) {
-      console.log('YaleDemoEndpoint#create oaAnnotation:');
+    _create: function (oaAnnotation, successCallback, errorCallback) {
+      console.log('YaleDemoEndpoint#_create oaAnnotation:');
       console.dir(oaAnnotation);
 
       var layerId = oaAnnotation.layerId;
@@ -82,8 +82,8 @@ import session from '../session';
       }
     },
     
-    update: function (oaAnnotation, successCallback, errorCallback) {
-      console.log('YaleDemoEndpoint#update oaAnnotation:');
+    _update: function (oaAnnotation, successCallback, errorCallback) {
+      console.log('YaleDemoEndpoint#_update oaAnnotation:');
       console.dir(oaAnnotation);
       
       var _this = this;
@@ -108,7 +108,7 @@ import session from '../session';
       });
     },
 
-    deleteAnnotation: function (annotationId, successCallback, errorCallback) {
+    _deleteAnnotation: function (annotationId, successCallback, errorCallback) {
       console.log('YaleDemoEndpoint#delete annotationId: ' + annotationId);
       var _this = this;
       var fbKey = this.fbKeyMap[annotationId];
@@ -147,7 +147,7 @@ import session from '../session';
       });
     },
     
-    updateOrder: function(canvasId, layerId, annoIds, successCallback, errorCallback) {
+    _updateOrder: function(canvasId, layerId, annoIds, successCallback, errorCallback) {
       jQuery.each(annoIds, function(index, value) {
         console.log(value);
       });
