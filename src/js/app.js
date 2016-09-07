@@ -10,6 +10,7 @@ import './plugins/yale-demo-endpoint';
 import './plugins/yale-ext';
 import './plugins/annotation-editor';
 import './plugins/dialog-builder';
+import './plugins/ym-annotation-selector';
 
 class App {
   constructor() {

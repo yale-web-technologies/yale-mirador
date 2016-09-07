@@ -1,4 +1,4 @@
-import getMiradorProxy from './mirador-proxy';
+import getMiradorProxyManager from './mirador-proxy/mirador-proxy-manager';
 import AnnotationListRenderer from './annotation/annotation-list-renderer';
 import AnnotationWindow from './annotation/annotation-window';
 
@@ -10,7 +10,7 @@ export default class {
   init() {
     console.log('Grid#init');
     this.element = jQuery('#ym_grid');
-    this.miradorProxy = getMiradorProxy();
+    this.miradorProxyManager = getMiradorProxyManager();
     this.annotationListRenderer = new AnnotationListRenderer();
     this.initLayout();
     this.bindEvents();
@@ -31,20 +31,25 @@ export default class {
       },
       content: [{
         type: 'row',
-        content: [{
+        content: [/*{
           type: 'component',
           componentName: 'Mirador',
           componentState: { label: 'Mirador' },
           isClosable: false
-        }]
+        }*/]
       }]
     };
     
     this.layout = new GoldenLayout(config, this.element);
     
     this.layout.registerComponent('Mirador', function (container, componentState) {
+      /*
       var template = Handlebars.compile(jQuery('#viewer_template').html());
       container.getElement().html(template({ id: 'viewer' }));
+      */
+      const id = componentState.miradorId;
+      const template = Handlebars.compile(jQuery('#viewer_template').html());
+      container.getElement().html(template({ id: id }));
     });
     
     this.layout.registerComponent('Annotations', function (container, componentState) {
@@ -54,10 +59,10 @@ export default class {
     });
 
     this.layout.on('stateChanged', function (e) {
-      console.log('layout stateChanged');
-      if (_this.miradorProxy.getMirador()) {
-        _this.miradorProxy.publish('resizeMirador');
-      }
+      console.log('GoldenLayout stateChanged');
+      jQuery.each(_this.miradorProxyManager.getMiradorProxies(), function(key, miradorProxy) {
+        miradorProxy.publish('resizeMirador');
+      });
       return true;
     });
     
@@ -68,6 +73,17 @@ export default class {
     console.log('Grid#resize');
     this.element.css('bottom', 0);
     this.layout.updateSize();
+  }
+  
+  addMiradorWindow(miradorId) {
+    console.log('Grid#addMiradorWindow');
+    var windowId = Mirador.genUUID();
+    var itemConfig = {
+      type: 'component',
+      componentName: 'Mirador',
+      componentState: { miradorId: miradorId }
+    };
+    this.layout.root.contentItems[0].addChild(itemConfig);
   }
   
   addWindow(options) {
@@ -82,6 +98,7 @@ export default class {
     
     new AnnotationWindow({ appendTo: jQuery('#' + windowId),
       annotationListRenderer: this.annotationListRenderer,
+      miradorId: options.miradorId,
       initialLayerId: options.layerId || null,
       initialTocTags: options.tocTags || null
     });

@@ -1,3 +1,4 @@
+import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import { getState, setState } from '../state.js';
 
 // Menu bar at the top of the Mirador-embedding window.
@@ -29,7 +30,7 @@ export default class {
     var _this = this;
     
     jQuery('#ym_menu_add_window').click(function (event) {
-      jQuery.publish('YM_ADD_WINDOW');
+      jQuery.publish('YM_ADD_WINDOW', { miradorId: getMiradorProxyManager().anyId() });
     });
     
     jQuery('#ym_menu_anno_height').click(function (event) {

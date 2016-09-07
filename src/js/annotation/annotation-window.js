@@ -1,4 +1,4 @@
-import getMiradorProxy from '../mirador-proxy';
+import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import MenuTagSelector from '../widgets/menu-tag-selector';
 import LayerSelector from '../widgets/layer-selector';
 import annoUtil from './anno-util';
@@ -8,11 +8,9 @@ import { getState, setState } from '../state.js';
 export default class {
   constructor(options) {
     jQuery.extend(this, {
-      id: null,
+      id: null, // annotation window ID
+      miradorId: null,
       appnedTo: null,
-      element: null,
-      canvasWindow: null, // window that contains the canvas for the annotations
-      endpoint: null,
       annotationListRenderer: null,
       initialLayerId: null,
       initialTocTags: null
@@ -22,11 +20,11 @@ export default class {
   }
 
   init() {
-    this.miradorProxy = getMiradorProxy();
+    this.miradorProxy = getMiradorProxyManager().getMiradorProxy(this.miradorId);
     if (!this.id) {
       this.id = Mirador.genUUID();
     }
-    this.canvasWindow = this.miradorProxy.getFirstWindow();
+    this.canvasWindow = this.miradorProxy.getFirstWindow(); // window that contains the canvas for the annotations
     this.endpoint = this.canvasWindow.endpoint;
     this.element = jQuery(template({}));
     this.appendTo.append(this.element);

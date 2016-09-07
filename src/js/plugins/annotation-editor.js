@@ -1,5 +1,5 @@
 import LayerSelector from '../widgets/layer-selector';
-import getMiradorProxy from '../mirador-proxy';
+import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import annoUtil from '../annotation/anno-util';
 
 (function($) {
@@ -8,6 +8,7 @@ import annoUtil from '../annotation/anno-util';
   $.AnnotationEditor = function(options) {
     jQuery.extend(this, {
       miradorDriven: false, // true if created and managed by Mirador core.
+      miradorId: null,
       windowId: null,
       annotation: null,
       id: null,
@@ -27,8 +28,8 @@ import annoUtil from '../annotation/anno-util';
   $.AnnotationEditor.prototype = {
     
     init: function() {
-      this.miradorProxy = getMiradorProxy();
-      this.endpoint = this.endpoint || this.miradorProxy.getEndPoint(this.windowId);
+      this.miradorProxy = getMiradorProxyManager().getMiradorProxy(this.miradorId);
+      this.endpoint = this.endpoint || this.miradorProxy.getWindowById(this.windowId).getEndpoint();
       this.id = this.id || $.genUUID();
       
       var tagsStr = this.annotation ? annoUtil.getTags(this.annotation).join(' ') : '';

@@ -1,5 +1,6 @@
 import session from './session';
-import getMiradorProxy from './mirador-proxy';
+import getMiradorProxyManager from './mirador-proxy/mirador-proxy-manager';
+import WindowProxy from './mirador-proxy/window-proxy';
 import annoUtil from './annotation/anno-util';
 import getModalAlert from './widgets/modal-alert';
 
@@ -14,19 +15,25 @@ class MiradorWindow {
     }, options);
     
     const _this = this;
-    const miradorProxy = getMiradorProxy();
+    const miradorProxyManager = getMiradorProxyManager();
     
-    this.viewerElem = jQuery('#viewer');
+    this.viewerTemplateElem = jQuery('#\\{\\{id\\}\\}');
      
     const dfd = this._fetchServerSettings();
     
     dfd.done(function(data) {
       const serverSettings = session.setServerSettings(data);
       const htmlOptions = _this._parseHtmlOptions();
-      _this._miradorConfig = _this._buildMiradorConfig(serverSettings, htmlOptions);
-      miradorProxy.setMirador(Mirador(_this._miradorConfig));
-      _this._handleLoadOptions(htmlOptions);
-      _this._bindEvents(serverSettings);
+      const miradorInstanceId = Mirador.genUUID();
+      
+      _this._miradorConfig = _this._buildMiradorConfig(serverSettings, 
+        htmlOptions, miradorInstanceId);
+
+      _this.grid.addMiradorWindow(miradorInstanceId);
+      const mirador = Mirador(_this._miradorConfig);
+      miradorProxyManager.addMirador(miradorInstanceId, mirador);
+      _this._handleLoadOptions(htmlOptions, miradorInstanceId);
+      _this._bindEvents(serverSettings, miradorInstanceId);
     });
     dfd.fail(function() {
       alert('ERROR failed to retrieve server settings');
@@ -40,9 +47,9 @@ class MiradorWindow {
   /**
    * Process parameters passed from the server via HTML.
    */
-  _handleLoadOptions(htmlOptions) {
+  _handleLoadOptions(htmlOptions, miradorInstanceId) {
     const _this = this;
-    const miradorProxy = getMiradorProxy();
+    const miradorProxy = getMiradorProxyManager().getMiradorProxy(miradorInstanceId);
     
     jQuery.subscribe('YM_READY_TO_RELOAD_ANNO_WIN', function(event) { // after annotations have been loaded
       if (_this._urlOptionsProcessed) {
@@ -73,6 +80,7 @@ class MiradorWindow {
       if (addAnnotationWindows) {
         for (let i = 0; i < htmlOptions.layerIds.length; ++i) {
           jQuery.publish('YM_ADD_WINDOW', { 
+            miradorId: miradorInstanceId,
             tocTags: htmlOptions.tocTags,
             layerId: htmlOptions.layerIds[i],
           });
@@ -84,7 +92,7 @@ class MiradorWindow {
   /**
    * Sets up configuration parameters to pass to Mirador.
    */
-  _buildMiradorConfig(serverSettings, htmlOptions) {
+  _buildMiradorConfig(serverSettings, htmlOptions, miradorInstanceId) {
     const config = jQuery.extend(true, {}, Mirador.DEFAULT_SETTINGS); // deep copy from Mirador.DEFAULT_SETTINGS
     let endpointConfig = null;
     
@@ -110,7 +118,7 @@ class MiradorWindow {
     }
     
     jQuery.extend(config, {
-      id: 'viewer',
+      id: miradorInstanceId,
       buildPath: serverSettings.buildPath || '/',
       i18nPath: '/locales/',
       imagesPath: '/images/',
@@ -139,7 +147,7 @@ class MiradorWindow {
     if (serverSettings.tagHierarchy) {
       config.extension.tagHierarchy = serverSettings.tagHierarchy;
     }
-    console.log('MiradorWindow config: ' + JSON.stringify(config, null, 2));
+    //console.log('MiradorWindow config: ' + JSON.stringify(config, null, 2));
     return config;
   }
   
@@ -147,13 +155,13 @@ class MiradorWindow {
    * Retrieves parameters passed via HTML attributes.
    */
   _parseHtmlOptions() {
-    const viewer = this.viewerElem;
+    const elem = this.viewerTemplateElem;
     const options = {};
-    const tocTagsStr = viewer.attr('data-toc-tags') || '';
-    const layerIdsStr = viewer.attr('data-layer-ids') || '';
+    const tocTagsStr = elem.attr('data-toc-tags') || '';
+    const layerIdsStr = elem.attr('data-layer-ids') || '';
     
-    options.manifestUri = viewer.attr('data-manifest-url');
-    options.canvasId = viewer.attr('data-canvas-id') || '';
+    options.manifestUri = elem.attr('data-manifest-url');
+    options.canvasId = elem.attr('data-canvas-id') || '';
     options.tocTags = tocTagsStr ? tocTagsStr.split(',') : [];
     options.layerIds = layerIdsStr ? layerIdsStr.split(',') : [];
     
@@ -165,9 +173,9 @@ class MiradorWindow {
    */
   _fetchServerSettings() {
     const dfd = jQuery.Deferred();
-    const viewerElem = jQuery('#viewer');
-    const settingsUrl = viewerElem.attr('data-settings-url');
-    const roomId = viewerElem.attr('data-room-id');
+    const elem = this.viewerTemplateElem;
+    const settingsUrl = elem.attr('data-settings-url');
+    const roomId = elem.attr('data-room-id');
     
     console.log('settingsUrl: ' + settingsUrl);
     
@@ -183,9 +191,9 @@ class MiradorWindow {
     return dfd;
   }
 
-  _bindEvents(serverSettings) {
+  _bindEvents(serverSettings, miradorInstanceId) {
     const _this = this;
-    const miradorProxy = getMiradorProxy();
+    const miradorProxy = getMiradorProxyManager().getMiradorProxy(miradorInstanceId);
     
     jQuery(window).resize(function() {
       _this.grid.resize();
@@ -194,7 +202,8 @@ class MiradorWindow {
     miradorProxy.subscribe('ANNOTATIONS_LIST_UPDATED', function(event, params) {
       console.log('MiradorWindow#bindEvents received ANNOTATIONS_LIST_UPDATED');
       if (serverSettings.tagHierarchy) {
-        const endpoint = miradorProxy.getEndPoint(params.windowId);
+        const window = miradorProxy.getWindowById(params.windowId);
+        const endpoint = (new WindowProxy(window)).getEndPoint();
         endpoint.parseAnnotations();
       }
       jQuery.publish('YM_READY_TO_RELOAD_ANNO_WIN');

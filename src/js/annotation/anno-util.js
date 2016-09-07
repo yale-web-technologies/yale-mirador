@@ -1,6 +1,13 @@
 export default {
   
   /**
+   * @returns {boolean} true if the annotation targets a canvas fragment, not another annotation.
+   */
+  isAnnoOnCanvas: function(annotation) {
+    return annotation.on.type !== 'oa:Annotation';
+  },
+  
+  /**
    * Returns content of first text (non-tag) resource it finds from the annotation.
    */
   getAnnotationText: function(annotation) {

@@ -1,5 +1,5 @@
 import session from '../session';
-import getMiradorProxy from '../mirador-proxy';
+import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import CanvasToc from '../annotation/toc';
 import getMiradorWindow from '../mirador-window';
 import getModalAlert from '../widgets/modal-alert';
@@ -400,7 +400,7 @@ import getErrorDialog from '../widgets/error-dialog';
     },
     
     parseAnnotations: function() {
-      this.annotationsList = getMiradorProxy().getFirstWindow().annotationsList;
+      //this.annotationsList = getMiradorProxyManager().getFirstWindowProxy().getAnnotationsList();
       var spec = getMiradorWindow().getConfig().extension.tagHierarchy;
       this.canvasToc = new CanvasToc(spec, this.annotationsList);
       console.log('YaleEndpoint#parseAnnotations canvasToc:');
