@@ -1,4 +1,5 @@
 import MiradorProxy from './mirador-proxy';
+import WindowProxy from './window-proxy';
 
 class MiradorProxyManager {
   constructor() {
@@ -26,6 +27,10 @@ class MiradorProxyManager {
       }
     });
     return window;
+  }
+  
+  getWindowProxyById(windowId) {
+    return (new WindowProxy(this.getWindowById(windowId)));
   }
   
   // XXX This works because only one Mirador window is assumed. 

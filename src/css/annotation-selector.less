@@ -1,10 +1,37 @@
 #ym_annotation_selector {
-  .column.canvases, .column.annos {
+  .canvases, .layers, .anno {
+    padding: 5px 5px;
+  }
+  
+  .canvases, .layers {
     overflow-y: scroll;
     border: inset 2px;
+    
+    .selected, .selected a {
+      color: @white;
+      background-color: @blue;
+    }
+    
+    a {
+      display: inline-block;
+      width: 100%;
+    }
+  }
+  
+  .canvases {
+    margin-bottom: 10px;
+  }
+  
+  .annos {
+    overflow-y: scroll;
   }
   
   .anno {
     border: solid 1px @gray;
+    
+    &.selected {
+      border: solid 4px @blue;
+      padding: 2px 2px;
+    }
   }
 }

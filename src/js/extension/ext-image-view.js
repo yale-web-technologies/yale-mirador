@@ -1,51 +1,16 @@
 (function($) {
   
-  $.yaleExt = {
+  $.yaleExt = $.yaleExt || {};
+  
+  /*
+   * Functions in this file must be called in the context of an ImageView 
+   * so "this" will point to the instance of the image view.
+   */
+  jQuery.extend($.yaleExt, {
 
-    // Get bounds of multiple paper.js shapes.
-    getCombinedBounds: function (shapes) {
-      console.log('shapes: ' + shapes);
-      var bounds = null;
-      jQuery.each(shapes, function (index, shape) {
-        if (bounds) {
-          bounds = bounds.unite(shape.strokeBounds);
-        } else {
-          bounds = shape.strokeBounds;
-        }
-        console.log('index: ' + index + ', bounds: ' + bounds);
-      });
-      return bounds;
-    },
-    
-    highlightShape: function (shape) {
-      if (!shape._ym_oldStrokeColor) {
-        shape._ym_oldStrokeColor = shape.strokeColor;
-      }
-      if (!shape._ym_oldStrokeWdth) {
-        shape._ym_oldStrokeWidth = shape.strokeWidth;
-      }
-      shape.set({ 
-        //strokeColor: 'yellow',
-        strokeWidth: 30,
-        opacity: 1 
-      });
-    },
-    
-    deHighlightShape: function (shape) {
-      if (shape._ym_oldStrokeColor) {
-        shape.set({ strokeColor: shape._ym_oldStrokeColor });
-      }
-      if (shape._ym_oldStrokeWidth) {
-        shape.set({ strokeWidth: shape._ym_oldStrokeWidth });
-      }
-      shape.opacity = 0;
-    },
-    
     /*
      * Highlight the boundaries for the currently chosen annotation
      * and pan to show the annotated area.
-     * Must be called in the context of an ImageView so "this" will point to the instance of
-     * the image view.
      */ 
     panToAnnotation: function(annotation) {
       var viewport = this.osd.viewport;
@@ -105,45 +70,8 @@
       if (panX !== 0 || panY !== 0) {
         viewport.panBy(new OpenSeadragon.Point(panX, panY));
       }
-    },
-    
-    /*
-     * Get paper.js shapes which are associated with the annotation.
-     * Must be called in the context of an OsdRegionDrawTool so "this" will
-     * point an instance of it.
-     */
-    getShapesForAnnotation: function(annotation) {
-      var out_shapes = [];
-      jQuery.each(this.annotationsToShapesMap, function(key, shapes) {
-        jQuery.each(shapes, function (index, shape) {
-          if (shape.data.annotation['@id'] === annotation['@id']) {
-            out_shapes.push(shape);
-          }
-        });
-      });
-      return out_shapes;
-    },
-    
-    /*
-     * Highlight annotated area for annotation focused in annotation window.
-     * Must be called in the context of an OsdRegionDrawTool so "this" will
-     * point an instance of it.
-     */
-    updateHighlights: function(annotation) {
-      jQuery.each(this.annotationsToShapesMap, function(key, shapes) {
-        jQuery.each(shapes, function (index, shape) {
-          if (shape.data.annotation['@id'] === annotation['@id']) {
-            $.yaleExt.highlightShape(shape);
-            shape.bringToFront();
-          } else {
-            $.yaleExt.deHighlightShape(shape);
-            shape.sendToBack();
-          }
-        });
-      });
-      this.osdViewer.forceRedraw();
     }
-
-  };
+    
+  });
   
 })(Mirador);

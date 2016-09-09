@@ -1,16 +1,19 @@
 require('../css/main.less');
 
 import 'babel-polyfill';
+
+import './extension/ext-global';
+import './extension/ext-image-view';
+import './extension/ext-osd-region-draw-tool';
+import './extension/dialog-builder';
+import './annotation/yale-endpoint';
+import './annotation/yale-demo-endpoint';
+import './annotation/annotation-editor';
+import './annotation/ym-annotation-selector';
 import Grid from './grid';
 import MainMenu from './widgets/main-menu';
 import getMiradorWindow from './mirador-window';
-
-import './plugins/yale-endpoint';
-import './plugins/yale-demo-endpoint';
-import './plugins/yale-ext';
-import './plugins/annotation-editor';
-import './plugins/dialog-builder';
-import './plugins/ym-annotation-selector';
+import './extension/interface';
 
 class App {
   constructor() {

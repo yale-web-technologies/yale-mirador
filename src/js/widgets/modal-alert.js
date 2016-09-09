@@ -18,6 +18,7 @@ class ModalAlert {
     elem.html(template());
     elem.modal({ 
       closable: false,
+      allowMultiple: true,
       duration: 0,
       dimmerSettings: {
         opacity: 0.5
@@ -30,6 +31,7 @@ class ModalAlert {
   }
   
   hide() {
+    console.log('X ModalAlert HIDE');
     this.elem.modal('hide');
   }
 }

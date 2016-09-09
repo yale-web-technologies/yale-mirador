@@ -1,4 +1,5 @@
 import annoUtil from './anno-util';
+import AnnotationEditor from './annotation-editor';
 
 /**
  * Generate HTML elements for the annotations to be shown in the annotation window,
@@ -213,7 +214,7 @@ export default class AnnotationListRenderer {
     
     annoElem.find('.annotate').click(function (event) {
       const dialogElement = jQuery('#ym_annotation_dialog');
-      const editor = new Mirador.AnnotationEditor({
+      const editor = new AnnotationEditor({
         parent: dialogElement,
         canvasWindow: annoWin.canvasWindow,
         mode: 'create',
@@ -240,7 +241,7 @@ export default class AnnotationListRenderer {
     });
     
     annoElem.find('.edit').click(function(event) {
-      const editor = new Mirador.AnnotationEditor({
+      const editor = new AnnotationEditor({
         parent: annoElem,
         canvasWindow: annoWin.canvasWindow,
         mode: 'update',

@@ -7,7 +7,7 @@ export default class WindowProxy {
     return this.window.manifest;
   }
 
-  getCurrentCanvasId(window) {
+  getCurrentCanvasId() {
     return this.window.canvasID;
   }
   
