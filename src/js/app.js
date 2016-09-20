@@ -14,6 +14,7 @@ import Grid from './grid';
 import MainMenu from './widgets/main-menu';
 import getMiradorWindow from './mirador-window';
 import './extension/interface';
+// import './util/override-pubsub';
 
 class App {
   constructor() {

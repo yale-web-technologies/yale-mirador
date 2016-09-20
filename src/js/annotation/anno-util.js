@@ -1,10 +1,12 @@
+import svgUtil from './svg-util';
+
 export default {
   
   /**
    * @returns {boolean} true if the annotation targets a canvas fragment, not another annotation.
    */
   isAnnoOnCanvas: function(annotation) {
-    return annotation.on.type !== 'oa:Annotation';
+    return annotation.on['@type'] !== 'oa:Annotation';
   },
   
   /**
@@ -14,7 +16,7 @@ export default {
     var content = null;
     var resource = annotation.resource;
     
-    if (!(resource instanceof Array || resource instanceof Object)) {
+    if (!(resource instanceof Array || typeof resource === 'object')) {
       return null;
     }
     if (!(resource instanceof Array)) {
@@ -60,6 +62,11 @@ export default {
     return true;
   },
   
+  getTargetSelectorValue: function(annotation) {
+    const selector =  annotation.on.selector;
+    return selector ? selector.value : null;
+  },
+  
   // For an annotation of annotation,
   // follow the "on" relation until the eventual target annotation if found.
   findFinalTargetAnnotation: function(annotation, annotations) {
@@ -90,6 +97,35 @@ export default {
       }
     }
     return targetAnno;
+  },
+  
+  getFinalTargetCanvasIds(annotation) {
+    const canvasIds = [];
+    let targetAnno = null;
+    
+    if (annotation['@type'] === 'oa:Annotation') {
+      targetAnno = this.findFinalTargetAnnotation(annotation, this.annotationsList);
+    } else {
+      targetAnno = annotation;
+    }
+    if (!targetAnno) {
+      return [];
+    }
+    let targets = targetAnno.on;
+    if (targets instanceof Array) {
+      jQuery.each(targets, function(index, target) {
+        if (target.full) {
+          canvasIds.push(target.full);
+        }
+      });
+    } else if (typeof targets === 'object') {
+      if (targets.full) {
+        canvasIds.push(targets.full);
+      }
+    } else {
+      console.log('ERROR annoUtil.getFinalTargetCanvasIds: wrong target type ' + (typeof targets));
+    }
+    return canvasIds;
   },
   
   /**
@@ -125,5 +161,35 @@ export default {
       return currentAnno.layerId === layerId &&
         toc.findNodeForAnnotation(currentAnno) === node;
     });
+  },
+  
+  /**
+   * Merge annotation's target ("on" attribute) with a new "on" attribute (sourceTarget).
+   */ 
+  mergeTargets: function(annotation, sourceTarget) {
+    const destTarget = annotation.on;
+    let destCanvasId = destTarget.full;
+    const sourceCanvasId = sourceTarget.full;
+
+    if (destTarget instanceof Array) { // (destination) annotation has (possibly) multiple targets
+      const targetsWithSameCanvasId = destTarget.filter(function(on) { 
+        return on.full === sourceCanvasId;
+      });
+      if (targetsWithSameCanvasId.length === 1) { // there's a destination target on the same canvas as the source target
+        const target = targetsWithSameCanvasId[0];
+        target.selector.value = svgUtil.mergeSvgs(target.selector.value, sourceTarget.selector.value);
+      } else if (targetsWithSameCanvasId.length === 0) { // there's no existing target on the same canvas
+        annotation.on.push(sourceTarget);
+      } else {
+        throw 'multiple targets on same canvas';
+      }
+    } else { // (destination) annotation has a single target
+      const destTargetId = destTarget.full;
+      if (destCanvasId === sourceCanvasId) {
+        destTarget.selector.value = svgUtil.mergeSvgs(destTarget.selector.value, sourceTarget.selector.value);
+      } else {
+        annotation.on = [ destTarget, sourceTarget];
+      }
+    }
   }
 };

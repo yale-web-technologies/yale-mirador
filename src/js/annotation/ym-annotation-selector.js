@@ -207,11 +207,14 @@ class YmAnnotationSelector {
   }
 
   setDimensions() {
-    const maxHeight = jQuery(window).height() - 250;
+    const winHeight = jQuery(window).height();
+    const rest = 180; // estimate height of dialog minus height of content div
+    const maxContentHeight =  (winHeight - rest) * 0.82;
     
-    this.contentGrid.css('height', maxHeight);
-    this.canvasesPanel.css('height', maxHeight * 0.46);
-    this.layersPanel.css('height', maxHeight * 0.46);
+    this.elem.css('margin-top', -(winHeight * 0.45));
+    this.contentGrid.css('height', maxContentHeight);
+    this.canvasesPanel.css('height', maxContentHeight * 0.46);
+    this.layersPanel.css('height', maxContentHeight * 0.46);
   }
 
   scrollToCurrentCanvas() {

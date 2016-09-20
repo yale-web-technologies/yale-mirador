@@ -6,7 +6,7 @@
 (function ($) {
 
   var template = Handlebars.compile([
-    '<div class="header">Error</div>',
+    '<div class="header"></div>',
     '<div class="content">',
     '  <div class="description">',
     '    <p>{{message}}</p>',

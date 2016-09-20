@@ -1,3 +1,4 @@
+import annoUtil from '../annotation/anno-util';
 import YaleEndpoint from '../annotation/yale-endpoint';
 import YaleDemoEndpoint from '../annotation/yale-demo-endpoint';
 import AnnotationEditor from '../annotation/annotation-editor';
@@ -9,5 +10,6 @@ import AnnotationEditor from '../annotation/annotation-editor';
   $.YaleEndpoint = YaleEndpoint;
   $.YaleDemoEndpoint = YaleDemoEndpoint;
   $.AnnotationEditor = AnnotationEditor;
+  $.annoUtil = annoUtil;
   
 })(Mirador);

@@ -1,3 +1,5 @@
+import annoUtil from './anno-util';
+
 export default class FirebaseProxy {
   constructor(settings) {
     var config = {
@@ -54,7 +56,8 @@ export default class FirebaseProxy {
   }
   
   addAnno(annotation, layerId) {
-    var canvasId = this._getTargetCanvasId(annotation);
+    var canvasIds = annoUtil.getFinalTargetCanvasIds(annotation);
+    var canvasId = canvasIds[0];
     var ref = firebase.database().ref('annotations');
     var annoObj = { 
       canvasId: canvasId,

@@ -11,7 +11,6 @@ export default class AnnotationEditor {
       id: null,
       parent: null,
       canvasWindow: null, // reference window that contains the canvas
-      mode: null, // "create" or "update"
       endpoint: null,
       targetAnnotation: null, // target annotation (annotation annotated by this annotation)
       saveCallback: null,
@@ -23,6 +22,7 @@ export default class AnnotationEditor {
   }
   
   init() {
+    this._mode = null; // "create", "update", or "merge"
     this.miradorProxyManager = getMiradorProxyManager();
     this.endpoint = this.endpoint || this.miradorProxyManager.getWindowProxyById(this.windowId).getEndPoint();
     this.id = this.id || Mirador.genUUID();
@@ -53,7 +53,7 @@ export default class AnnotationEditor {
     var dfd = this.layerSelector.init();
     
     dfd.done(function() {
-      if (_this.mode === 'create') {
+      if (_this._mode === 'create') {
         title.text('Create Annotation');
       } else { // update
         title.text('');
@@ -123,8 +123,17 @@ export default class AnnotationEditor {
     return tinymce.get(this.textArea.attr('id'));
   }
   
+  // Called by Mirador core - XXX seong
+  getMode() {
+    return this._mode;
+  }
+  
+  getLoadedAnnotation() {
+    return this._loadedAnnotation;
+  }
+  
   // Called by Mirador core
-  createAnnotation (targetAnnotation) {
+  createAnnotation(targetAnnotation) {
     var tagText = this.element.find('.tags_editor').val().trim();
     var resourceText = this.getEditor().getContent();
     var tags = [];
@@ -145,11 +154,11 @@ export default class AnnotationEditor {
       });
     }
     motivation.push("oa:commenting");
-      resource.push({
-        "@type": "dctypes:Text",
-        "format": "text/html",
-        "chars": resourceText
-      });
+    resource.push({
+      "@type": "dctypes:Text",
+      "format": "text/html",
+      "chars": resourceText
+    });
 
     var layerId = this.layerSelector.val();
     var annotation = {
@@ -167,6 +176,24 @@ export default class AnnotationEditor {
     }
     console.log('AnnotationEditor#createAnnotation anno: ' + JSON.stringify(annotation, null, 2));
     return annotation;
+  }
+  
+  loadAnnotation(annotation) {
+    this._mode = 'merge';
+    this._loadedAnnotation = annotation;
+    
+    // Reload the editor with the contents of the annotation
+    const content = annoUtil.getAnnotationText(annotation);
+    this.layerSelector.val(annotation.layerId);
+    this.getEditor().setContent(content);
+    
+    const tags = annoUtil.getTags(annotation);
+    if (tags.length > 0) {
+      this.element.find('.tags_editor').val(tags.join(' '));
+    }
+    
+    // Prevent user from editing the merged content
+    this.getEditor().getBody().setAttribute('contenteditable', false);
   }
 
   // Called by Mirador core
@@ -216,7 +243,7 @@ export default class AnnotationEditor {
     var _this = this;
     var annotation = null;
     
-    if (this.mode == 'create') {
+    if (this._mode == 'create') {
       annotation = this.createAnnotation(this.targetAnnotation);
       this.endpoint.create(annotation, function(data) {
         var annotation = data;
@@ -245,12 +272,12 @@ export default class AnnotationEditor {
     console.dir(this.targetAnnotation);
 
     var msg = '';
-    if (this.mode === 'create') {
+    if (this._mode === 'create') {
       if (!this.targetAnnotation) {
         msg += 'Target annotation is missing.\n';
       }
     }
-    if (this.mode === 'create' && !this.layerSelector.val()) {
+    if (this._mode === 'create' && !this.layerSelector.val()) {
       msg += 'Layer is not selected.\n';
     }
     if (this.getEditor().getContent().trim() === '') {

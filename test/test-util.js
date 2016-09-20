@@ -1,16 +1,16 @@
 export default {
   
   createAnnotation: function(options) {
-    var anno = {
+    const _this = this;
+    const anno = {
       '@context': 'http://iiif.io/api/presentation/2/context.json',
-      '@id': 'http://example.org/annotations/1',
       '@type': 'oa:annotation',
       motivation: ['oa:commenting'],
-      on: this.createOnAttribute(),
+      on: null,
       resource: [
         {
           '@type': 'dctypes:Text',
-          chars: 'hello world',
+          chars: '',
           format: 'text/html'
         }
       ],
@@ -18,20 +18,31 @@ export default {
         'http://example.org/lists/1'
       ]
     };
-    if (options.chars) {
-      anno.resource[0].chars = options.chars;
-    }
+    anno['@id'] = options.id || 'http://example.org/annotations/1';
+    anno.resource[0].chars = options.chars || '';
     if (options.tags) {
       for (var i = 0; i < options.tags.length; ++i) {
         anno.resource.push(this.createTag(options.tags[i]));
       }
     }
+    const targetConfigs = options.on;
+    if (targetConfigs) {
+      if (targetConfigs instanceof Array) {
+        jQuery.each(targetConfigs, function(index, targetConfig) {
+          anno.on.push(_this.createOnAttribute(targetConfig));
+        });
+      } else {
+        anno.on = this.createOnAttribute(targetConfigs); 
+      }
+    } else {
+      anno.on = this.createOnAttribute();
+    }
     return anno;
   },
   
-  createOnAttribute: function() {
-    var on = {
-      '@type': 'oaSpecificResource',
+  createOnAttribute: function(config) {
+    const on = {
+      '@type': 'oa:SpecificResource',
       full: 'http://manifests.example.org/book1/canvas/1',
       selector: {
         '@type': 'oa:SvgSelector',
@@ -45,11 +56,28 @@ export default {
           'text-anchor="start" style="mix-blend-mode: normal"/></svg>"'
       }
     };
+    if (config) {
+      if (config.type) {
+        if (config.type == 'canvas') {
+          on['@type'] = 'oa:SpecificResource';
+          
+        } else {
+          on['@type'] = 'oa:Annotation';
+          delete on.selector;
+        }
+      }
+      if (config.targetId) {
+        on.full = config.targetId;
+      }
+      if (config.svg) {
+        on.selector.value = config.svg;
+      }
+    }
     return on;
   },
   
   createTag: function(value) {
-    var tag = {
+    const tag = {
       "@type": "oa:Tag",
       chars: value
     };

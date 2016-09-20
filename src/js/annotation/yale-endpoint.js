@@ -101,8 +101,15 @@ export default class YaleEndpoint {
   }
   
   create (oaAnnotation, successCallback, errorCallback) {
+    const _this = this;
+    
     if (this.userAuthorize('create', oaAnnotation)) {
-      this._create(oaAnnotation, successCallback, errorCallback);
+      this._create(oaAnnotation, function(anno) {
+        _this.annotationsList.push(anno);
+        if (typeof successCallback === 'function') {
+          successCallback(anno);
+        }
+      }, errorCallback);
     } else {
       console.log('YaleEndpoint#create user not authorized');
       getErrorDialog().show('authz_create');
@@ -152,9 +159,22 @@ export default class YaleEndpoint {
     });
   }
   
-  update (oaAnnotation, successCallback, errorCallback) {
+  update(oaAnnotation, successCallback, errorCallback) {
+    const _this = this;
+    const annotationId = oaAnnotation['@id'];
+    
     if (this.userAuthorize('update', oaAnnotation)) {
-      this._update(oaAnnotation, successCallback, errorCallback);
+      this._update(oaAnnotation, function(anno) {
+        jQuery.each(_this.annotationsList, function(index, value) {
+          if (value['@id'] === annotationId) {
+            _this.annotationsList[index] = anno;
+            return false;
+          }
+        });
+        if (typeof successCallback === 'function') {
+          successCallback(anno);
+        }
+      }, errorCallback);
     } else {
       console.log('YaleEndpoint#update user not authorized');
       getErrorDialog().show('authz_update');
@@ -164,7 +184,7 @@ export default class YaleEndpoint {
     }
   }
 
-  _update (oaAnnotation, successCallback, errorCallback) {
+  _update(oaAnnotation, successCallback, errorCallback) {
     var _this = this;
     var annotation = this.getAnnotationInEndpoint(oaAnnotation);
     var url = this.prefix + '/annotations';
@@ -203,8 +223,18 @@ export default class YaleEndpoint {
   }
   
   deleteAnnotation (annotationId, successCallback, errorCallback) {
+    const _this = this;
+    
     if (this.userAuthorize('delete', null)) {
-      this._deleteAnnotation(annotationId, successCallback, errorCallback);
+      this._deleteAnnotation(annotationId, 
+        function() {
+          _this.annotationsList = jQuery.grep(_this.annotationsList, function(value, index) {
+            return value['@id'] !== annotationId;
+          });
+          if (typeof successCallback === 'function') {
+            successCallback();
+          }
+        }, errorCallback);
     } else {
       console.log('YaleEndpoint#delete user not authorized');
       getErrorDialog().show('authz_update');
