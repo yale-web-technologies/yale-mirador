@@ -1,15 +1,16 @@
 import annoUtil from '../annotation/anno-util';
 import session from '../session';
-import YaleEndpoint from './yale-endpoint';
+import YaleEndpointBase from './yale-endpoint-base';
 import FirebaseProxy from './firebase-proxy';
 
 // Endpoint for FireBase containing dummy data for development/testing
-export default class YaleDemoEndpoint extends YaleEndpoint {
+export default class YaleDemoEndpoint extends YaleEndpointBase {
   constructor(options) {
     super(options);
   }
 
   init() {
+    super.init();
     console.log('YaleDemoEndpoint#init');
     var _this = this;
     this.fbKeyMap = {}; // key: annotation['@id], value: firebase key.
@@ -18,25 +19,28 @@ export default class YaleDemoEndpoint extends YaleEndpoint {
     this.fbProxy = new FirebaseProxy(fbSettings);
   }
   
-  _search(options, dfd) {
-    var _this = this;
-    var canvasId = options.uri;
-    var fbDfd = this.fbProxy.getAnnosByCanvasId(canvasId);
-    this.annotationsList = [];
+  _search(options) {
+    const _this = this;
+    
+    return new Promise(function(resolve, reject) {
+      const canvasId = options.uri;
+      const fbDfd = _this.fbProxy.getAnnosByCanvasId(canvasId);
+      _this.annotationsList = [];
 
-    fbDfd.done(function(annoInfos) {
-      console.log('YaleDemoEndpoint#_search annoInfos: ');
-      console.dir(annoInfos);
-      jQuery.each(annoInfos, function(index, annoInfo) {
-        var oaAnnotation = _this.getAnnotationInOA(annoInfo.annotation);
-        oaAnnotation.layerId = annoInfo.layerId;
-        oaAnnotation.endpoint = _this;
-        _this.fbKeyMap[oaAnnotation['@id']] = annoInfo.fbKey;
-        _this.annotationsList.push(oaAnnotation);
+      fbDfd.done(function(annoInfos) {
+        console.log('YaleDemoEndpoint#_search annoInfos: ');
+        console.dir(annoInfos);
+        jQuery.each(annoInfos, function(index, annoInfo) {
+          var oaAnnotation = _this.getAnnotationInOA(annoInfo.annotation);
+          oaAnnotation.layerId = annoInfo.layerId;
+          oaAnnotation.endpoint = _this;
+          _this.fbKeyMap[oaAnnotation['@id']] = annoInfo.fbKey;
+          _this.annotationsList.push(oaAnnotation);
+        });
+        console.log('_this.annotationsList: ');
+        console.dir(_this.annotationsList);
+        resolve();
       });
-      console.log('_this.annotationsList: ');
-      console.dir(_this.annotationsList);
-      dfd.resolve();
     });
   }
 
@@ -108,23 +112,26 @@ export default class YaleDemoEndpoint extends YaleEndpoint {
     });
   }
 
-  getLayers(dfd) {
-    console.log('YaleDemoEndpoint#getLayers');
-    var ref = firebase.database().ref('layers');
-    
-    ref.once('value', function (snapshot) {
-      var data = snapshot.val();
+  _getLayers() {
+    console.log('YaleDemoEndpoint#_getLayers');
+    const promise = new Promise(function(resolve, reject) {
+      const ref = firebase.database().ref('layers');
       
-      console.log('Layers: ' + JSON.stringify(data, null, 2));
-      
-      var layers = [];
-      
-      jQuery.each(data, function (key, value) {
-        layers.push(value);
+      ref.once('value', function (snapshot) {
+        var data = snapshot.val();
+        
+        console.log('Layers: ' + JSON.stringify(data, null, 2));
+        
+        var layers = [];
+        
+        jQuery.each(data, function (key, value) {
+          layers.push(value);
+        });
+        
+        resolve(layers);
       });
-      
-      dfd.resolve(layers);
     });
+    return promise;
   }
   
   _updateOrder(canvasId, layerId, annoIds, successCallback, errorCallback) {

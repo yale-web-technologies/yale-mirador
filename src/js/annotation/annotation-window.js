@@ -93,7 +93,7 @@ export default class {
       this.element.find('.annowin_menu_tag_row').hide();
     }
 
-    if (this.endpoint.annotationLayers.length > 0) {
+    if (this.endpoint.getAnnotationLayers().length > 0) {
       if (this.layerSelector.isLoaded()) {
         layerDfd = jQuery.Deferred().resolve();
       } else {

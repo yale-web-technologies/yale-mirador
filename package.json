@@ -51,6 +51,7 @@
   },
   "dependencies": {
     "babel-polyfill": "^6.9.1",
+    "dexie": "^1.4.2",
     "golden-layout": "^1.5.1",
     "js-cookie": "^2.1.2",
     "semantic-ui": "^2.2.2"

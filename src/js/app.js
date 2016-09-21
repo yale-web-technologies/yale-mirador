@@ -14,7 +14,7 @@ import Grid from './grid';
 import MainMenu from './widgets/main-menu';
 import getMiradorWindow from './mirador-window';
 import './extension/interface';
-// import './util/override-pubsub';
+//import './util/override-pubsub'; // import this only for debugging!
 
 class App {
   constructor() {
@@ -28,6 +28,6 @@ class App {
 jQuery(document).ready(function () {
   console.log('Yale Mirador Extension document ready');
   if (jQuery('#ym_grid').length > 0) {
-    var app = new App();
+    const app = new App();
   }
 });

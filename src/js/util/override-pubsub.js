@@ -17,7 +17,10 @@
   };
 
   $.publish = function() {
-    console.log('PUB ' + Array.prototype.slice.call(arguments));
+    var args = Array.prototype.slice.call(arguments);
+    if (!args[0].match('updateTooltips.')) {
+      console.log('PUB ' + args);
+    }
     o.trigger.apply(o, arguments);
   };
 

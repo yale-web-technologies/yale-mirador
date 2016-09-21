@@ -28,7 +28,7 @@ export default class {
     console.log('LayerSelector#reload');
     var _this = this;
     var dfd = jQuery.Deferred();
-    var layers = this.endpoint.annotationLayers;
+    var layers = this.endpoint.getAnnotationLayers();
     
     this.selector.empty();
     
