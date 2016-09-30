@@ -21,7 +21,7 @@
   $.DialogBuilder = function (container) {
     var id = 'ym_dialog';
     var elem = jQuery('#' + id);
-    if (elem.size() === 0) {
+    if (elem.length === 0) {
       elem = jQuery('<div/>')
         .attr('id', id)
         .addClass('ui modal ym_modal')

@@ -222,7 +222,7 @@ class YmAnnotationSelector {
     const canvasElems = this.canvasesPanel.find('.canvas');
     let scrollTo = null;
     
-    console.log('scrollToCurrentCanvas ' + canvasElems.size());
+    console.log('scrollToCurrentCanvas ' + canvasElems.length);
     
     canvasElems.each(function(index, canvasElem) {
       const elem = $(canvasElem);
@@ -245,7 +245,7 @@ Mirador.getYmAnnotationSelector = function() {
   if (!instance) {
     const id = 'ym_annotation_selector';
     let elem = jQuery('#' + id);
-    if (elem.size() === 0) {
+    if (elem.length === 0) {
       elem = jQuery('<div/>').attr('id', id)
         .addClass('ui modal ym_modal ym_large_modal')
         .appendTo(jQuery('body'));

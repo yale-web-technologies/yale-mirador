@@ -27,7 +27,7 @@ class App {
 
 jQuery(document).ready(function () {
   console.log('Yale Mirador Extension document ready');
-  if (jQuery('#ym_grid').size() > 0) {
+  if (jQuery('#ym_grid').length > 0) {
     var app = new App();
   }
 });
