@@ -1,3 +1,5 @@
+import WindowProxy from './window-proxy';
+
 export default class WorkspaceProxy {
   
   constructor(workspace) {
@@ -6,6 +8,10 @@ export default class WorkspaceProxy {
   
   getWorkspace() {
     return this.workspace;
+  }
+  
+  getWindowsProxies() {
+    return this.workspace.windows.map(window => new WindowProxy(window));
   }
   
   getWindowById(windowId) {

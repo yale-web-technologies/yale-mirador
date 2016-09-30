@@ -19,13 +19,12 @@ export default class YaleDemoEndpoint extends YaleEndpointBase {
     this.fbProxy = new FirebaseProxy(fbSettings);
   }
   
-  _search(options) {
+  _search(canvasId) {
     const _this = this;
     
     return new Promise(function(resolve, reject) {
-      const canvasId = options.uri;
       const fbDfd = _this.fbProxy.getAnnosByCanvasId(canvasId);
-      _this.annotationsList = [];
+      const annotations = [];
 
       fbDfd.done(function(annoInfos) {
         console.log('YaleDemoEndpoint#_search annoInfos: ');
@@ -33,13 +32,12 @@ export default class YaleDemoEndpoint extends YaleEndpointBase {
         jQuery.each(annoInfos, function(index, annoInfo) {
           var oaAnnotation = _this.getAnnotationInOA(annoInfo.annotation);
           oaAnnotation.layerId = annoInfo.layerId;
-          oaAnnotation.endpoint = _this;
           _this.fbKeyMap[oaAnnotation['@id']] = annoInfo.fbKey;
-          _this.annotationsList.push(oaAnnotation);
+          annotations.push(oaAnnotation);
         });
         console.log('_this.annotationsList: ');
         console.dir(_this.annotationsList);
-        resolve();
+        resolve(annotations);
       });
     });
   }

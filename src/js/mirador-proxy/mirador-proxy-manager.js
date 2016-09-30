@@ -18,6 +18,21 @@ class MiradorProxyManager {
     return this.miradorProxies[miradorId];
   }
   
+  /**
+   * @returns {WindowProxy[]} a list of window proxies for all windows in all Mirador instances
+   */
+  getAllWindowProxies() {
+    let windowProxies = [];
+    for (let miradorProxy of this.getMiradorProxies()) {
+       windowProxies = windowProxies.concat(miradorProxy.getWindowProxies());
+    }
+    return windowProxies;
+  }
+  
+  getWindowProxyById(windowId) {
+    return (new WindowProxy(this.getWindowById(windowId)));
+  }
+  
   getWindowById(windowId) {
     let window = null;
     jQuery.each(this.miradorProxies, function(miradorId, miradorProxy) {
@@ -29,8 +44,13 @@ class MiradorProxyManager {
     return window;
   }
   
-  getWindowProxyById(windowId) {
-    return (new WindowProxy(this.getWindowById(windowId)));
+  getCurrentCanvasIdByWindowId(windowId) {
+    const windowProxy = this.getWindowProxyById(windowId);
+    if (windowProxy) {
+      return windowProxy.getCurrentCanvasId();
+    } else {
+      return null;
+    }
   }
   
   // XXX This works because only one Mirador window is assumed. 

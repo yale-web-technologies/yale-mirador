@@ -16,5 +16,29 @@ export default {
       values.push(value);
     });
     return values;
+  },
+  
+  waitUntil: function(testFunc, execFunc, ms, count) {
+    const _this = this;
+    if (ms === undefined) {
+      ms = 100;
+    }
+    if (count === undefined) {
+      count = 1;
+    }
+    if (count > 5) {
+      console.log('util.waitUntil max try num exceeded: giving up');
+      console.log('testFunc: ' + testFunc);
+      console.log('execFunc: ' + execFunc);
+      return;
+    }
+    if (testFunc()) {
+      execFunc();
+    } else {
+      console.log('util.waitUntil trial ' + count + ' failed. Retrying in ' + (ms*2) + ' ms.');
+      setTimeout(function() {
+        _this.waitUntil(testFunc, execFunc, ms * 2, count + 1);
+      }, ms);
+    }
   }
 };

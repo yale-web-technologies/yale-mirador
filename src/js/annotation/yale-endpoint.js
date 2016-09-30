@@ -11,15 +11,13 @@ export default class YaleEndpoint extends YaleEndpointBase {
     super(options);
   }
 
-  _search(options) {
+  _search(canvasId) {
     const _this = this;
     
     return new Promise(function(resolve, reject) {
-      const canvasId = options.uri;
-      //const url = _this.prefix + '/getAnnotations?includeTargetingAnnos=true&canvas_id=' + encodeURIComponent(canvasId);
       const url = _this.prefix + '/getAnnotationsViaList?canvas_id=' + encodeURIComponent(canvasId);
       console.log('YaleEndpoint#_search url: ' + url);
-      _this.annotationsList = [];
+      const annotations = [];
 
       jQuery.ajax({
         url: url,
@@ -33,13 +31,12 @@ export default class YaleEndpoint extends YaleEndpointBase {
           console.log('YaleEndpoint#_search data: ');
           console.dir(data);
 
-          var annotations = data;
-          jQuery.each(annotations, function (index, value) {
+          jQuery.each(data, function (index, value) {
             var oaAnnotation = _this.getAnnotationInOA(value.annotation);
             oaAnnotation.layerId = value.layer_id;
-            _this.annotationsList.push(oaAnnotation);
+            annotations.push(oaAnnotation);
           });
-          resolve(data);
+          resolve(annotations);
         },
         error: function (jqXHR, textStatus, errorThrown) {
           console.log('YaleEndpoint#search error searching');
@@ -153,7 +150,7 @@ export default class YaleEndpoint extends YaleEndpointBase {
   _getLayers() {
     console.log('YaleEndpoint#_getLayers');
     const _this = this;
-    const promise = new Promise(function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
       const url = _this.prefix + '/layers';
       
       jQuery.ajax({
@@ -164,7 +161,6 @@ export default class YaleEndpoint extends YaleEndpointBase {
         success: function (data, textStatus, jqXHR) {
           console.log('YaleEndpoint#getLayers data: '); 
           console.dir(data);
-          //_this._layers = data;
           resolve(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {

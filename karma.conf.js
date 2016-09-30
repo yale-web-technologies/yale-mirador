@@ -20,6 +20,7 @@ module.exports = function(config) {
       'lib/js.cookie.js',
       'lib/semantic/dist/semantic.min.js',
       'lib/goldenlayout/goldenlayout.min.js',
+      'lib/dexie.js',
       'dist/yale-mirador/yale-mirador.bundle.js',
       'test/**/*-test.js'
     ],

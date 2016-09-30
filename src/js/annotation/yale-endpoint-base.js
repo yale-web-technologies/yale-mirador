@@ -1,4 +1,5 @@
 import session from '../session';
+import util from '../util/util';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import getMiradorWindow from '../mirador-window';
 import getModalAlert from '../widgets/modal-alert';
@@ -21,8 +22,7 @@ export default class YaleEndpointBase {
   }
 
   init() {
-    const cache = getAnnotationCache();
-    this.cache = cache.isValid() ? cache : null;
+    this._cache = getAnnotationCache();
   }
   
   getCanvasToc() {
@@ -36,26 +36,77 @@ export default class YaleEndpointBase {
   search(options) {
     console.log('YaleEndpoint#search options: ' + JSON.stringify(options));
     const _this = this;
+    const canvasId = options.uri;
     const progressPane = getModalAlert();
     const errorPane = getErrorDialog();
     
-    getModalAlert().show();
+    progressPane.show();
     
-    this.getLayers().then(function() {
-      _this._search(options).then(function() {
+    let p = new Promise(function(resolve, reject) {
+      util.waitUntil(() => _this._cache.isValid(), function() {
+        resolve();
+      }, 250);
+    });
+    
+    p.then(() => { return _this.getLayers(); });
+    
+    p.then(function() {
+      if (_this._cache) {
+        _this._cache.getAnnotationsPerCanvas(canvasId).then(function(annotations) {
+          if (annotations !== null) { // cache hit
+            console.log('HIT CACHE - annos:');
+            console.dir(annotations);
+            progressPane.hide();
+            _this.annotationsList = annotations;
+            _this._setEndpoint(annotations);
+            _this.dfd.resolve(true);
+          } else { // cache miss
+            _this.searchRemote(canvasId).then(function(annotations) {
+              console.log('MISSED CACHE - annos:');
+              console.dir(annotations);
+              progressPane.hide();
+              _this.annotationsList = annotations;
+              _this._cache.setAnnotationsPerCanvas(canvasId, annotations);
+              // Set endpoint after saving to cache, because the db cannot
+              // serialize the annotations with endpoint in them. 
+              _this._setEndpoint(annotations);
+              _this.dfd.resolve(true);
+            }).catch(function(e) {
+              console.log('ERROR searchRemote - ' + e.stack);
+              progressPane.hide();
+              _this.dfd.reject();
+            });
+          }
+        }).catch(function(e) {
+          console.log('ERROR cache.getAnnotationsPerCanvas - ' + e.stack);
+          console.log(e.stack);
+          progressPane.hide();
+          _this.dfd.reject();
+        });
+      } 
+    }).catch(function(e) {
+      console.log('ERROR getLayers - ' + e.stack);
+      progressPane.hide();
+      errorPane.show('layers');
+      _this.dfd.reject();
+    });
+  }
+  
+  searchRemote(canvasId) {
+    const _this = this;
+    const progressPane = getModalAlert();
+    const errorPane = getErrorDialog();
+    
+    return new Promise(function(resolve, reject) {
+      _this._search(canvasId).then(function(annotations) {
         progressPane.hide();
-        _this.dfd.resolve(true);
+        resolve(annotations);
       }).catch(function(e) {
         console.log('ERROR _search - ' + e);
         progressPane.hide();
         errorPane.show('annotations');
-        _this.dfd.reject();
+        reject();
       });
-    }).catch(function(e) {
-      console.log('ERROR getLayers - ' + e);
-      proressPane.hide();
-      errorPane.show('layers');
-      _this.dfd.reject();
     });
   }
 
@@ -65,6 +116,7 @@ export default class YaleEndpointBase {
     if (this.userAuthorize('create', oaAnnotation)) {
       this._create(oaAnnotation, function(anno) {
         _this.annotationsList.push(anno);
+        _this._cache.invalidateAnnotation(anno);
         if (typeof successCallback === 'function') {
           successCallback(anno);
         }
@@ -84,6 +136,7 @@ export default class YaleEndpointBase {
     
     if (this.userAuthorize('update', oaAnnotation)) {
       this._update(oaAnnotation, function(anno) {
+        _this._cache.invalidateAnnotation(anno);
         jQuery.each(_this.annotationsList, function(index, value) {
           if (value['@id'] === annotationId) {
             _this.annotationsList[index] = anno;
@@ -107,8 +160,9 @@ export default class YaleEndpointBase {
     const _this = this;
     
     if (this.userAuthorize('delete', null)) {
-      this._deleteAnnotation(annotationId, 
+      this._deleteAnnotation(annotationId,
         function() {
+          _this._cache.invalidateAnnotationId(annotationId);
           _this.annotationsList = jQuery.grep(_this.annotationsList, function(value, index) {
             return value['@id'] !== annotationId;
           });
@@ -139,29 +193,27 @@ export default class YaleEndpointBase {
     
     return new Promise(function(resolve, reject) {
       const layersCallback = function(layers) {
-        if (_this.cache) {
-          _this.cache.setLayers(layers);
-        }
-        _this.annotationLayers = layers;
+        _this._annotationLayers = layers;
+        _this._cache.setLayers(layers);
         resolve(layers);
       };
       
-      let useCached = false;
-      
-      if (_this.cache) {
-        _this.cache.getLayers().then(function(layers) {
+      if (_this._cache) {
+        _this._cache.getLayers().then(function(layers) {
           if (layers.length > 0) {
-            useCached = true;
-            console.log('Using cached layers...');
+            console.log('HIT CACHE - layers');
             _this._annotationLayers = layers;
             resolve(layers);
           } else {
+            console.log('MISSED CACHE - layers empty');
             _this._getLayers().then(layersCallback);
           }
         }).catch(function(e) { // error getting layers from cache
+          console.log('MISSED CACHE - layers error');
           _this._getLayers().then(layersCallback);
         });
       } else {
+        console.log('MISSED CACHE - layers no cache');
         _this._getLayers().then(layersCallback);
       }
     });
@@ -178,7 +230,11 @@ export default class YaleEndpointBase {
   
   updateOrder(canvasId, layerId, annoIds, successCallback, errorCallback) {
     if (this.userAuthorize('update', null)) {
-      this._updateOrder(canvasId, layerId, annoIds, successCallback, errorCallback);
+      this._updateOrder(canvasId, layerId, annoIds, 
+        function() {
+          _this._cache.invalidateCanvasId(canvasId);
+          successCallback();
+        }, errorCallback);
     } else {
       console.log('YaleEndpoint#update user not authorized');
       getErrorDialog().show('authz_update');
@@ -217,8 +273,7 @@ export default class YaleEndpointBase {
       //annotatedBy: annotatedBy,
       //annotatedAt: annotation.created,
       //serializedAt: annotation.updated,
-      //permissions: annotation.permissions,
-      endpoint: this
+      //permissions: annotation.permissions
     };
 
     //console.log('YaleEndpoint#getAnnotationInOA oaAnnotation:');
@@ -251,5 +306,12 @@ export default class YaleEndpointBase {
     this.canvasToc = new CanvasToc(spec, this.annotationsList);
     console.log('YaleEndpoint#parseAnnotations canvasToc:');
     console.dir(this.canvasToc.annoHierarchy);
+  }
+  
+  _setEndpoint(annotations) {
+    const _this = this;
+    jQuery.each(annotations, function(index, anno) {
+      anno.endpoint = _this;
+    });
   }
 }

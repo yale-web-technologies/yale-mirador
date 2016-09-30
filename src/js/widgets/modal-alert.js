@@ -31,13 +31,11 @@ class ModalAlert {
   }
   
   hide() {
-    console.log('X ModalAlert HIDE');
     this.elem.modal('hide');
   }
 }
 
 let instance = null;
-
 
 const template = Handlebars.compile([
   'Loading annotations ...'
