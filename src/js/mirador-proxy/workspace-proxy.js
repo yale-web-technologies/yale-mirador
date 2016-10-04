@@ -10,7 +10,7 @@ export default class WorkspaceProxy {
     return this.workspace;
   }
   
-  getWindowsProxies() {
+  getWindowProxies() {
     return this.workspace.windows.map(window => new WindowProxy(window));
   }
   

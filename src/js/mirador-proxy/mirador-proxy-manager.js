@@ -23,8 +23,11 @@ class MiradorProxyManager {
    */
   getAllWindowProxies() {
     let windowProxies = [];
-    for (let miradorProxy of this.getMiradorProxies()) {
-       windowProxies = windowProxies.concat(miradorProxy.getWindowProxies());
+    const miradorProxies = this.getMiradorProxies();
+    
+    for (let key of Object.keys(miradorProxies)) {
+      let miradorProxy = miradorProxies[key];
+      windowProxies = windowProxies.concat(miradorProxy.getWindowProxies());
     }
     return windowProxies;
   }

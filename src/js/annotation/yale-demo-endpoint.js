@@ -58,6 +58,8 @@ export default class YaleDemoEndpoint extends YaleEndpointBase {
     if (typeof successCallback === 'function') {
       oaAnnotation['@id'] = annoId;
       oaAnnotation.endpoint = this;
+      console.log('YaleDemoEndpoint#_create success:');
+      console.dir(oaAnnotation);
       successCallback(oaAnnotation);
     } else {
       console.log('YaleDemoEndpoint#create no success callback');

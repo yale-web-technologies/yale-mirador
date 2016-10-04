@@ -148,16 +148,26 @@ class AnnotationCache {
   }
   
   invalidateAnnotation(annotation) {
-    this.invalidateAnnotationId(annotation['@id']);
+    const canvasIdSet = new Set();
+    const targetCanvasIds = annoUtil.getFinalTargetCanvasIds(annotation);
+    
+    for (let canvasId of targetCanvasIds) {
+      canvasIdSet.add(canvasId);
+    }
+    for (let canvasId of canvasIdSet) {
+      this.invalidateCanvasId(canvasId);
+    }
   }
   
   invalidateAnnotationId(annotationId) {
+    console.log('invalidateAnnotationId: ' + annotationId);
     const proxyMgr = getMiradorProxyManager();
     const canvasIdSet = new Set();
     for (let windowProxy of proxyMgr.getAllWindowProxies()) {
       for (let annotation of windowProxy.getAnnotationsList()) {
         if (annotation['@id'] === annotationId) {
-          const targetCanvasIds = annoUtil.getFinalTargetCanvasIds();
+          const targetCanvasIds = annoUtil.getFinalTargetCanvasIds(annotation);
+          console.log('targetCanvasIds: ' + targetCanvasIds);
           for (let canvasId of targetCanvasIds) {
             canvasIdSet.add(canvasId);
           }
