@@ -301,7 +301,7 @@ export default class AnnotationListRenderer {
 }
 
 const annotationTemplate = Handlebars.compile([
-  '<div class="annowin_anno" draggable="true">',
+  '<div class="annowin_anno">',
   '  <div class="normal_view">',
   '    {{#if isEditor}}',
   '      <div class="menu_bar">',
