@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/yale-web-technologies/yale-mirador.svg?branch=master)](https://travis-ci.org/yale-web-technologies/yale-mirador)
+[![Build Status](https://travis-ci.org/yale-web-technologies/yale-mirador.svg?branch=master)](https://travis-ci.org/yale-web-technologies/yale-mirador) [![Dependency Status](https://gemnasium.com/badges/github.com/yale-web-technologies/yale-mirador.svg)](https://gemnasium.com/github.com/yale-web-technologies/yale-mirador)
 
 # Yale Mirador Extension
 This is an extension to [IIIF/Mirador](https://github.com/IIIF/mirador).
