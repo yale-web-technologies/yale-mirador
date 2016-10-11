@@ -1,17 +1,22 @@
+language: node_js
+
+node_js:
+  - "6.3.0"
+
 # Handle git submodules yourself
 git:
   submodules: false
 # Use sed to replace the SSH URL with the public URL, then initialize submodules
 
 before_install:
-- sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
-- git submodule update --init --recursive
+  - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+  - git submodule update --init --recursive
 
 install:
-- npm install
+  - npm install
 
 script:
-- npm run build
+  - npm run build
 
 cache:
   directories:
