@@ -18,7 +18,7 @@ before_install:
 install:
   - npm install -g grunt-cli
   - npm install
-  - cd submodules/mirador && npm install & cd -
+  - cd submodules/mirador && npm install && cd -
 
 script:
   - npm run build
