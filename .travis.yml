@@ -13,12 +13,12 @@ git:
 before_install:
   - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
   - git submodule update --init --recursive
-  - cd submodules/mirador && rm -f .git && mkdir .git
+  - cd submodules/mirador && rm -f .git && mkdir .git && cd -
 
 install:
   - npm install -g grunt-cli
   - npm install
-  - cd submodules/mirador && npm install
+  - cd submodules/mirador && npm install & cd -
 
 script:
   - npm run build
@@ -26,3 +26,4 @@ script:
 cache:
   directories:
     - node_modules
+    - submodules/mirador/node_modules
