@@ -3,9 +3,12 @@ import annoUtil from './anno-util';
 
 export default function getAnnotationCache() {
   if (!instance) {
-    instance = new AnnotationCache();
+    return new AnnotationCache();
+  } else {
+    return new Promise(function(resolve, reject) {
+      instance.isValid() ? resolve(instance) : reject(instance);
+    });
   }
-  return instance;
 };
 
 let instance = null;
@@ -17,15 +20,19 @@ class AnnotationCache {
     this._valid = false;
     this._expiresInMS = 2 * 60 * 60 * 1000; // milliseconds
     
-    if (window.indexedDB) {
-      this.clear().then(function() {
-        return _this.init();
-      }).then(function() {
-        _this._valid = true;
-      });
-    } else {
-      console.log('IndexedDB is not available on this browser.');
-    }
+    return new Promise(function(resolve, reject) {
+      if (window.indexedDB) {
+        _this.clear().then(function() {
+          return _this.init();
+        }).then(function() {
+          _this._valid = true;
+          resolve(_this);
+        });
+      } else {
+        reject(_this);
+        console.log('IndexedDB is not available on this browser.');
+      }
+    });
   }
   
   /**
@@ -33,13 +40,15 @@ class AnnotationCache {
    */
   init() {
     const _this = this;
-    this.db = new Dexie(this._dbName);
+    this._db = new Dexie(this._dbName).on('versionchange', function(event) {
+      console.log('versionchange ' + event.newVersion);
+    });
     
-    this.db.version(1).stores({
+    this._db.version(1).stores({
       layers: 'id,jsonData,timestamp',
       annosPerCanvas: 'canvasId,jsonData,timestamp'
     });
-    return this.db.open().catch(function(e) {
+    return this._db.open().catch(function(e) {
       console.log('ERROR AnnotationCache#setupIndexDb open failed: ' + e);
       _this._valid = false;
     });
@@ -59,8 +68,8 @@ class AnnotationCache {
    * @returns {object} a Promise
    */
   emptyTable(name) {
-    const table = this.db.table(name);
-    return this.db.transaction('rw', table, function() {
+    const table = this._db.table(name);
+    return this._db.transaction('rw', table, function() {
       table.each(function (item, cursor) {
         console.log('deleting ' + cursor.key);
         table.delete(cursor.key).catch(function(e) {
@@ -74,7 +83,7 @@ class AnnotationCache {
    * @returns {object} a Promise
    */
   getLayers() {
-    return this.db.layers.where('id').equals(1).first(function (row) {
+    return this._db.layers.where('id').equals(1).first(function (row) {
       const data = (row !== undefined) ? row.jsonData : null;
       return (data instanceof Array) ? data : [];
     });
@@ -87,7 +96,7 @@ class AnnotationCache {
     const _this = this;
     return this.emptyTable('layers')
       .then(function() {
-        return _this.db.layers.add({ id: 1, jsonData: layersJson})
+        return _this._db.layers.add({ id: 1, jsonData: layersJson})
           .catch(function(e) {
             console.log('ERROR AnnotatinCache#setLayers update failed: ' + e);
             throw e;
@@ -100,7 +109,7 @@ class AnnotationCache {
    */
   getAnnotationsPerCanvas(canvasId) {
     const _this = this;
-    const coll = this.db.annosPerCanvas.where('canvasId').equals(canvasId)
+    const coll = this._db.annosPerCanvas.where('canvasId').equals(canvasId)
       .and(function(rec) {
         const nowMS = new Date().valueOf();
         console.log('rec.timestamp: ' + rec.timestamp);
@@ -119,8 +128,8 @@ class AnnotationCache {
    * @returns {object} a Promise
    */
   setAnnotationsPerCanvas(canvasId, data) {
-    const table = this.db.annosPerCanvas;
-    const coll = this.db.annosPerCanvas.where('canvasId').equals(canvasId);
+    const table = this._db.annosPerCanvas;
+    const coll = this._db.annosPerCanvas.where('canvasId').equals(canvasId);
     const nowMS = new Date().valueOf();
     
     if (coll.count() === 0) {
@@ -131,7 +140,7 @@ class AnnotationCache {
   }
   
   deleteAnnotationsPerCanvas(canvasId) {
-    const table = this.db.annosPerCanvas;
+    const table = this._db.annosPerCanvas;
     const coll = table.where('canvasId').equals(canvasId);
     return coll.delete().catch(function(e) {
       console.log('ERROR AnnotationCache#deleteAnnotationsPerCanvas failed to delete canvasId: ' + canvasId);

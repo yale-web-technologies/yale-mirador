@@ -4,7 +4,7 @@ var path = require('path');
 
 module.exports = {
   debug: true,
-  entry: './src/js/app.js',
+  entry: ['./src/js/app.js', './src/js/bootstrap.js'],
   output: {
     path: './dist/yale-mirador',
     filename: 'yale-mirador.bundle.js'

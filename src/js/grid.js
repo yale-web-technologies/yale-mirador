@@ -3,13 +3,13 @@ import AnnotationListRenderer from './annotation/annotation-list-renderer';
 import AnnotationWindow from './annotation/annotation-window';
 
 export default class {
-  constructor() {
-    this.init();
+  constructor(rootElementId) {
+    this.init(rootElementId);
   }
   
-  init() {
+  init(rootElementId) {
     console.log('Grid#init');
-    this.element = jQuery('#ym_grid');
+    this.element = jQuery('#' + rootElementId);
     this.miradorProxyManager = getMiradorProxyManager();
     this.annotationListRenderer = new AnnotationListRenderer();
     this.initLayout();

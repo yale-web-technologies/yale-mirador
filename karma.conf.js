@@ -12,7 +12,7 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['mocha'],
+    frameworks: ['mocha', 'sinon'],
 
     // list of files / patterns to load in the browser
     files: [
@@ -21,7 +21,8 @@ module.exports = function(config) {
       'lib/semantic/dist/semantic.min.js',
       'lib/goldenlayout/goldenlayout.min.js',
       'lib/dexie.js',
-      'dist/yale-mirador/yale-mirador.bundle.js',
+      //'dist/yale-mirador/yale-mirador.bundle.js',
+      'src/js/app.js',
       'test/**/*-test.js'
     ],
 
@@ -32,8 +33,8 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'src/js/**/*.js': ['webpack', 'sourcemap'],
-      'test/**/*-test.js': ['webpack', 'sourcemap']
+      './src/js/app.js': ['webpack', 'sourcemap'],
+      './test/**/*-test.js': ['webpack', 'sourcemap']
     },
     
     webpack: webpackConfig,
@@ -42,6 +43,7 @@ module.exports = function(config) {
       require('karma-webpack'),
       require('karma-sourcemap-loader'),
       require('karma-mocha'),
+      require('karma-sinon'),
       require('karma-phantomjs-launcher'),
       require('karma-coverage')
     ],

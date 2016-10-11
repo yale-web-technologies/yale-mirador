@@ -16,18 +16,18 @@ import getMiradorWindow from './mirador-window';
 import './extension/interface';
 //import './util/override-pubsub'; // import this only for debugging!
 
-class App {
-  constructor() {
+export default class App {
+  constructor(element) {
     console.log('App.constructor');
     var mainMenu = new MainMenu();
-    var grid = new Grid();
+    var grid = new Grid(element);
     getMiradorWindow().init({ mainMenu: mainMenu, grid: grid });
   }
 }
-
+/* XXX
 jQuery(document).ready(function () {
   console.log('Yale Mirador Extension document ready');
   if (jQuery('#ym_grid').length > 0) {
     const app = new App();
   }
-});
+});*/

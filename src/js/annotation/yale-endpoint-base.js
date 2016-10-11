@@ -22,7 +22,10 @@ export default class YaleEndpointBase {
   }
 
   init() {
-    this._cache = getAnnotationCache();
+    const _this = this;
+    getAnnotationCache().then(function(instance) {
+      _this._cache = instance;
+    });
   }
   
   getCanvasToc() {
@@ -43,7 +46,7 @@ export default class YaleEndpointBase {
     progressPane.show();
     
     let p = new Promise(function(resolve, reject) {
-      util.waitUntil(() => _this._cache.isValid(), function() {
+      util.waitUntil(() => _this._cache && _this._cache.isValid(), function() {
         resolve();
       }, 250);
     });

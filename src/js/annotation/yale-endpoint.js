@@ -2,7 +2,6 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import getMiradorWindow from '../mirador-window';
 import getModalAlert from '../widgets/modal-alert';
 import getErrorDialog from '../widgets/error-dialog';
-import getAnnotationCache from './annotation-cache';
 import CanvasToc from '../annotation/toc';
 import YaleEndpointBase from './yale-endpoint-base';
 

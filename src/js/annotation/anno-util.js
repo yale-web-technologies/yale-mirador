@@ -162,11 +162,28 @@ export default {
         toc.findNodeForAnnotation(currentAnno) === node;
     });
   },
-  
+
   /**
    * Merge annotation's target ("on" attribute) with a new "on" attribute (sourceTarget).
    */ 
   mergeTargets: function(annotation, sourceTarget) {
+    if (annotation.on instanceof Array) {
+      annotation.on.push(sourceTarget);
+    } else {
+      annotation.on = [annotation.on, sourceTarget];
+    }
+  },
+  
+  /**
+   * XXX this version of mergeTargets will probably have to be removed
+   * because SVG to SVG merge will likely turn out to be illegal against 
+   * the IIIF spec. The selector SVG of a target should always contains 
+   * a single path and if multiple targets exist for an annotation,
+   * the "on" field should be an array of targets.
+   *
+   * Merge annotation's target ("on" attribute) with a new "on" attribute (sourceTarget).
+   */ 
+  mergeTargetsOld: function(annotation, sourceTarget) {
     const destTarget = annotation.on;
     let destCanvasId = destTarget.full;
     const sourceCanvasId = sourceTarget.full;

@@ -1,18 +1,18 @@
+import { expect } from 'chai';
+
 import getAnnotationCache from '../../src/js/annotation/annotation-cache';
 import util from '../test-util';
 
-import { expect } from 'chai';
-
 describe('AnnotationCache', function() {
-  let cache = getAnnotationCache();
+  let cache = null;
   
   beforeEach(function(done) {
-    cache.clear().then(function() {
-      cache.init().then(function() {
-        done();
+    getAnnotationCache().then(function(instance) {
+      cache = instance;
+      cache.clear().then(function() {
+        cache.init().then(() => done());
       });
     });
-    
   });
   
   it('setAnnotationsPerCanvas', function(done) {

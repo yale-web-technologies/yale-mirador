@@ -2,6 +2,10 @@ import svgUtil from '../../src/js/annotation/svg-util';
 
 import { expect } from 'chai';
 
+// XXX these svg manipulations will probably not needed 
+// because multiple paths under in a single target will probably turn out to 
+// be illegal according to IIIF spec.
+
 describe('mergeSvgs', function() {
   it('merge single path with single', function() {
     const svg1 = '<svg><path d="M1,1,2,1,2,2z"/></svg>';
