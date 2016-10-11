@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/yale-web-technologies/yale-mirador.svg?branch=master)](https://travis-ci.org/yale-web-technologies/yale-mirador)
+
 # Yale Mirador Extension
 This is an extension to [IIIF/Mirador](https://github.com/IIIF/mirador).
 Hopefully much of the extended functionality will be merged into the IIIF/Mirador core
