@@ -19,6 +19,7 @@ git clone --recursive git@github.com:yale-web-technologies/yale-mirador.git
 cd yale-mirador
 npm install  # Install node modules for yale-mirador
 cd submodules/mirador
+npm install -g grunt-cli
 npm install  # Install node modules for the submodule mirador
 ```
 
