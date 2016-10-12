@@ -7,6 +7,24 @@
    * so "this" will point to the instance of the image view.
    */
   jQuery.extend($.yaleExt, {
+    
+    zoomToAnnotation: function(annotation) {
+      const viewport = this.osd.viewport;
+      const currentZoom = viewport.getZoom();
+      console.log('panToAnnotation zoom: ' + currentZoom);
+      const shapes = $.yaleExt.getShapesForAnnotation.call(this.annotationsLayer.drawTool, annotation);
+      const shapeBounds = $.yaleExt.getCombinedBounds(shapes); // in image coordinates
+      const shapeWH = viewport.imageToViewportCoordinates(shapeBounds.width, shapeBounds.height);
+      const viewportBounds = viewport.getBounds();
+      const widthRatio = shapeWH.x / viewportBounds.width;
+      console.log('w ratio: ' + widthRatio);
+      const heightRatio = shapeWH.y / viewportBounds.height;
+      console.log('h ratio: ' + heightRatio);
+      const zoomFactor = 1.0 / Math.max(widthRatio, heightRatio) * 0.8;
+      console.log('zoomFactor: ' + zoomFactor);
+      
+      viewport.zoomBy(zoomFactor);
+    },
 
     /*
      * Highlight the boundaries for the currently chosen annotation
@@ -16,10 +34,8 @@
       var viewport = this.osd.viewport;
       var shapes = $.yaleExt.getShapesForAnnotation.call(this.annotationsLayer.drawTool, annotation);
       var shapeBounds = $.yaleExt.getCombinedBounds(shapes); // in image coordinates
-      var annoWidth = shapeBounds.width;
-      var annoHeight = shapeBounds.height;
-      var x = shapeBounds.x + annoWidth / 2;
-      var y = shapeBounds.y + annoHeight / 2;
+      var x = shapeBounds.x + shapeBounds.width / 2;
+      var y = shapeBounds.y + shapeBounds.height / 2;
       var p = new OpenSeadragon.Point(x, y);
       
       var shapeXY = viewport.imageToViewportCoordinates(shapeBounds.x, shapeBounds.y);

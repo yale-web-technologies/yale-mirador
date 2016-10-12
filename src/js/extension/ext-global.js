@@ -21,24 +21,21 @@
     
     highlightShape: function (shape) {
       if (!shape._ym_oldStrokeColor) {
-        shape._ym_oldStrokeColor = shape.strokeColor;
+        shape.data._ym_oldStrokeColor = shape.strokeColor;
       }
       if (!shape._ym_oldStrokeWdth) {
-        shape._ym_oldStrokeWidth = shape.strokeWidth;
+        shape.data._ym_oldStrokeWidth = shape.data.currentStrokeValue;
       }
-      shape.set({ 
-        //strokeColor: 'yellow',
-        strokeWidth: 30,
-        opacity: 1 
-      });
+      shape.data.currentStrokeValue = 2;
+      shape.set({ opacity: 1 });
     },
     
     deHighlightShape: function (shape) {
-      if (shape._ym_oldStrokeColor) {
-        shape.set({ strokeColor: shape._ym_oldStrokeColor });
+      if (shape.data._ym_oldStrokeColor) {
+        shape.set({ strokeColor: shape.data._ym_oldStrokeColor });
       }
-      if (shape._ym_oldStrokeWidth) {
-        shape.set({ strokeWidth: shape._ym_oldStrokeWidth });
+      if (shape.data._ym_oldStrokeWidth) {
+        shape.data.currentStrokeValue = shape.data._ym_oldStrokeWidth;
       }
       shape.opacity = 0;
     }
