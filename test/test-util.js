@@ -4,7 +4,7 @@ export default {
     const _this = this;
     const anno = {
       '@context': 'http://iiif.io/api/presentation/2/context.json',
-      '@type': 'oa:annotation',
+      '@type': 'oa:Annotation',
       motivation: ['oa:commenting'],
       on: null,
       resource: [

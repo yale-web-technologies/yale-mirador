@@ -16,13 +16,14 @@ export default class AnnotationEditor {
       saveCallback: null,
       cancelCallback: null
     }, options);
+    
+    this._mode = options.mode; // "create", "update", or "merge"
 
     this.init();
     this.hide();
   }
   
   init() {
-    this._mode = null; // "create", "update", or "merge"
     this.miradorProxyManager = getMiradorProxyManager();
     this.endpoint = this.endpoint || this.miradorProxyManager.getWindowProxyById(this.windowId).getEndPoint();
     this.id = this.id || Mirador.genUUID();
@@ -294,13 +295,13 @@ export default class AnnotationEditor {
   bindEvents() {
     var _this = this;
     
-    this.element.find('.save').click(function() {
+    this.element.find('.ym_save').click(function() {
       if (_this.validate()) {
         _this.save();
       }
     });
     
-    this.element.find('.cancel').click(function() {
+    this.element.find('.ym_cancel').click(function() {
       _this.destroy();
       if (typeof _this.cancelCallback === 'function') {
         _this.cancelCallback();
@@ -332,8 +333,8 @@ const template = Handlebars.compile([
   '  <input class="tags_editor" placeholder="{{t "addTagsHere"}}…" {{#if tags}}value="{{tags}}"{{/if}}/>',
   '  {{#unless miradorDriven}}',
   '    <div class="bottom_row">',
-  '        <button class="save">Save</button>',
-  '        <button class="cancel">Cancel</button>',
+  '        <button class="ym_save">Save</button>',
+  '        <button class="ym_cancel">Cancel</button>',
   '      <div class="ym_float_right">',
   '        <i class="large caret up icon ym_vertical_dec"></i>',
   '        <i class="large caret down icon ym_vertical_inc"></i>',

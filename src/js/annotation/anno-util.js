@@ -72,16 +72,12 @@ export default {
   findFinalTargetAnnotation: function(annotation, annotations) {
     var nextId = '';
     var nextAnno = annotation;
-    var targetAnno = null;
-    
-    if (nextAnno.on['@type'] !== 'oa:Annotation') {
-      return annotation;
-    }
+    var targetAnno = annotation;
     
     while(nextAnno) {
       //console.log('nextAnno: ');
       //console.dir(nextAnno);
-      
+
       if (nextAnno.on['@type'] === 'oa:Annotation') {
         nextId = nextAnno.on.full;
         nextAnno = null;
@@ -99,12 +95,12 @@ export default {
     return targetAnno;
   },
   
-  getFinalTargetCanvasIds(annotation) {
+  getFinalTargetCanvasIds(annotation, annotations) {
     const canvasIds = [];
     let targetAnno = null;
     
     if (annotation['@type'] === 'oa:Annotation') {
-      targetAnno = this.findFinalTargetAnnotation(annotation, this.annotationsList);
+      targetAnno = this.findFinalTargetAnnotation(annotation, annotations);
     } else {
       targetAnno = annotation;
     }

@@ -55,9 +55,7 @@ export default class FirebaseProxy {
     return dfd;
   }
   
-  addAnno(annotation, layerId) {
-    var canvasIds = annoUtil.getFinalTargetCanvasIds(annotation);
-    var canvasId = canvasIds[0];
+  addAnno(annotation, canvasId, layerId) {
     var ref = firebase.database().ref('annotations');
     var annoObj = { 
       canvasId: canvasId,

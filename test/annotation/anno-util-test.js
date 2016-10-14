@@ -20,8 +20,17 @@ describe('getFinalTargetCanvasIds', function() {
       on: { type: 'anno', targetId: 'anno1'} });
     const anno3 = util.createAnnotation({ id: 'anno3',
       on: { type: 'anno', targetId: 'anno2'} });
+    const annos = [anno1, anno2, anno2];
       
-    let canvasIds = annoUtil.getFinalTargetCanvasIds(anno1);
+    let canvasIds = annoUtil.getFinalTargetCanvasIds(anno1, annos);
+    expect(canvasIds.length).to.equal(1);
+    expect(canvasIds[0]).to.equal('canvas1');
+    
+    canvasIds = annoUtil.getFinalTargetCanvasIds(anno2, annos);
+    expect(canvasIds.length).to.equal(1);
+    expect(canvasIds[0]).to.equal('canvas1');
+    
+    canvasIds = annoUtil.getFinalTargetCanvasIds(anno3, annos);
     expect(canvasIds.length).to.equal(1);
     expect(canvasIds[0]).to.equal('canvas1');
   });

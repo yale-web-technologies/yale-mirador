@@ -156,16 +156,8 @@ class AnnotationCache {
     return this.deleteAnnotationsPerCanvas(canvasId);
   }
   
-  invalidateAnnotation(annotation) {
-    const canvasIdSet = new Set();
-    const targetCanvasIds = annoUtil.getFinalTargetCanvasIds(annotation);
-    
-    for (let canvasId of targetCanvasIds) {
-      canvasIdSet.add(canvasId);
-    }
-    for (let canvasId of canvasIdSet) {
-      this.invalidateCanvasId(canvasId);
-    }
+  invalidateAnnotation(annotation, annotations) {
+    this.invalidateAnnotationId(annotation['@id']);
   }
   
   invalidateAnnotationId(annotationId) {
@@ -173,9 +165,10 @@ class AnnotationCache {
     const proxyMgr = getMiradorProxyManager();
     const canvasIdSet = new Set();
     for (let windowProxy of proxyMgr.getAllWindowProxies()) {
-      for (let annotation of windowProxy.getAnnotationsList()) {
+      let annotations = windowProxy.getAnnotationsList();
+      for (let annotation of annotations) {
         if (annotation['@id'] === annotationId) {
-          const targetCanvasIds = annoUtil.getFinalTargetCanvasIds(annotation);
+          const targetCanvasIds = annoUtil.getFinalTargetCanvasIds(annotation, annotations);
           console.log('targetCanvasIds: ' + targetCanvasIds);
           for (let canvasId of targetCanvasIds) {
             canvasIdSet.add(canvasId);

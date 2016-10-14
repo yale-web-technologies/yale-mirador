@@ -52,7 +52,10 @@ export default class YaleDemoEndpoint extends YaleEndpointBase {
     var annoId = Mirador.genUUID();
     annotation['@id'] = annoId;
     
-    var fbKey = this.fbProxy.addAnno(annotation, layerId);
+    var canvasIds = annoUtil.getFinalTargetCanvasIds(annotation, this.annotationsList);
+    var canvasId = canvasIds[0];
+    
+    var fbKey = this.fbProxy.addAnno(annotation, canvasId, layerId);
     this.fbKeyMap[annoId] = fbKey;
 
     if (typeof successCallback === 'function') {
