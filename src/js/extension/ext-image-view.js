@@ -20,7 +20,7 @@
       console.log('w ratio: ' + widthRatio);
       const heightRatio = shapeWH.y / viewportBounds.height;
       console.log('h ratio: ' + heightRatio);
-      const zoomFactor = 1.0 / Math.max(widthRatio, heightRatio) * 0.8;
+      const zoomFactor = 1.0 / Math.max(widthRatio, heightRatio) * 0.75;
       console.log('zoomFactor: ' + zoomFactor);
       
       viewport.zoomBy(zoomFactor);
@@ -53,7 +53,7 @@
       var visibleTop = viewportBounds.y;
       var visibleBottom = viewportBounds.y + viewportBounds.height;
 
-      var padding = 0.05 / viewport.getZoom();
+      var padding = 0.08 / viewport.getZoom();
       var panX = 0;
       var panY = 0;
 
