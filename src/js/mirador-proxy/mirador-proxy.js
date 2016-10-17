@@ -36,6 +36,10 @@ export default class MiradorProxy {
     return new WindowProxy(this.getFirstWindow());
   }
   
+  getEndPoint() {
+    return this.getFirstWindowProxy().getEndPoint();
+  }
+  
   publish() {
     const eventEmitter = this.mirador.viewer.eventEmitter;
     let args = Array.from(arguments);
