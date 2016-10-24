@@ -77,6 +77,12 @@ and because "Yale Extension" depends on it.
 
 ### Parameters
 
+#### Via Cookies
+* `loggedIn`: `'true'` or `'false'`
+* `isEditor`: `'true'` or `'false'`
+
+#### Via HTML
+
 See `example/index.html` for the HTML required to run the app.
 In addition to the IDs and classes of the HTML elements,
 there are some parameters that must be passed through the `#viewer_template`
@@ -87,7 +93,17 @@ element:
 * `data-room-id`: ID of the "room" (or a project). Some settings (e.g. tagHierarchy) are defined per room. The host should 
 figure out and manage the room IDs.
 
-Server settings data from `data-settings-url`:
+Optional (only when requested via the URL):
+* `data-canvas-id`: e.g. `"http://manifests.ydc2.yale.edu/LOTB/canvas/bv11"`
+* `data-toc-tags`: e.g. `"chapter22,scene2"`
+* `data-layer-ids`: e.g. `"http://mirador-annotations-lotb.herokuapp.com/layers/Tibetan,http://mirador-annotations-lotb.herokuapp.com/layers/English"`
+
+#### Via API
+
+The client construct a URL `API_URL?room_id=ROOM_ID`
+where `API_URL` is `data-settings-url` and `ROOM_ID` is `data-room-id` from above.
+
+An example of the response from the API:
 ```
 {
   {
@@ -97,6 +113,10 @@ Server settings data from `data-settings-url`:
   };
 }
 ```
+
+`buildPath` is the absolute URL root path under which all Yale-Mirador assets 
+can be referenced.
+(e.g. `/sites/all/modules/mirador-project/yale-mirador`) 
 
 ## Version String
 Webpack generates (via [webpack-version-file-plugin](https://github.com/mvanede/webpack-version-file-plugin))
