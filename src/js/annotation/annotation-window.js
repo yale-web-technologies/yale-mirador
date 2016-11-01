@@ -6,7 +6,13 @@ import session from '../session';
 import { getState, setState } from '../state.js';
 
 export default class {
+  
+  /**
+   * @returns {Promise}
+   */
   constructor(options) {
+    const _this = this;
+
     jQuery.extend(this, {
       id: null, // annotation window ID
       miradorId: null,
@@ -16,10 +22,18 @@ export default class {
       initialTocTags: null
     }, options);
 
-    this.init();
+    return new Promise(function(resolve, reject) {
+      _this.init().then(function() {
+        resolve(_this);
+      });
+    });
   }
 
+  /**
+   * @returns {Promise}
+   */
   init() {
+    const _this = this;
     this.miradorProxy = getMiradorProxyManager().getMiradorProxy(this.miradorId);
     if (!this.id) {
       this.id = Mirador.genUUID();
@@ -34,8 +48,9 @@ export default class {
     this.placeholder = this.element.find('.placeholder');
     this.placeholder.text('Loading...').show();
     
-    this.reload();
-    this.bindEvents();
+    return this.reload().then(function() {
+      _this.bindEvents();
+    });
   }
   
   initMenuTagSelector() {
@@ -72,8 +87,7 @@ export default class {
 
   reload() {
     console.log('AnnotationWindow#reload');
-    var _this = this;
-    var layerDfd = null, menuTagDfd = null;
+    const _this = this;
 
     this.placeholder.hide();
 
@@ -92,26 +106,43 @@ export default class {
     } else {
       this.element.find('.annowin_menu_tag_row').hide();
     }
-
-    if (this.endpoint.getAnnotationLayers().length > 0) {
-      if (this.layerSelector.isLoaded()) {
-        layerDfd = jQuery.Deferred().resolve();
+    
+    const layersPromise = new Promise(function(resolve, reject) {
+      if (_this.endpoint.getAnnotationLayers().length > 0) {
+        if (_this.layerSelector.isLoaded()) {
+          resolve();
+        } else {
+          _this.layerSelector.init().then(function() {
+            resolve();
+          });
+        }
       } else {
-        layerDfd = this.layerSelector.init();
+        reject();
       }
-    } else {
-      layerDfd = jQuery.Deferred().reject();
-    }
-    
-    if (this.endpoint.getCanvasToc()) {
-      menuTagDfd = this.menuTagSelector.reload();
-    } else {
-      menuTagDfd = jQuery.Deferred().resolve();
-    }
-    
-    jQuery.when(layerDfd, menuTagDfd).done(function() {
-      _this.updateList();
     });
+    
+    const tocPromise = new Promise(function(resolve, reject) {
+      if (_this.endpoint.getCanvasToc()) {
+        _this.menuTagSelector.reload().then(function() {
+          resolve();
+        });
+      } else {
+        reject();
+      }
+    });
+    
+    return Promise.all([layersPromise, tocPromise]).then(function() {
+      _this.updateList();
+      return _this;
+    });
+    
+    /*
+    return new Promise(function(resolve, reject) {
+      jQuery.when(layerDfd, menuTagDfd).done(function() {
+        _this.updateList();
+        resolve();
+      });
+    });*/
   }
   
   updateList() {
@@ -149,11 +180,11 @@ export default class {
     })[0];
   }
   
-  highlightFocusedAnnotation(annotation) {
+  highlightAnnotation(annoId) {
     this.listElem.find('.annowin_anno').each(function(index, value) {
       var annoElem = jQuery(value);
-      var annoID = annoElem.data('annotationId');
-      if (annoID === annotation['@id']) {
+      var curAnnoId = annoElem.data('annotationId');
+      if (curAnnoId === annoId) {
         annoElem.addClass('ym_anno_selected');
       } else {
         annoElem.removeClass('ym_anno_selected');
@@ -197,6 +228,22 @@ export default class {
       //scrollTop: annoElem.position().top + this.listElem.scrollTop()
       scrollTop: annoElem.position().top + this.listElem.position().top + this.element.scrollTop()
     }, 250);
+  }
+  
+  scrollToAnnotation(annoId) {
+    console.log('AnnotationWindow#scrollToAnnotation annoId: ' + annoId);
+    const _this = this;
+    let found = false;
+    
+    this.listElem.find('.annowin_anno').each(function(index, value) {
+      const elem = $(value);
+      if (elem.data('annotationId') === annoId) {
+        found = true;
+        _this.scrollToElem(elem);
+        return false;
+      }
+    });
+    return found;
   }
   
   clearHighlights() {

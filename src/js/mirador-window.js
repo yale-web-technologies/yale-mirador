@@ -26,6 +26,7 @@ class MiradorWindow {
       const htmlOptions = _this._parseHtmlOptions();
       const miradorInstanceId = Mirador.genUUID();
       
+      _this._miradorId = miradorInstanceId;
       _this._miradorConfig = _this._buildMiradorConfig(serverSettings, 
         htmlOptions, miradorInstanceId);
 
@@ -207,6 +208,11 @@ class MiradorWindow {
         endpoint.parseAnnotations();
       }
       jQuery.publish('YM_READY_TO_RELOAD_ANNO_WIN');
+    });
+    
+    miradorProxy.subscribe('YM_ANNOWIN_ANNO_SHOW', function(event, windowId, annoId) {
+      console.log('MiradorWindow SUB YM_ANNOWIN_ANNO_SHOW windowId: ' + windowId  + ', annoId: ' + annoId);
+      _this.grid.showAnnotation(_this._miradorId, windowId, annoId);
     });
   }
 }

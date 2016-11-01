@@ -286,7 +286,7 @@ export default class YaleEndpointBase {
 
   // Converts OA Annotation to endpoint format
   getAnnotationInEndpoint(oaAnnotation) {
-    var annotation = {
+    const annotation = {
       '@id': oaAnnotation['@id'],
       '@type': oaAnnotation['@type'],
       '@context': oaAnnotation['@context'],
@@ -305,10 +305,19 @@ export default class YaleEndpointBase {
   
   parseAnnotations() {
     //this.annotationsList = getMiradorProxyManager().getFirstWindowProxy().getAnnotationsList();
-    var spec = getMiradorWindow().getConfig().extension.tagHierarchy;
+    const spec = getMiradorWindow().getConfig().extension.tagHierarchy;
     this.canvasToc = new CanvasToc(spec, this.annotationsList);
     console.log('YaleEndpoint#parseAnnotations canvasToc:');
     console.dir(this.canvasToc.annoHierarchy);
+  }
+  
+  findAnnotationById(annoId) {
+    for (let anno of this.annotationsList) {
+      if (anno['@id'] === annoId) {
+        return anno;
+      }
+    }
+    return null;
   }
   
   _setEndpoint(annotations) {

@@ -12,14 +12,17 @@ export default class {
     this.element = jQuery('#' + rootElementId);
     this.miradorProxyManager = getMiradorProxyManager();
     this.annotationListRenderer = new AnnotationListRenderer();
+    
+    this._annotationWindows = {};
+    
     this.initLayout();
     this.bindEvents();
   }
 
   // GoldenLayout
   initLayout() {
-    var _this = this;
-    var config = {
+    const _this = this;
+    const config = {
       settings: {
         hasHeaders: true,
         showPopoutIcon: false,
@@ -43,23 +46,25 @@ export default class {
     this.layout = new GoldenLayout(config, this.element);
     
     this.layout.registerComponent('Mirador', function (container, componentState) {
-      /*
-      var template = Handlebars.compile(jQuery('#viewer_template').html());
-      container.getElement().html(template({ id: 'viewer' }));
-      */
       const id = componentState.miradorId;
       const template = Handlebars.compile(jQuery('#viewer_template').html());
       container.getElement().html(template({ id: id }));
     });
     
     this.layout.registerComponent('Annotations', function (container, componentState) {
-      var id = componentState.windowId;
-      var appendTo = jQuery('<div/>').attr('id', id);
+      const id = componentState.windowId;
+      const appendTo = jQuery('<div/>').attr('id', id);
       container.getElement().html(appendTo[0].outerHTML);
     });
 
     this.layout.on('stateChanged', function (e) {
       console.log('GoldenLayout stateChanged');
+      /*
+      jQuery.each(arguments, function(index, arg){
+        console.log('Arg ' + index + ':');
+        console.dir(arg);
+      });
+      */
       jQuery.each(_this.miradorProxyManager.getMiradorProxies(), function(key, miradorProxy) {
         miradorProxy.publish('resizeMirador');
       });
@@ -77,8 +82,8 @@ export default class {
   
   addMiradorWindow(miradorId) {
     console.log('Grid#addMiradorWindow');
-    var windowId = Mirador.genUUID();
-    var itemConfig = {
+    const windowId = Mirador.genUUID();
+    const itemConfig = {
       type: 'component',
       componentName: 'Mirador',
       componentState: { miradorId: miradorId }
@@ -88,27 +93,71 @@ export default class {
   
   addWindow(options) {
     console.log('Grid#addWindow');
-    var windowId = Mirador.genUUID();
-    var itemConfig = {
+    const _this = this;
+    const windowId = Mirador.genUUID();
+    const itemConfig = {
       type: 'component',
       componentName: 'Annotations',
       componentState: { windowId: windowId }
     };
     this.layout.root.contentItems[0].addChild(itemConfig);
     
-    new AnnotationWindow({ appendTo: jQuery('#' + windowId),
+    return new AnnotationWindow({ appendTo: jQuery('#' + windowId),
       annotationListRenderer: this.annotationListRenderer,
       miradorId: options.miradorId,
       initialLayerId: options.layerId || null,
       initialTocTags: options.tocTags || null
+    }).then(function(window) {
+      _this._annotationWindows[windowId] = window;
+      return window;
+    });
+  }
+
+  bindEvents() {
+    const _this = this;
+    
+    this.layout.on('itemDestroyed', function(item) {
+      console.log('itemDestroyed component: ' + item.componentName);
+      console.dir(item);
+
+      if (item.componentName == 'Annotations') {
+        const windowId = item.config.componentState.windowId;
+        console.log('Annotatin window ' + windowId);
+        delete _this._annotationWindows[windowId];
+      }
+    });
+    
+    jQuery.subscribe('YM_ADD_WINDOW', function(event, options) {
+      _this.addWindow(options || {});
     });
   }
   
-  bindEvents() {
-    var _this = this;
+  showAnnotation(miradorId, windowId, annoId) {
+    console.log('MiradorWindow#showAnnotation miradorId: ' + miradorId + 
+      ', windowId: ' + windowId + ', annoId: ' + annoId);
+    const miradorProxy = this.miradorProxyManager.getMiradorProxy(miradorId);
+    const endpoint = miradorProxy.getEndPoint();
+    const annotation = endpoint.findAnnotationById(annoId);
+    let found = false;
     
-    jQuery.subscribe('YM_ADD_WINDOW', function (event, options) {
-      _this.addWindow(options || {});
+    jQuery.each(this._annotationWindows, function(key, annoWindow) {
+      let success = annoWindow.scrollToAnnotation(annoId);
+      if (success) {
+        annoWindow.highlightAnnotation(annoId);
+      }
+      found = found || success;
     });
+    if (!found) {
+      if (annotation) {
+        this.addWindow({
+          miradorId: miradorId,
+          layerId: annotation.layerId
+        }).then(function(annoWindow) {
+          annoWindow.scrollToAnnotation(annoId);
+        });
+      } else {
+        console.log('ERROR Grid#showAnnotation annotation not found from endpoint, id: ' + annoId);
+      }
+    }
   }
 }

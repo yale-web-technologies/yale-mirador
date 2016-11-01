@@ -51,9 +51,8 @@ export default class AnnotationEditor {
       parent: this.layerSelectorContainer,
       endpoint: this.endpoint
     });
-    var dfd = this.layerSelector.init();
     
-    dfd.done(function() {
+    this.layerSelector.init().then(function() {
       if (_this._mode === 'create') {
         title.text('Create Annotation');
       } else { // update

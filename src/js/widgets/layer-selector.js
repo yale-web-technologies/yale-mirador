@@ -14,20 +14,25 @@ export default class {
       initialLayerId: null
     }, options);
   }
-  
+
+  /**
+   * @returns {Promise}
+   */
   init() {
     this._isLoaded = false;
     this.selector = new Selector({
       appendTo: this.parent
     });
     this.bindEvents();
-    return this.reload(); // return a Deferred object.
+    return this.reload();
   }
   
+  /**
+   * @returns {Promise}
+   */
   reload() {
     console.log('LayerSelector#reload');
     var _this = this;
-    var dfd = jQuery.Deferred();
     var layers = this.endpoint.getAnnotationLayers();
     
     this.selector.empty();
@@ -36,14 +41,15 @@ export default class {
       _this.selector.addItem(value.label, value['@id']);
     });
     
-    setTimeout(function() {
-      if (layers.length > 0) {
-        _this.selector.val(_this.initialLayerId || layers[0]['@id'], true);
-        _this._isLoaded = true;
-      }
-      dfd.resolve();
-    }, 0);
-    return dfd;
+    return new Promise(function(resolve, reject) {
+      setTimeout(function() {
+        if (layers.length > 0) {
+          _this.selector.val(_this.initialLayerId || layers[0]['@id'], true);
+          _this._isLoaded = true;
+        }
+        resolve();
+      }, 0);
+    });
   }
   
   val(value) {

@@ -29,30 +29,27 @@ export default class {
   
   reload() {
     var _this = this;
-    var dfd = jQuery.Deferred();
     var toc = this.endpoint.getCanvasToc();
     var annoHierarchy = toc ? toc.annoHierarchy : null;
     
-    if (!annoHierarchy) {
-      dfd.reject();
-      return dfd;
-    }
-    
-    this.selector.empty();
-    
-    var layers = [];
-    
-    var menu = this.buildMenu(annoHierarchy);
-    //console.log('MenuTagSelector menu: ' + JSON.stringify(menu, null, 2));
-    
-    this.selector.setItems(menu);
-    
-    setTimeout(function() {
-      const value = (_this.initialTags && _this.initialTags.length > 0) ? _this.initialTags.join('|') : 'all';
-      _this.selector.val(value, true);
-      dfd.resolve();
-    }, 0);
-    return dfd;
+    return new Promise(function(resolve, reject) {
+      if (!annoHierarchy) {
+        reject();
+      }
+      _this.selector.empty();
+      
+      var layers = [];
+      var menu = _this.buildMenu(annoHierarchy);
+      //console.log('MenuTagSelector menu: ' + JSON.stringify(menu, null, 2));
+      
+      _this.selector.setItems(menu);
+      
+      setTimeout(function() {
+        const value = (_this.initialTags && _this.initialTags.length > 0) ? _this.initialTags.join('|') : 'all';
+        _this.selector.val(value, true);
+        resolve();
+      }, 0);
+    });
   }
   
   val(value) {
