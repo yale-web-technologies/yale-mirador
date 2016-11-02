@@ -135,14 +135,6 @@ export default class {
       _this.updateList();
       return _this;
     });
-    
-    /*
-    return new Promise(function(resolve, reject) {
-      jQuery.when(layerDfd, menuTagDfd).done(function() {
-        _this.updateList();
-        resolve();
-      });
-    });*/
   }
   
   updateList() {
