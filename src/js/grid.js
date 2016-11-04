@@ -154,6 +154,8 @@ export default class {
           layerId: annotation.layerId
         }).then(function(annoWindow) {
           annoWindow.scrollToAnnotation(annoId);
+        }).catch(function(reason) {
+          console.log('ERROR Grid#showAnnotation addWindow failed <- ' + reason);
         });
       } else {
         console.log('ERROR Grid#showAnnotation annotation not found from endpoint, id: ' + annoId);

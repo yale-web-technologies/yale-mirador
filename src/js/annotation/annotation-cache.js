@@ -27,6 +27,9 @@ class AnnotationCache {
         }).then(function() {
           _this._valid = true;
           resolve(_this);
+        }).catch(function(reason) {
+          console.log('ERROR AnnotationCache#constructor promise rejected - ' + reason);
+          reject(_this);
         });
       } else {
         reject(_this);

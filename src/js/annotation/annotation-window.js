@@ -25,6 +25,8 @@ export default class {
     return new Promise(function(resolve, reject) {
       _this.init().then(function() {
         resolve(_this);
+      }).catch(function(reason) {
+        reject('AnnotationWindow#init failed - ' + reason);
       });
     });
   }
@@ -50,6 +52,8 @@ export default class {
     
     return this.reload().then(function() {
       _this.bindEvents();
+    }).catch(function(reason) {
+      throw 'AnnotationWindow#init promise failed - ' + reason;
     });
   }
   
@@ -114,10 +118,12 @@ export default class {
         } else {
           _this.layerSelector.init().then(function() {
             resolve();
+          }).catch(function(reason) {
+            reject('layerSelector.init failed - ' + reason);
           });
         }
       } else {
-        reject();
+        reject('No layers from endpoint');
       }
     });
     
@@ -125,9 +131,11 @@ export default class {
       if (_this.endpoint.getCanvasToc()) {
         _this.menuTagSelector.reload().then(function() {
           resolve();
+        }).catch(function(reason) {
+          reject('menuTagSelector.reload failed - ' + reason);
         });
       } else {
-        reject();
+        resolve();
       }
     });
     
@@ -228,7 +236,7 @@ export default class {
     let found = false;
     
     this.listElem.find('.annowin_anno').each(function(index, value) {
-      const elem = $(value);
+      const elem = jQuery(value);
       if (elem.data('annotationId') === annoId) {
         found = true;
         _this.scrollToElem(elem);

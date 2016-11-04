@@ -25,6 +25,8 @@ export default class YaleEndpointBase {
     const _this = this;
     getAnnotationCache().then(function(instance) {
       _this._cache = instance;
+    }).catch(function(reason) {
+      console.log('ERROR YaleEndpointBase#init getAnnotationCache failed');
     });
   }
   
@@ -104,11 +106,11 @@ export default class YaleEndpointBase {
       _this._search(canvasId).then(function(annotations) {
         progressPane.hide();
         resolve(annotations);
-      }).catch(function(e) {
-        console.log('ERROR _search - ' + e);
+      }).catch(function(reason) {
+        console.log('ERROR _search - ' + reason);
         progressPane.hide();
         errorPane.show('annotations');
-        reject();
+        reject('_search failed - ' + reason);
       });
     });
   }
@@ -195,10 +197,13 @@ export default class YaleEndpointBase {
     const _this = this;
     
     return new Promise(function(resolve, reject) {
-      const layersCallback = function(layers) {
+      const successCallback = function(layers) {
         _this._annotationLayers = layers;
         _this._cache.setLayers(layers);
         resolve(layers);
+      };
+      const errorCallback = function(reason) {
+        reject('_getLayers failed - ' + reason);
       };
       
       if (_this._cache) {
@@ -209,15 +214,15 @@ export default class YaleEndpointBase {
             resolve(layers);
           } else {
             console.log('MISSED CACHE - layers empty');
-            _this._getLayers().then(layersCallback);
+            _this._getLayers().then(successCallback).catch(errorCallback);
           }
         }).catch(function(e) { // error getting layers from cache
           console.log('MISSED CACHE - layers error');
-          _this._getLayers().then(layersCallback);
+          _this._getLayers().then(successCallback).catch(errorCallback);
         });
       } else {
         console.log('MISSED CACHE - layers no cache');
-        _this._getLayers().then(layersCallback);
+        _this._getLayers().then(successCallback).catch(errorCallback);
       }
     });
   }

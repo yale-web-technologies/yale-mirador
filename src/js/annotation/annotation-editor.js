@@ -71,6 +71,8 @@ export default class AnnotationEditor {
         _this.initTinyMce();
         _this.bindEvents();
       }, 0);
+    }).catch(function(reason) {
+      console.log('ERROR AnnotationEditor#reload layerSelector.init failed - ' + reason);
     });
   }
   
