@@ -26,6 +26,12 @@ npm install  # Install node modules for the submodule mirador
 Note that the "Yale Core" is defined as a git submodule of This
 project, under `submodules/mirador`. 
 
+## update
+```
+git pull --recurse-submodules
+```
+And do `npm install` as above in case dependency changed.
+
 ## Bulid
 
 ```
