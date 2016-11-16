@@ -16,7 +16,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'dist/mirador/mirador.js',
+      'dist/mirador/mirador.min.js',
       'lib/js.cookie.js',
       'lib/semantic/dist/semantic.min.js',
       'lib/goldenlayout/goldenlayout.min.js',
