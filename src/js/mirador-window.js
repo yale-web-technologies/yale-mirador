@@ -136,7 +136,10 @@ class MiradorWindow {
           mode: 'create'
         }
       },
-      extension: {}
+      extension: {
+        tagHierarchy: serverSettings.tagHierarchy || null,
+        groupId: htmlOptions.groupId || null
+      }
     });
     
     config.windowSettings.displayLayout = false;
@@ -145,9 +148,6 @@ class MiradorWindow {
       config.windowSettings.canvasControls.annotations.annotationCreation = false;
     }
 
-    if (serverSettings.tagHierarchy) {
-      config.extension.tagHierarchy = serverSettings.tagHierarchy;
-    }
     //console.log('MiradorWindow config: ' + JSON.stringify(config, null, 2));
     return config;
   }
@@ -162,6 +162,8 @@ class MiradorWindow {
     const layerIdsStr = elem.attr('data-layer-ids') || '';
     
     options.manifestUri = elem.attr('data-manifest-url');
+    options.groupId = elem.attr('data-group-id'); // group or project ID
+    
     options.canvasId = elem.attr('data-canvas-id') || '';
     options.tocTags = tocTagsStr ? tocTagsStr.split(',') : [];
     options.layerIds = layerIdsStr ? layerIdsStr.split(',') : [];

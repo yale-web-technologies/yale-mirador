@@ -150,7 +150,12 @@ export default class YaleEndpoint extends YaleEndpointBase {
     console.log('YaleEndpoint#_getLayers');
     const _this = this;
     return new Promise(function(resolve, reject) {
-      const url = _this.prefix + '/layers';
+      const groupId = getMiradorWindow().getConfig().extension.groupId;
+      let url = _this.prefix + '/layers';
+      
+      if (groupId) {
+        url += '?group_id=' + groupId;
+      }
       
       jQuery.ajax({
         url: url,
