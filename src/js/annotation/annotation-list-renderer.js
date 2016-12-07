@@ -206,6 +206,7 @@ export default class AnnotationListRenderer {
       options.annotationsList);
     
     annoElem.click(function(event) {
+      console.log('Clicked: Annotation ' + annotation['@id']);
       annoWin.clearHighlights();
       annoWin.highlightAnnotation(annotation['@id']);
       annoWin.miradorProxy.publish('ANNOTATION_FOCUSED', [annoWin.id, finalTargetAnno]);
