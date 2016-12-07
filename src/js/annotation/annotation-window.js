@@ -1,7 +1,7 @@
+import {annoUtil} from '../import';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import MenuTagSelector from '../widgets/menu-tag-selector';
 import LayerSelector from '../widgets/layer-selector';
-import annoUtil from './anno-util';
 import session from '../session';
 import { getState, setState } from '../state.js';
 

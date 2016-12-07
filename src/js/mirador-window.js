@@ -1,7 +1,7 @@
+import {annoUtil} from './import';
 import session from './session';
 import getMiradorProxyManager from './mirador-proxy/mirador-proxy-manager';
 import WindowProxy from './mirador-proxy/window-proxy';
-import annoUtil from './annotation/anno-util';
 import getModalAlert from './widgets/modal-alert';
 
 // JavaScript code for the browser window that embeds Mirador.

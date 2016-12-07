@@ -1,4 +1,4 @@
-import annoUtil from './anno-util';
+import {annoUtil} from '../import';
 import AnnotationEditor from './annotation-editor';
 
 /**

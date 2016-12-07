@@ -1,5 +1,5 @@
+import {annoUtil} from '../import';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
-import annoUtil from './anno-util';
 
 export default function getAnnotationCache() {
   if (!instance) {
@@ -171,7 +171,8 @@ class AnnotationCache {
       let annotations = windowProxy.getAnnotationsList();
       for (let annotation of annotations) {
         if (annotation['@id'] === annotationId) {
-          const targetCanvasIds = annoUtil.getFinalTargetCanvasIds(annotation, annotations);
+          const targetCanvasIds = annoUtil.getTargetCanvasIds(annotation, {
+            annotations: annotations});
           console.log('targetCanvasIds: ' + targetCanvasIds);
           for (let canvasId of targetCanvasIds) {
             canvasIdSet.add(canvasId);

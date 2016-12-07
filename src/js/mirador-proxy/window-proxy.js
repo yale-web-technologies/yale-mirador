@@ -15,6 +15,10 @@ export default class WindowProxy {
     return this.window.endpoint;
   }
   
+  getCanvases() {
+    return this.window.manifest.getCanvases();
+  }
+  
   getAnnotationsList() {
     return this.window.annotationsList;
   }

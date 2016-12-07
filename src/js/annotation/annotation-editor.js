@@ -1,6 +1,6 @@
+import {annoUtil} from '../import';
 import LayerSelector from '../widgets/layer-selector';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
-import annoUtil from '../annotation/anno-util';
 
 export default class AnnotationEditor {
   constructor(options) {
@@ -59,7 +59,7 @@ export default class AnnotationEditor {
         title.text('');
       }
       if (_this.annotation) {
-        _this.textArea.val(annoUtil.getAnnotationText(_this.annotation));
+        _this.textArea.val(annoUtil.getText(_this.annotation));
         if (_this.annotation.layerId) {
           _this.layerSelector.val(_this.annotation.layerId);
         }
@@ -185,7 +185,7 @@ export default class AnnotationEditor {
     this._loadedAnnotation = annotation;
     
     // Reload the editor with the contents of the annotation
-    const content = annoUtil.getAnnotationText(annotation);
+    const content = annoUtil.getText(annotation);
     this.layerSelector.val(annotation.layerId);
     this.getEditor().setContent(content);
     
