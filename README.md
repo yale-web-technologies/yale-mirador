@@ -1,20 +1,19 @@
 [![Build Status](https://travis-ci.org/yale-web-technologies/yale-mirador.svg?branch=master)](https://travis-ci.org/yale-web-technologies/yale-mirador) [![Dependency Status](https://gemnasium.com/badges/github.com/yale-web-technologies/yale-mirador.svg)](https://gemnasium.com/github.com/yale-web-technologies/yale-mirador)
 
 # Yale Mirador Extension
-This is an extension to [IIIF/Mirador](https://github.com/IIIF/mirador).
-Hopefully much of the extended functionality will be merged into the IIIF/Mirador core
-in the future.
+This projects embeds [Mirador](https://github.com/IIIF/mirador) and also
+contains some modifications and extensions to it.
 
 ## Definitions
 Some clarification of the terms we will be using because
 it can get quite confusing:
 
-* **IIIF Mirador**: the "real" Mirador project and its code at https://github.com/IIIF/mirador
+* **IIIF Mirador**: the original Mirador project and its code at https://github.com/IIIF/mirador
 * **Yale Core**: the Yale fork of Mirador with the same structure as "IIIF Mirador" but with the minimal code modifications we had to made to make it work with the embedding environment. (https://github.com/yale-web-technologies/mirador)
 * **Yale Extension**: this project. It has its own project structure and includes additional JavaScript and styles added on top of "Mirador Core".
 
-## Download and Setup
-```
+## Download and Initial Setup
+```bash
 git clone --recursive git@github.com:yale-web-technologies/yale-mirador.git
 cd yale-mirador
 npm install  # Install node modules for yale-mirador
@@ -26,7 +25,7 @@ npm install  # Install node modules for the submodule mirador
 Note that the "Yale Core" is defined as a git submodule of This
 project, under `submodules/mirador`. 
 
-## update
+## Update
 ```
 git pull --recurse-submodules
 ```
@@ -37,7 +36,7 @@ And do `npm install` as above in case dependency changed.
 ```
 npm run build
 ```
-It runs `grunt` for "Mirador" and `webpack` for "Yale Mirador", and
+It runs `grunt` for Mirador and `webpack` for Yale Extension, and
 creates output files in `dist/`. 
 
 To build them separately,
@@ -46,7 +45,7 @@ npm run build:mirador
 npm run build:yale-mirador
 ```
 
-## Running the example
+## Running the Example
 ```
 npm run start
 ```
@@ -68,7 +67,7 @@ npm run test
 ## Deploy
 
 ### Dependency
-See `package.json` for dependencies. Notably you should include
+See `package.json` for dependencies &ndash; note the version requirements. Notably you should include
 * [JavaScript Cookie](https://github.com/js-cookie/js-cookie)
 * [Semantic UI](http://semantic-ui.com/)
 * [Golden Layout](https://www.golden-layout.com/)
@@ -99,10 +98,13 @@ element:
 * `data-room-id`: ID of the "room" (or a project). Some settings (e.g. tagHierarchy) are defined per room. The host should 
 figure out and manage the room IDs.
 
-Optional (only when requested via the URL):
+Optional (only to load specific resources):
 * `data-canvas-id`: e.g. `"http://manifests.ydc2.yale.edu/LOTB/canvas/bv11"`
 * `data-toc-tags`: e.g. `"chapter22,scene2"`
 * `data-layer-ids`: e.g. `"http://mirador-annotations-lotb.herokuapp.com/layers/Tibetan,http://mirador-annotations-lotb.herokuapp.com/layers/English"`
+* `data-annotation-id`: ID of the annotation to load; e.g. "http://annotations.example.org/annotations/123"
+
+NOTE**(!)**: When optional parameters are passed, `data-canvas-id` is required.
 
 #### Via API
 
@@ -123,7 +125,3 @@ An example of the response from the API:
 `buildPath` is the absolute URL root path under which all Yale-Mirador assets 
 can be referenced.
 (e.g. `/sites/all/modules/mirador-project/yale-mirador`) 
-
-## Version String
-Webpack generates (via [webpack-version-file-plugin](https://github.com/mvanede/webpack-version-file-plugin))
-version.json under `dist/yale-mirador`.
