@@ -9,7 +9,6 @@ export default class {
     jQuery.extend(this, {
       selector: null,
       parent: null,
-      endpoint: null,
       changeCallback: null,
       initialLayerId: null
     }, options);
@@ -18,22 +17,21 @@ export default class {
   /**
    * @returns {Promise}
    */
-  init() {
+  init(layers) {
     this._isLoaded = false;
     this.selector = new Selector({
       appendTo: this.parent
     });
     this.bindEvents();
-    return this.reload();
+    return this.reload(layers);
   }
   
   /**
    * @returns {Promise}
    */
-  reload() {
+  reload(layers) {
     console.log('LayerSelector#reload');
     var _this = this;
-    var layers = this.endpoint.getAnnotationLayers();
     
     this.selector.empty();
     

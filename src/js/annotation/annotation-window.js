@@ -5,8 +5,8 @@ import LayerSelector from '../widgets/layer-selector';
 import session from '../session';
 import { getState, setState } from '../state.js';
 
-export default class {
-  
+export default class AnnotationWindow {
+
   /**
    * @returns {Promise}
    */
@@ -19,7 +19,8 @@ export default class {
       appnedTo: null,
       annotationListRenderer: null,
       initialLayerId: null,
-      initialTocTags: null
+      initialTocTags: null,
+      annotationId: null
     }, options);
 
     return new Promise(function(resolve, reject) {
@@ -34,23 +35,40 @@ export default class {
   /**
    * @returns {Promise}
    */
-  init() {
+  async init() {
     const _this = this;
+    let annosToShow = [];
+    
     this.miradorProxy = getMiradorProxyManager().getMiradorProxy(this.miradorId);
     if (!this.id) {
       this.id = Mirador.genUUID();
     }
     this.canvasWindow = this.miradorProxy.getFirstWindow(); // window that contains the canvas for the annotations
     this.endpoint = this.canvasWindow.endpoint;
+    this.explorer = await this.endpoint.getAnnotationExplorer();
     this.element = jQuery(template({}));
     this.appendTo.append(this.element);
     this.listElem = this.element.find('.annowin_list');
+    
+    if (!this.initialLayerId && this.annotationId) {
+      annosToShow = this.canvasWindow.annotationsList.filter(anno => anno['@id'] === _this.annotationId);
+      if (annosToShow.length > 0) {
+        this.initialLayerId = annosToShow[0].layerId;
+      }
+    }
+
     this.initLayerSelector();
     this.tempMenuRow = this.element.find('.annowin_temp_row');
     this.placeholder = this.element.find('.placeholder');
     this.placeholder.text('Loading...').show();
     
     return this.reload().then(function() {
+      if (annosToShow.length > 0) {
+        const finalTargetAnno = annoUtil.findFinalTargetAnnotation(annosToShow[0],
+          _this.canvasWindow.annotationsList);
+        _this.highlightAnnotations(annosToShow, 'SELECTED');
+        _this.miradorProxy.publish('ANNOTATION_FOCUSED', [_this.id, finalTargetAnno]);
+      }
       _this.bindEvents();
     }).catch(function(reason) {
       throw 'AnnotationWindow#init promise failed - ' + reason;
@@ -64,10 +82,10 @@ export default class {
     }
     this.menuTagSelector = new MenuTagSelector({
       parent: this.element.find('.menu_tag_selector_container'),
-      endpoint: this.endpoint,
+      annotationExplorer: this.explorer,
       initialTags: this.initialTocTags,
       changeCallback: function(value, text) {
-        console.log('Change/updateList from TOC selector');
+        console.log('Change from TOC selector: ', value);
         _this.updateList();
       }
     });
@@ -75,13 +93,13 @@ export default class {
   }
   
   initLayerSelector() {
-    var _this = this;
+    const _this = this;
     this.layerSelector = new LayerSelector({
       parent: this.element.find('.layer_selector_container'),
-      endpoint: this.endpoint,
+      annotationExplorer: this.explorer,
       initialLayerId: this.initialLayerId,
       changeCallback: function(value, text) {
-        console.log('Change/updateList from Layer selector');
+        console.log('Change from Layer selector: ', value);
         _this.currentLayerId = value;
         _this.updateList();
       }
@@ -103,32 +121,34 @@ export default class {
 
     var canvas = this.getCurrentCanvas();
     this.element.find('.title').text(canvas.label);
-    
-    if (this.endpoint.getCanvasToc()) {
+
+    if (this.explorer.getAnnotationToc()) {
       this.initMenuTagSelector();
       this.element.find('.annowin_menu_tag_row').show();
     } else {
       this.element.find('.annowin_menu_tag_row').hide();
     }
-    
     const layersPromise = new Promise(function(resolve, reject) {
-      if (_this.endpoint.getAnnotationLayers().length > 0) {
-        if (_this.layerSelector.isLoaded()) {
-          resolve();
-        } else {
-          _this.layerSelector.init().then(function() {
+      _this.explorer.getLayers().then(function(layers) {
+        console.log('xx 3', layers);
+        if (layers.length > 0) {
+          if (_this.layerSelector.isLoaded()) {
             resolve();
-          }).catch(function(reason) {
-            reject('layerSelector.init failed - ' + reason);
-          });
+          } else {
+            _this.layerSelector.init(layers).then(function() {
+              resolve();
+            }).catch(function(reason) {
+              reject('layerSelector.init failed - ' + reason);
+            });
+          }
+        } else {
+          reject('No layers from annotation explorer');
         }
-      } else {
-        reject('No layers from endpoint');
-      }
+      });
     });
     
     const tocPromise = new Promise(function(resolve, reject) {
-      if (_this.endpoint.getCanvasToc()) {
+      if (_this.explorer.getAnnotationToc()) {
         _this.menuTagSelector.reload().then(function() {
           resolve();
         }).catch(function(reason) {
@@ -154,9 +174,9 @@ export default class {
     options.annotationWindow = this;
     options.isEditor = session.isEditor();
     options.annotationsList = this.canvasWindow.annotationsList;
-    options.toc = this.endpoint.getCanvasToc();
+    options.toc = this.explorer.getAnnotationToc();
     options.selectedTags = ['all'];
-    if (this.endpoint.getCanvasToc()) {
+    if (this.explorer.getAnnotationToc()) {
       options.selectedTags = this.menuTagSelector.val().split('|');
     }
     options.isCompleteList = (options.selectedTags[0] === 'all'); // true if current window will show all annotations of a sortable list.
@@ -194,7 +214,8 @@ export default class {
 
   highlightAnnotations(annotations, flag) {
     const _this = this;
-    const klass = (flag == 'TARGETING' ? 'ym_anno_targeting' : 'ym_anno_targeted');
+    const klass = (flag === 'TARGETING' ? 'ym_anno_targeting' : 
+      (flag === 'TARGETED' ? 'ym_anno_targeted' : 'ym_anno_selected'));
     let firstMatch = true;
     
     this.listElem.find('.annowin_anno').each(function(index, value) {
@@ -326,7 +347,7 @@ export default class {
       
       const annotationsList = _this.canvasWindow.annotationsList;
       const layerId = _this.currentLayerId;
-      const toc = _this.endpoint.getCanvasToc();
+      const toc = _this.explorer.getAnnotationToc();
       
       if (toc) {
         const siblings = annoUtil.findTocSiblings(annotation, annotationsList, layerId, toc);

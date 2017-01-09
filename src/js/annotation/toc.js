@@ -1,4 +1,4 @@
-import annoUtil from './anno-util';
+import {annoUtil} from '../import';
 
 /**
  * A tag based table-of-contents structure for annotations.

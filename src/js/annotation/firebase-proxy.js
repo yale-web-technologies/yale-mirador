@@ -1,4 +1,4 @@
-import annoUtil from './anno-util';
+import {annoUtil} from '../import';
 
 export default class FirebaseProxy {
   constructor(settings) {

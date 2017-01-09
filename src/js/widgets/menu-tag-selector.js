@@ -6,7 +6,7 @@ export default class {
     jQuery.extend(this, {
       selector: null,
       parent: null,
-      endpoint: null,
+      annotationExplorer: null,
       changeCallback: null
     }, options);
     
@@ -29,7 +29,7 @@ export default class {
   
   reload() {
     var _this = this;
-    var toc = this.endpoint.getCanvasToc();
+    var toc = this.annotationExplorer.getAnnotationToc();
     var annoHierarchy = toc ? toc.annoHierarchy : null;
     
     return new Promise(function(resolve, reject) {

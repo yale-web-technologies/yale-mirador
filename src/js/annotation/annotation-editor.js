@@ -19,8 +19,11 @@ export default class AnnotationEditor {
     
     this._mode = options.mode; // "create", "update", or "merge"
 
+    console.log('EEE 1');
     this.init();
+    console.log('EEE 2');
     this.hide();
+    console.log('EEE 3');
   }
   
   init() {
@@ -39,20 +42,24 @@ export default class AnnotationEditor {
     }
   }
   
-  reload(parent) {
-    var _this = this;
+  async reload(parent) {
+    console.log('AnnotationEditor#reload parent:', parent);
+    const _this = this;
     
     parent.prepend(this.element);
-    var header = this.element.find('.header');
-    var title = header.find('.title');
+    const header = this.element.find('.header');
+    const title = header.find('.title');
     this.textArea = this.element.find('textarea');
     this.layerSelectorContainer = this.element.find('.layer_select');
     this.layerSelector = new LayerSelector({
-      parent: this.layerSelectorContainer,
-      endpoint: this.endpoint
+      parent: this.layerSelectorContainer
     });
     
-    this.layerSelector.init().then(function() {
+    console.log(1);
+    const layers = await this.endpoint.getLayers();
+    console.log(layers);
+    
+    this.layerSelector.init(layers).then(() => {
       if (_this._mode === 'create') {
         title.text('Create Annotation');
       } else { // update
@@ -101,10 +108,12 @@ export default class AnnotationEditor {
   
   // Called by Mirador core
   show(selector) {
+    console.log('selector: ', selector);
     if (selector) {
       this.reload(jQuery(selector));
     }
     this.element.show();
+    console.log('display: ', this.element.css('display'));
   }
   
   hide() {

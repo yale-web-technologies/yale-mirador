@@ -1,12 +1,10 @@
-import annoUtil from '../annotation/anno-util';
+import {annoUtil} from '../import';
 import session from '../session';
-import YaleEndpointBase from './yale-endpoint-base';
 import FirebaseProxy from './firebase-proxy';
 
 // Endpoint for FireBase containing dummy data for development/testing
-export default class YaleDemoEndpoint extends YaleEndpointBase {
+export default class YaleDemoEndpoint {
   constructor(options) {
-    super(options);
   }
 
   init() {

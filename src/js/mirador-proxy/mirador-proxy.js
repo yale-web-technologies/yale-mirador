@@ -24,6 +24,10 @@ export default class MiradorProxy {
     return this.getWorkspaceProxy().getWindowProxies();
   }
   
+  getWindowProxyById(windowId) {
+    return new WindowProxy(this.getWindowById(windowId));
+  }
+  
   getWindowById(windowId) {
     return this.getWorkspaceProxy().getWindowById(windowId);
   }

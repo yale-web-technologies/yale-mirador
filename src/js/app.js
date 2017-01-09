@@ -10,6 +10,7 @@ import './annotation/yale-endpoint';
 import './annotation/yale-demo-endpoint';
 import './annotation/annotation-editor';
 import './annotation/ym-annotation-selector';
+import getConfigFetcher from './config/config-fetcher';
 import Grid from './grid';
 import MainMenu from './widgets/main-menu';
 import getMiradorWindow from './mirador-window';
@@ -18,9 +19,30 @@ import './extension/interface';
 
 export default class App {
   constructor(element) {
-    console.log('App.constructor');
-    var mainMenu = new MainMenu();
-    var grid = new Grid(element);
-    getMiradorWindow().init({ mainMenu: mainMenu, grid: grid });
+    //console.log('App#constructor');
+    const viewerTemplateElem = jQuery('#\\{\\{id\\}\\}');
+    const configFetcher = getConfigFetcher();
+    const settingsFromHtml = configFetcher.fetchSettingsFromHtml(viewerTemplateElem);
+    const {apiUrl, projectId} = settingsFromHtml;
+    
+    configFetcher.fetchSettingsFromApi(apiUrl, projectId)
+    .catch(function(reason) {
+      alert('ERROR failed to retrieve server setting - ' + reason);
+    })
+    .then(function(settingsFromApi) {
+      console.log('Settings from API:', settingsFromApi);
+      const mainMenu = new MainMenu();
+      const grid = new Grid(element);
+      const settings = jQuery.extend(settingsFromHtml, settingsFromApi);
+      
+      getMiradorWindow().init({
+        mainMenu: mainMenu,
+        grid: grid,
+        settings: settings
+      });
+    })
+    .catch(function(reason) {
+      alert('ERROR failed to init Mirador - ' + reason);
+    });
   }
 }

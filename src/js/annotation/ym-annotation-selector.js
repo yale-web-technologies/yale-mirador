@@ -1,4 +1,4 @@
-import annoUtil from '../annotation/anno-util';
+import {annoUtil} from '../import';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 
 class YmAnnotationSelector {
@@ -191,7 +191,7 @@ class YmAnnotationSelector {
   
   createAnnoElem(annotation) {
     const _this = this;
-    const content = annoUtil.getAnnotationText(annotation);
+    const content = annoUtil.getText(annotation);
     const html = annotationTemplate({ content: content });
     const elem = jQuery(html).addClass('anno');
     

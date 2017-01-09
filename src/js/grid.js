@@ -91,6 +91,13 @@ export default class {
     this.layout.root.contentItems[0].addChild(itemConfig);
   }
   
+  addWindows(config) {
+    for (let windowConfig of config.windows) {
+      windowConfig.miradorId = config.miradorId;
+      this.addWindow(windowConfig);
+    }
+  }
+  
   addWindow(options) {
     console.log('Grid#addWindow');
     const _this = this;
@@ -106,7 +113,8 @@ export default class {
       annotationListRenderer: this.annotationListRenderer,
       miradorId: options.miradorId,
       initialLayerId: options.layerId || null,
-      initialTocTags: options.tocTags || null
+      initialTocTags: options.tocTags || null,
+      annotationId: options.annotationId || null
     }).then(function(window) {
       _this._annotationWindows[windowId] = window;
       return window;
@@ -129,6 +137,11 @@ export default class {
     
     jQuery.subscribe('YM_ADD_WINDOW', function(event, options) {
       _this.addWindow(options || {});
+    });
+    
+    jQuery.subscribe('YM_ADD_WINDOWS', function(event, config) {
+      console.log('Received YM_ADD_WINDOWS config:', config);
+      _this.addWindows(config);
     });
   }
   
