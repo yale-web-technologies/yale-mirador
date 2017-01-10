@@ -130,7 +130,6 @@ export default class AnnotationWindow {
     }
     const layersPromise = new Promise(function(resolve, reject) {
       _this.explorer.getLayers().then(function(layers) {
-        console.log('xx 3', layers);
         if (layers.length > 0) {
           if (_this.layerSelector.isLoaded()) {
             resolve();

@@ -16,14 +16,10 @@ export default class AnnotationEditor {
       saveCallback: null,
       cancelCallback: null
     }, options);
-    
-    this._mode = options.mode; // "create", "update", or "merge"
 
-    console.log('EEE 1');
+    this._mode = options.mode; // "create", "update", or "merge"
     this.init();
-    console.log('EEE 2');
     this.hide();
-    console.log('EEE 3');
   }
   
   init() {

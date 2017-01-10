@@ -92,6 +92,7 @@ export default class {
   }
   
   addWindows(config) {
+    console.log('Grid#addWindows config:', config);
     for (let windowConfig of config.windows) {
       windowConfig.miradorId = config.miradorId;
       this.addWindow(windowConfig);
