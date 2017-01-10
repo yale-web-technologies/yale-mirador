@@ -3,7 +3,7 @@ import Selector from './selector';
 export default class {
   /**
    * init() should be called separately after instantiation
-   * because it returns a jQuery deferred object.
+   * because it returns a Promise.
    */
   constructor(options) {
     jQuery.extend(this, {
@@ -18,6 +18,7 @@ export default class {
    * @returns {Promise}
    */
   init(layers) {
+    console.log('LayerSelector#init layers:', layers);
     this._isLoaded = false;
     this.selector = new Selector({
       appendTo: this.parent
@@ -31,22 +32,19 @@ export default class {
    */
   reload(layers) {
     console.log('LayerSelector#reload');
-    var _this = this;
+    const _this = this;
     
     this.selector.empty();
     
-    jQuery.each(layers, function(index, value) {
-      _this.selector.addItem(value.label, value['@id']);
-    });
-    
+    for (let layer of layers) {
+      _this.selector.addItem(layer.label, layer['@id']);
+    }
     return new Promise(function(resolve, reject) {
-      setTimeout(function() {
-        if (layers.length > 0) {
-          _this.selector.val(_this.initialLayerId || layers[0]['@id'], true);
-          _this._isLoaded = true;
-        }
-        resolve();
-      }, 0);
+      if (layers.length > 0) {
+        _this.selector.val(_this.initialLayerId || layers[0]['@id'], true);
+        _this._isLoaded = true;
+      }
+      resolve();
     });
   }
   

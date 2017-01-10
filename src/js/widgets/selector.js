@@ -82,6 +82,8 @@ export default class {
   
   val(value, skipNotify) {
     const dd = this.element;
+    dd.dropdown('refresh');
+    
     if (value === undefined) {
       return dd.dropdown('get value');
     } else {
