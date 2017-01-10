@@ -37,11 +37,6 @@ module.exports = {
   },
   plugins: [
     new ExtractTextPlugin('yale-mirador.bundle.css', { allChunks: true }),
-    /*new VersionFile({
-      packageFile: path.join(__dirname, 'package.json'),
-      template: path.join(__dirname, 'src', 'template', 'version.ejs'),
-      outputFile: path.join(__dirname, 'dist', 'yale-mirador', 'version.json')
-    })*/
     new BannerWebpackPlugin({
       chunks: {
         'yale-mirador': {
