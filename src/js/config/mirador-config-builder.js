@@ -8,7 +8,7 @@ export default class MiradorConfigBuilder {
       canvasId: null,
       defaultSettings: null, // Mirador default settings
       endpointUrl: null,
-      groupId: null,
+      projectId: null,
       isEditor: false,
       manifestUri: null,
       miradorId: null, // ID of Mirador instance
@@ -39,7 +39,7 @@ export default class MiradorConfigBuilder {
       },
       extension: {
         tagHierarchy: this.options.tagHierarchy || null,
-        groupId: this.options.groupId || null,
+        projectId: this.options.projectId || null,
         firebase: this.options.firebase || null
       }
     });

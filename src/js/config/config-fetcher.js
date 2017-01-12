@@ -21,24 +21,27 @@ class ConfigFetcher {
     options.roomId = elem.attr('data-room-id');
     
     options.manifestUri = elem.attr('data-manifest-url');
-    options.groupId = elem.attr('data-group-id'); // group or project ID
-    
+    options.projectId = elem.attr('data-room-id'); // group or project ID
+
     options.canvasId = elem.attr('data-canvas-id') || '';
     options.tocTags = tocTagsStr ? tocTagsStr.split(',') : [];
     options.layerIds = layerIdsStr ? layerIdsStr.split(',') : [];
     options.annotationId = elem.attr('data-annotation-id') || null;
-    
+
     return options;
   }
-  
+
   /**
    * Retrieves settings from the server via a REST API.
    */
-  fetchSettingsFromApi(url, roomId) {
+  fetchSettingsFromApi(baseUrl, roomId) {
+    const url = baseUrl + '?room_id=' + roomId;
+    console.log('ConfigFetcher#fetchSettingsFromApi url:', url);
+
     return new Promise(function(resolve, reject) {
       const dfd = jQuery.Deferred();
       jQuery.ajax({
-        url: url + '?room_id=' + roomId,
+        url: url,
         success: function(data) {
           resolve(data);
         },
