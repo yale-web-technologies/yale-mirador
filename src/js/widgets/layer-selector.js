@@ -48,8 +48,8 @@ export default class {
     });
   }
   
-  val(value) {
-    return this.selector.val(value);
+  val(value, skipNotify) {
+    return this.selector.val(value, skipNotify);
   }
   
   isLoaded() {

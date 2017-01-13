@@ -12,12 +12,12 @@ export default class AnnotationSource {
     console.log('AnnotationSource#getLayers');
     const _this = this;
     return new Promise(function(resolve, reject) {
-      const projectId = getMiradorWindow().getConfig().extension.projectId;
+      const settings = getMiradorWindow().getConfig().extension;
       let url = _this.options.prefix + '/layers';
-      
-      if (projectId) {
-        url += '?group_id=' + projectId;
+      if (settings.projectId && !settings.disableAuthz) {
+        url += '?group_id=' + settings.projectId;
       }
+      console.log('AnnotationSource#getLayers url:', url);
 
       jQuery.ajax({
         url: url,

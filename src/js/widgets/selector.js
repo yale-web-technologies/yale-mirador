@@ -18,10 +18,10 @@ export default class {
     this.element.dropdown({
       direction: 'downward',
       onChange: function(value, text) {
-        if (typeof _this.changeCallback === 'function' && !_this.skipNotify) {
+        if (typeof _this.changeCallback === 'function' && !_this._skipNotify) {
           _this.changeCallback(value, text);
         }
-        this.skipNotify = false;
+        this._skipNotify = false;
       },
       action: function(text, value) {
         _this.element.dropdown('set selected', value);
@@ -82,6 +82,7 @@ export default class {
   
   val(value, skipNotify) {
     const dd = this.element;
+    this._skipNotify = skipNotify || false;
     dd.dropdown('refresh');
     
     if (value === undefined) {

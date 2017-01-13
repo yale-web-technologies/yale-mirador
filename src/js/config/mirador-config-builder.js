@@ -7,6 +7,7 @@ export default class MiradorConfigBuilder {
       buildPath: null,
       canvasId: null,
       defaultSettings: null, // Mirador default settings
+      disableAuthz: false,
       endpointUrl: null,
       projectId: null,
       isEditor: false,
@@ -40,7 +41,8 @@ export default class MiradorConfigBuilder {
       extension: {
         tagHierarchy: this.options.tagHierarchy || null,
         projectId: this.options.projectId || null,
-        firebase: this.options.firebase || null
+        firebase: this.options.firebase || null,
+        disableAuthz: this.options.disableAuthz || false
       }
     });
     

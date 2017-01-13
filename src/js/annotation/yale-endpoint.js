@@ -260,9 +260,12 @@ export default class YaleEndpoint {
   }
 
   parseAnnotations() {
+    const explorer = this.getAnnotationExplorer();
     const spec = getMiradorWindow().getConfig().extension.tagHierarchy;
+    explorer.reloadAnnotationToc(spec, this.annotationsList);
+    /*const spec = getMiradorWindow().getConfig().extension.tagHierarchy;
     this.canvasToc = new CanvasToc(spec, this.annotationsList);
     console.log('YaleEndpoint#parseAnnotations canvasToc:');
-    console.dir(this.canvasToc.annoHierarchy);
+    console.dir(this.canvasToc.annoHierarchy);*/
   }
 }
