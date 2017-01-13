@@ -116,10 +116,12 @@ export default class {
       initialLayerId: options.layerId || null,
       initialTocTags: options.tocTags || null,
       annotationId: options.annotationId || null
-    }).then(function(window) {
+    })
+    .then(function(window) {
       _this._annotationWindows[windowId] = window;
       return window;
-    });
+    })
+    .catch((reason) => { throw reason; });
   }
 
   bindEvents() {

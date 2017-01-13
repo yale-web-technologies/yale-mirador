@@ -27,7 +27,8 @@ export default class AnnotationWindow {
       _this.init().then(function() {
         resolve(_this);
       }).catch(function(reason) {
-        reject('AnnotationWindow#init failed - ' + reason);
+        const msg = 'AnnotationWindow#init failed - ' + reason;
+        throw msg;
       });
     });
   }
