@@ -24,7 +24,8 @@ app.get('/api/settings', function(req, res) {
     buildPath: '/dist/mirador',
     tagHierarchy: config.tagHierarchy,
     endpointUrl: config.endpointUrl,
-    firebase: config.firebase
+    firebase: config.firebase,
+    disableAuthz: config.disableAuthz
   };
   res.setHeader('Content-Type', 'application/json');
   res.cookie('isEditor', config.isEditor);
