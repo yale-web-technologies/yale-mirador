@@ -90,8 +90,10 @@ export default class {
     } else {
       if (dd.dropdown('get item', value)) {
         dd.dropdown('set selected', value);
+        return value;
       } else {
         dd.dropdown('set selected', this.values[0]);
+        return this.values[0];
       }
     }
   }

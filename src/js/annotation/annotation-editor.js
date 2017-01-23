@@ -1,6 +1,7 @@
 import {annoUtil} from '../import';
-import LayerSelector from '../widgets/layer-selector';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
+import getUserSettings from '../config/user-settings';
+import LayerSelector from '../widgets/layer-selector';
 
 export default class AnnotationEditor {
   constructor(options) {
@@ -50,21 +51,22 @@ export default class AnnotationEditor {
     this.layerSelector = new LayerSelector({
       parent: this.layerSelectorContainer
     });
-    
-    console.log(1);
+
     const layers = await this.endpoint.getLayers();
     console.log(layers);
-    
+
     this.layerSelector.init(layers).then(() => {
       if (_this._mode === 'create') {
         title.text('Create Annotation');
+        const lastLayer = getUserSettings().get('lastSelectedLayer');
+        _this.layerSelector.val(lastLayer);
       } else { // update
         title.text('');
-      }
-      if (_this.annotation) {
-        _this.textArea.val(annoUtil.getText(_this.annotation));
-        if (_this.annotation.layerId) {
-          _this.layerSelector.val(_this.annotation.layerId);
+        if (_this.annotation) {
+          _this.textArea.val(annoUtil.getText(_this.annotation));
+          if (_this.annotation.layerId) {
+            _this.layerSelector.val(_this.annotation.layerId);
+          }
         }
       }
 

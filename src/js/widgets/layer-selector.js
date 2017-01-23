@@ -1,4 +1,5 @@
 import Selector from './selector';
+import getUserSettings from '../config/user-settings';
 
 export default class {
   /**
@@ -49,7 +50,12 @@ export default class {
   }
   
   val(value, skipNotify) {
-    return this.selector.val(value, skipNotify);
+    const retVal = this.selector.val(value, skipNotify);
+    if (value !== undefined) {
+      console.log('val:', value);
+      getUserSettings().set('lastSelectedLayer', value);
+    }
+    return retVal;
   }
   
   isLoaded() {
@@ -59,6 +65,7 @@ export default class {
   bindEvents() {
     var _this = this;
     this.selector.changeCallback = function(value, text) {
+      getUserSettings().set('lastSelectedLayer', value);
       if (typeof _this.changeCallback === 'function') {
         _this.changeCallback(value, text);
       }
