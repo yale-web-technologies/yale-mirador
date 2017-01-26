@@ -3,10 +3,11 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 
 export default function getAnnotationCache() {
   if (!instance) {
-    return new AnnotationCache();
+    const cache = new AnnotationCache();
+    return cache.init();
   } else {
     return new Promise(function(resolve, reject) {
-      instance.isValid() ? resolve(instance) : reject(instance);
+      instance.isValid() ? resolve(instance) : resolve(null);
     });
   }
 };
@@ -15,16 +16,16 @@ let instance = null;
 
 class AnnotationCache {
   constructor() {
-    const _this = this;
     this._dbName = 'anno_cache';
     this._valid = false;
     this._expiresInMS = 2 * 60 * 60 * 1000; // milliseconds
-    
+  }
+  
+  init() {
+    const _this = this;
     return new Promise(function(resolve, reject) {
       if (window.indexedDB) {
-        _this.clear().then(function() {
-          return _this.init();
-        }).then(function() {
+        _this._initIndexedDb().then(() => {
           _this._valid = true;
           resolve(_this);
         }).catch(function(reason) {
@@ -37,11 +38,11 @@ class AnnotationCache {
       }
     });
   }
-  
+
   /**
    * @returns {object} a Promise
    */
-  init() {
+  _initIndexedDb() {
     const _this = this;
     this._db = new Dexie(this._dbName).on('versionchange', function(event) {
       console.log('versionchange ' + event.newVersion);
@@ -159,7 +160,7 @@ class AnnotationCache {
     return this.deleteAnnotationsPerCanvas(canvasId);
   }
   
-  invalidateAnnotation(annotation, annotations) {
+  invalidateAnnotation(annotation, annoIsNew) {
     this.invalidateAnnotationId(annotation['@id']);
   }
   

@@ -30,7 +30,7 @@ export default class YaleEndpoint {
     const explorer = this.getAnnotationExplorer();
     
     progressPane.show();
-    explorer.getAnnotations(canvasId)
+    explorer.getAnnotations({ canvasId: canvasId })
     .catch((reason) => { 
       const msg = 'ERROR YaleEndpoint#search getAnnotations - ' + reason;
       console.log(msg);
