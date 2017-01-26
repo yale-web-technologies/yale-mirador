@@ -7,7 +7,6 @@ import './extension/ext-image-view';
 import './extension/ext-osd-region-draw-tool';
 import './extension/dialog-builder';
 import './annotation/yale-endpoint';
-import './annotation/yale-demo-endpoint';
 import './annotation/annotation-editor';
 import './annotation/ym-annotation-selector';
 import getConfigFetcher from './config/config-fetcher';
