@@ -1,7 +1,6 @@
 import {AnnotationExplorerDialog} from '../import';
 
 import YaleEndpoint from '../annotation/yale-endpoint';
-import YaleDemoEndpoint from '../annotation/yale-demo-endpoint';
 import AnnotationEditor from '../annotation/annotation-editor';
 import AnnotationSource from '../annotation/annotation-source';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
@@ -11,7 +10,6 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
   $.ym = {};
   
   $.YaleEndpoint = YaleEndpoint;
-  $.YaleDemoEndpoint = YaleDemoEndpoint;
   $.AnnotationEditor = AnnotationEditor;
   //$.annoUtil = annoUtil;
   
