@@ -6,12 +6,13 @@
   "scripts": {
     "start": "cd example; NODE_PATH=.. node server.js",
     "test": "karma start --singleRun",
-    "build": "npm run build:mirador && npm run build:yale-mirador",
+    "build": "npm run build:mirador && npm run build:yale-mirador && npm run postbuild",
     "prebuild:yale-mirador": "npm run clean:yale-mirador && mkdir -p dist/yale-mirador",
     "build:yale-mirador": "webpack",
     "prebuild:mirador": "npm run clean:mirador && mkdir -p dist/mirador",
     "build:mirador": "cd submodules/mirador && grunt && cd - && npm run copy:mirador",
     "copy:mirador": "cp -r submodules/mirador/build/mirador/* dist/mirador/",
+    "postbuild": "cp -r lib dist/",
     "clean:yale-mirador": "rm -rf dist/yale-mirador",
     "clean:mirador": "rm -rf dist/mirador"
   },
