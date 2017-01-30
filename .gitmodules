@@ -1,5 +1,0 @@
-[submodule "submodules/mirador"]
-	path = submodules/mirador
-	url = git@github.com:yale-web-technologies/mirador.git
-	branch = master
-
