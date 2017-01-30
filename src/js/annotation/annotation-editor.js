@@ -5,7 +5,9 @@ import LayerSelector from '../widgets/layer-selector';
 
 export default class AnnotationEditor {
   constructor(options) {
+    console.log('AnnotationEditor#constructor options:', options);
     jQuery.extend(this, {
+      windowId: null,
       miradorDriven: false, // true if created and managed by Mirador core.
       windowId: null,
       annotation: null,
@@ -19,6 +21,7 @@ export default class AnnotationEditor {
     }, options);
 
     this._mode = options.mode; // "create", "update", or "merge"
+    
     this.init();
     this.hide();
   }
