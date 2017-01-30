@@ -10,8 +10,7 @@
     "prebuild:yale-mirador": "npm run clean:yale-mirador && mkdir -p dist/yale-mirador",
     "build:yale-mirador": "webpack",
     "prebuild:mirador": "npm run clean:mirador && mkdir -p dist/mirador",
-    "build:mirador": "cd submodules/mirador && grunt && cd - && npm run copy:mirador",
-    "copy:mirador": "cp -r submodules/mirador/build/mirador/* dist/mirador/",
+    "build:mirador": "cp -r node_modules/mirador-y/dist/mirador/* dist/mirador/",
     "postbuild": "cp -r lib dist/",
     "clean:yale-mirador": "rm -rf dist/yale-mirador",
     "clean:mirador": "rm -rf dist/mirador"
@@ -58,11 +57,13 @@
     "webpack-version-file-plugin": "^0.2.2"
   },
   "dependencies": {
-    "mirador-y": "^0.1.0",
     "babel-polyfill": "^6.9.1",
     "dexie": "^1.4.2",
     "golden-layout": "^1.5.6",
     "js-cookie": "^2.1.2",
-    "semantic-ui": "^2.2.2"
+    "semantic-ui": "^2.2.2",
+    "joosugi": "^0.1.1",
+    "joosugi-semantic-ui": "^0.1.0",
+    "mirador-y": "^0.1.0"
   }
 }
