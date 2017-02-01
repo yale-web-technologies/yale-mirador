@@ -14,7 +14,7 @@ import Grid from './grid';
 import MainMenu from './widgets/main-menu';
 import getMiradorWindow from './mirador-window';
 import './extension/interface';
-//import './util/override-pubsub'; // import this only for debugging!
+//import './util/jquery-tiny-pubsub-trace'; // import this only for debugging!
 
 export default class App {
   constructor(element) {
