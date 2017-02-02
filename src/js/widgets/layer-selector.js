@@ -14,6 +14,7 @@ export default class {
       changeCallback: null,
       initialLayerId: null
     }, options);
+    this.appState = getStateStore();
   }
 
   /**
@@ -35,22 +36,26 @@ export default class {
   reload(layers) {
     console.log('LayerSelector#reload');
     const _this = this;
-    const layerIndexMap = getStateStore().getObject('layerIndexMap');
 
     this.selector.empty();
 
     for (let layer of layers) {
       let layerId = layer['@id'];
-      let layerIndex = layerIndexMap[layerId];
+      let layerIndex = this.appState.getObject('layerIndexMap')[layerId];
+      let colorClass = typeof layerIndex === 'number' ? 'layer_' + layerIndex % 10 : undefined;
+      
       _this.selector.addItem({
         label: layer.label,
         value: layerId,
-        colorClass: layerIndex ? 'layer_' + layerIndex : undefined
+        colorClass: colorClass
       });
     }
     return new Promise(function(resolve, reject) {
       if (layers.length > 0) {
-        _this.selector.val(_this.initialLayerId || layers[0]['@id'], true);
+        const layerId = _this.initialLayerId || layers[0]['@id'];
+        const layerIndex = _this.appState.getObject('layerIndexMap')[layerId];
+        _this.selector.val(layerId, true);
+        _this.selector.setColorClass('layer_' + layerIndex % 10);
         _this._isLoaded = true;
       }
       resolve();
@@ -72,10 +77,13 @@ export default class {
 
   bindEvents() {
     var _this = this;
-    this.selector.changeCallback = function(value, text) {
-      getUserSettings().set('lastSelectedLayer', value);
+    this.selector.changeCallback = function(layerId, text) {
+      const layerIndex = _this.appState.getObject('layerIndexMap')[layerId];
+      
+      _this.selector.setColorClass('layer_' + layerIndex % 10);
+      getUserSettings().set('lastSelectedLayer', layerId);
       if (typeof _this.changeCallback === 'function') {
-        _this.changeCallback(value, text);
+        _this.changeCallback(layerId, text);
       }
     };
   }

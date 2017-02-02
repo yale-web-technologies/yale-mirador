@@ -165,38 +165,38 @@ export default class AnnotationListRenderer {
     const headerHtml = headerTemplate({ text: text });
     return jQuery(headerHtml);
   }
-  
+
   createAnnoElem(annotation, options) {
     console.log('AnnotationWindow#createAnnoElem anno:', annotation);
     const content = annoUtil.getText(annotation);
     const tags = annoUtil.getTags(annotation);
     const tagsHtml = this.getTagsHtml(tags);
     const state = getStateStore();
-    
+
     const annoHtml = annotationTemplate({
       content: content,
       tags: tagsHtml,
       isEditor: options.isEditor,
       orderable: options.isCompleteList
     });
-    const layerNum = state.getObject('layerIndexMap')[annotation.layerId];
+    const layerIndex = state.getObject('layerIndexMap')[annotation.layerId];
     const annoElem = jQuery(annoHtml);
     const menuBar = annoElem.find('.menu_bar');
-    
+
     annoElem.data('annotationId', annotation['@id']);
     annoElem.find('.ui.dropdown').dropdown({ direction: 'downward' });
-    
-    menuBar.addClass('layer_' + layerNum);
+
+    menuBar.addClass('layer_' + layerIndex % 10);
     if (annotation.on['@type'] == 'oa:Annotation') { // annotation of annotation
       menuBar.addClass('targeting_anno');
     } else {
       menuBar.removeClass('targeting_anno');
     }
-    
+
     this.bindAnnotationItemEvents(annoElem, annotation, options);
     return annoElem;
   }
-  
+
   getTagsHtml(tags) {
     let html = '';
     jQuery.each(tags, function(index, value) {
@@ -204,12 +204,12 @@ export default class AnnotationListRenderer {
     });
     return html;
   }
-  
+
   bindAnnotationItemEvents(annoElem, annotation, options) {
     const annoWin = options.annotationWindow;
     const finalTargetAnno = annoUtil.findFinalTargetAnnotation(annotation, 
       options.annotationsList);
-    
+
     annoElem.click(function(event) {
       console.log('Clicked: Annotation ' + annotation['@id']);
       annoWin.clearHighlights();
@@ -217,7 +217,7 @@ export default class AnnotationListRenderer {
       annoWin.miradorProxy.publish('ANNOTATION_FOCUSED', [annoWin.id, finalTargetAnno]);
       jQuery.publish('ANNOTATION_FOCUSED', [annoWin.id, annotation]);
     });
-    
+
     annoElem.find('.annotate').click(function (event) {
       const dialogElement = jQuery('#ym_annotation_dialog');
       const editor = new AnnotationEditor({

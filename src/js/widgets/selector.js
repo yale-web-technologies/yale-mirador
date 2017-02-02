@@ -105,6 +105,14 @@ export default class {
     }
   }
   
+  setColorClass(newClass) {
+    if (this._oldClass) {
+      this.element.removeClass(this._oldClass);
+    }
+    this.element.addClass(newClass);
+    this._oldClass = newClass;
+  }
+
   destroy() {
     this.element.remove();
   }
@@ -123,7 +131,7 @@ const template = Handlebars.compile([
 const itemTemplate = Handlebars.compile([
   '<div class="item">',
   '  {{#if colorClass}}',
-  '    <span class="icon"><i class="circle icon {{colorClass}}"></i></span>',
+  '    <span class="icon_span"><i class="circle icon {{colorClass}}"></i></span>',
   '  {{/if}}',
   '  <span class="label">{{label}}</span>',
   '</div>'

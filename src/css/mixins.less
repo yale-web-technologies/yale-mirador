@@ -1,14 +1,17 @@
-// Loop from @i = 1 to initial input @i
+// Loop from @i = 0 to initial input @i
 .bgcolors-per-layer(@i) when (@i > 0) {
   .bgcolors-per-layer(@i - 1);
-  &.layer_@{i} {
-    background-color: extract(@layer-colors, @i);
+  @num: @i - 1;
+  &.layer_@{num} {
+    background-color: extract(@layer-colors, @i) !important;
   }
 }
 
+// Loop from @i = 0 to initial input @i
 .fgcolors-per-layer(@i) when (@i > 0) {
   .fgcolors-per-layer(@i - 1);
-  &.layer_@{i} {
+  @num: @i - 1;
+  &.layer_@{num} {
     color: extract(@layer-colors, @i);
   }
 }

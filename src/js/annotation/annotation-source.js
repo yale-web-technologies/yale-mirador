@@ -66,7 +66,6 @@ export default class AnnotationSource {
       const map = {};
       let count = 0;
       layers.forEach((layer) => {
-        console.log(count);
         map[layer['@id']] = count;
         console.log('count:', count);
         ++count;
