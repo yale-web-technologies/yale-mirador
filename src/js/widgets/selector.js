@@ -18,6 +18,7 @@ export default class {
     this.element.dropdown({
       direction: 'downward',
       onChange: function(value, text) {
+        console.log('Selector#init onChange ', value, text);
         if (typeof _this.changeCallback === 'function' && !_this._skipNotify) {
           _this.changeCallback(value, text);
         }
@@ -45,7 +46,11 @@ export default class {
         var menu = _this.addMenuItem(value.label, value.value, parent);
         _this._setItems(value.children, menu);
       } else {
-        _this.addItem(value.label, value.value, parent);
+        _this.addItem({
+          label: value.label,
+          value: value.value,
+          parent: parent
+        });
       }
     });
   }
@@ -66,13 +71,15 @@ export default class {
     return menu;
   }
   
-  addItem(label, value, parent) {
-    var item = jQuery('<div/>')
-      .addClass('item')
-      .attr('data-text', label)
-      .attr('data-value', value)
-      .text(label);
-    parent = parent || this.element.find('.menu');
+  addItem(options) {
+    const item = jQuery(itemTemplate({
+      label: options.label,
+      colorClass: options.colorClass
+    }))
+    .attr('data-text', options.label)
+    .attr('data-value', options.value);
+
+    parent = options.parent || this.element.find('.menu');
     parent.append(item);
   }
   
@@ -110,5 +117,14 @@ const template = Handlebars.compile([
   '  <i class="ym dropdown icon"></i>',
   '  <div class="menu">',
   '  </div>',
+  '</div>'
+].join(''));
+
+const itemTemplate = Handlebars.compile([
+  '<div class="item">',
+  '  {{#if colorClass}}',
+  '    <span class="icon"><i class="circle icon {{colorClass}}"></i></span>',
+  '  {{/if}}',
+  '  <span class="label">{{label}}</span>',
   '</div>'
 ].join(''));

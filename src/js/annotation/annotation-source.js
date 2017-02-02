@@ -1,5 +1,6 @@
 import getAnnotationCache from './annotation-cache';
 import getMiradorWindow from '../mirador-window';
+import getStateStore from '../state-store';
 
 // Implements inteface between Joosugi annotation explorer and the annotation server
 export default class AnnotationSource {
@@ -7,11 +8,27 @@ export default class AnnotationSource {
     this.options = jQuery.extend({
       prefix: null
     }, options);
+    this.layers = null;
   }
 
-  getLayers() {
+  async getLayers() {
     console.log('AnnotationSource#getLayers');
-    const _this = this;
+    let layers = null;
+
+    if (this.layers) {
+      console.log('AnnotationSource#getLayers hit cache', this.layers);
+      layers = this.layers;
+    } else {
+      layers = await this._getRemoteLayers();
+      this._updateLayerIndex(layers);
+    }
+
+    return layers;
+  }
+
+  _getRemoteLayers() {
+    var _this = this;
+
     return new Promise(function(resolve, reject) {
       const settings = getMiradorWindow().getConfig().extension;
       let url = _this.options.prefix + '/layers';
@@ -27,6 +44,7 @@ export default class AnnotationSource {
         contentType: 'application/json; charset=utf-8',
         success: function (data, textStatus, jqXHR) {
           console.log('AnnotationSource#getLayers layers: ', data);
+          _this.layers = data;
           resolve(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -38,6 +56,24 @@ export default class AnnotationSource {
         }
       });
     });
+  }
+
+  _updateLayerIndex(layers) {
+    console.log('AnnotationSource#_updateLayerIndex');
+    const state = getStateStore();
+    
+    if (!state.getObject('layerIndexMap')) {
+      const map = {};
+      let count = 0;
+      layers.forEach((layer) => {
+        console.log(count);
+        map[layer['@id']] = count;
+        console.log('count:', count);
+        ++count;
+      });
+      state.setObject('layerIndexMap', count > 0 ? map : null);
+    }
+    return layers;
   }
 
   async getAnnotations(options) {

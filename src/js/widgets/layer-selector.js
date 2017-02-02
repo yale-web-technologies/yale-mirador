@@ -1,4 +1,5 @@
 import Selector from './selector';
+import getStateStore from '../state-store';
 import getUserSettings from '../config/user-settings';
 
 export default class {
@@ -27,18 +28,25 @@ export default class {
     this.bindEvents();
     return this.reload(layers);
   }
-  
+
   /**
    * @returns {Promise}
    */
   reload(layers) {
     console.log('LayerSelector#reload');
     const _this = this;
-    
+    const layerIndexMap = getStateStore().getObject('layerIndexMap');
+
     this.selector.empty();
-    
+
     for (let layer of layers) {
-      _this.selector.addItem(layer.label, layer['@id']);
+      let layerId = layer['@id'];
+      let layerIndex = layerIndexMap[layerId];
+      _this.selector.addItem({
+        label: layer.label,
+        value: layerId,
+        colorClass: layerIndex ? 'layer_' + layerIndex : undefined
+      });
     }
     return new Promise(function(resolve, reject) {
       if (layers.length > 0) {
@@ -48,7 +56,7 @@ export default class {
       resolve();
     });
   }
-  
+
   val(value, skipNotify) {
     const retVal = this.selector.val(value, skipNotify);
     if (value !== undefined) {
@@ -57,11 +65,11 @@ export default class {
     }
     return retVal;
   }
-  
+
   isLoaded() {
     return this._isLoaded;
   }
-  
+
   bindEvents() {
     var _this = this;
     this.selector.changeCallback = function(value, text) {

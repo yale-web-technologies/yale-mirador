@@ -1,10 +1,10 @@
 import {AnnotationExplorer} from '../import';
 import AnnotationSource from './annotation-source';
 import CanvasToc from '../annotation/toc';
+import getErrorDialog from '../widgets/error-dialog';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import getMiradorWindow from '../mirador-window';
 import getModalAlert from '../widgets/modal-alert';
-import getErrorDialog from '../widgets/error-dialog';
 import session from '../session';
 import util from '../util/util';
 
@@ -17,8 +17,6 @@ export default class YaleEndpoint {
       prefix: null,
       dfd: null
     }, options);
-    
-    const _this = this;
   }
 
   search(options) {
@@ -28,15 +26,15 @@ export default class YaleEndpoint {
     const progressPane = getModalAlert();
     const errorPane = getErrorDialog();
     const explorer = this.getAnnotationExplorer();
-    
+
     progressPane.show();
     explorer.getAnnotations({ canvasId: canvasId })
-    .catch((reason) => { 
+    .catch(reason => { 
       const msg = 'ERROR YaleEndpoint#search getAnnotations - ' + reason;
       console.log(msg);
       throw(msg);
     })
-    .then((annotations) => {
+    .then(annotations => {
       console.log('YaleEndpoint#search annotations: ', annotations);
       progressPane.hide();
       for (let anno of annotations) {
@@ -189,12 +187,12 @@ export default class YaleEndpoint {
     return promise;
   }
 
-  getLayers() {
+  async getLayers() {
     console.log('YaleEndpoint#getLayers');
     const explorer = this.getAnnotationExplorer();
     return explorer.getLayers();
   }
-  
+
   updateOrder(canvasId, layerId, annoIds, successCallback, errorCallback) {
     console.log('YaleEndpoint#updateOrder canvasId:', canvasId, 'layerId:', layerId, 'annoIds:', annoIds);
     const _this = this;

@@ -1,11 +1,15 @@
+@import '../mixins';
+
 .annowin_anno {
   border: solid 1px #808080;
   background-color: #fafafa;
   padding: 3px;
-  
+
   .menu_bar {
     background-color: @light-blue;
+    .bgcolors-per-layer(10);
   }
+
   .menu_bar.targeting_anno {
     background-color: @light-green;
   }

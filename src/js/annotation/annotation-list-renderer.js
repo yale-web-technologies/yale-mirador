@@ -1,5 +1,6 @@
 import {annoUtil} from '../import';
 import AnnotationEditor from './annotation-editor';
+import getStateStore from '../state-store';
 
 /**
  * Generate HTML elements for the annotations to be shown in the annotation window,
@@ -137,12 +138,12 @@ export default class AnnotationListRenderer {
       }
     });
   }
-  
+
   appendUnattachedAnnotations(options) {
     const _this = this;
     const layerId = options.layerId;
     const showAll = (options.selectedTags[0] === 'all');
-    
+
     if (showAll && options.toc.numUnassigned() > 0) {
       const unassignedHeader = jQuery(headerTemplate({ text: 'Unassigned' }));
       let count = 0;
@@ -166,11 +167,11 @@ export default class AnnotationListRenderer {
   }
   
   createAnnoElem(annotation, options) {
-    //console.log('AnnotationWindow#addAnnotation:');
-    //console.dir(annotation);
+    console.log('AnnotationWindow#createAnnoElem anno:', annotation);
     const content = annoUtil.getText(annotation);
     const tags = annoUtil.getTags(annotation);
     const tagsHtml = this.getTagsHtml(tags);
+    const state = getStateStore();
     
     const annoHtml = annotationTemplate({
       content: content,
@@ -178,14 +179,18 @@ export default class AnnotationListRenderer {
       isEditor: options.isEditor,
       orderable: options.isCompleteList
     });
+    const layerNum = state.getObject('layerIndexMap')[annotation.layerId];
     const annoElem = jQuery(annoHtml);
+    const menuBar = annoElem.find('.menu_bar');
     
     annoElem.data('annotationId', annotation['@id']);
     annoElem.find('.ui.dropdown').dropdown({ direction: 'downward' });
+    
+    menuBar.addClass('layer_' + layerNum);
     if (annotation.on['@type'] == 'oa:Annotation') { // annotation of annotation
-      annoElem.find('.menu_bar').addClass('targeting_anno');
+      menuBar.addClass('targeting_anno');
     } else {
-      annoElem.find('.menu_bar').removeClass('targeting_anno');
+      menuBar.removeClass('targeting_anno');
     }
     
     this.bindAnnotationItemEvents(annoElem, annotation, options);

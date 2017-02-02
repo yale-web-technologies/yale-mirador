@@ -1,9 +1,10 @@
 import {annoUtil} from '../import';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
+import getStateStore from '../state-store';
+import getUserSettings from '../config/user-settings';
 import MenuTagSelector from '../widgets/menu-tag-selector';
 import LayerSelector from '../widgets/layer-selector';
 import session from '../session';
-import { getState, setState } from '../state.js';
 
 export default class AnnotationWindow {
 
@@ -111,10 +112,11 @@ export default class AnnotationWindow {
   reload() {
     console.log('AnnotationWindow#reload');
     const _this = this;
+    const state = getStateStore();
 
     this.placeholder.hide();
 
-    if (getState('ANNO_CELL_FIXED') === 'true') {
+    if (state.getString('ANNO_CELL_FIXED') === 'true') {
       this.element.addClass('fixed_height_cells');
     } else {
       this.element.removeClass('fixed_height_cells');
@@ -168,6 +170,7 @@ export default class AnnotationWindow {
   updateList() {
     console.log('AnnotationWindow#updateList');
     const _this = this;
+    const state = getStateStore();
     const options = {};
 
     options.parentElem = this.listElem;
@@ -181,7 +184,7 @@ export default class AnnotationWindow {
     }
     options.isCompleteList = (options.selectedTags[0] === 'all'); // true if current window will show all annotations of a sortable list.
     options.layerId  = this.layerSelector.val();
-    
+
     const count = this.annotationListRenderer.render(options);
     
     if (count === 0) {

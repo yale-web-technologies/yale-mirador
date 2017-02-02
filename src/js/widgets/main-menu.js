@@ -1,5 +1,5 @@
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
-import { getState, setState } from '../state.js';
+import getStateStore from '../state-store';
 
 // Menu bar at the top of the Mirador-embedding window.
 export default class {
@@ -18,8 +18,10 @@ export default class {
   }
   
   initAnnoHeightMenu() {
+    const state = getStateStore();
+
     this.annoHeightMenu = jQuery('#ym_menu_anno_height');
-    if (getState('ANNO_CELL_FIXED') === 'true') {
+    if (state.getString('ANNO_CELL_FIXED') === 'true') {
       this.annoHeightMenu.find('.checkmark').show();
     } else {
       this.annoHeightMenu.find('.checkmark').hide();
@@ -27,19 +29,20 @@ export default class {
   }
   
   bindEvents() {
-    var _this = this;
+    const _this = this;
+    const state = getStateStore();
     
     jQuery('#ym_menu_add_window').click(function (event) {
       jQuery.publish('YM_ADD_WINDOW', { miradorId: getMiradorProxyManager().anyId() });
     });
     
     jQuery('#ym_menu_anno_height').click(function (event) {
-      if (getState('ANNO_CELL_FIXED') === 'true') {
-        setState('ANNO_CELL_FIXED', false);
+      if (state.getString('ANNO_CELL_FIXED') === 'true') {
+        state.setString('ANNO_CELL_FIXED', false);
         _this.annoHeightMenu.find('.checkmark').hide();
         jQuery.publish('YM_ANNO_HEIGHT_FIXED', false);
       } else {
-        setState('ANNO_CELL_FIXED', true);
+        state.setString('ANNO_CELL_FIXED', true);
         _this.annoHeightMenu.find('.checkmark').show();
         jQuery.publish('YM_ANNO_HEIGHT_FIXED', true);
       }
