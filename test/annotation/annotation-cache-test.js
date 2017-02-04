@@ -5,7 +5,7 @@ import util from '../test-util';
 
 describe('AnnotationCache', function() {
   let cache = null;
-  
+
   beforeEach(function(done) {
     getAnnotationCache().then(function(instance) {
       cache = instance;

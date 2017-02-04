@@ -6,6 +6,7 @@ import { expect } from 'chai';
 // because multiple paths under in a single target will probably turn out to 
 // be illegal according to IIIF spec.
 
+/*
 describe('mergeSvgs', function() {
   it('merge single path with single', function() {
     const svg1 = '<svg><path d="M1,1,2,1,2,2z"/></svg>';
@@ -36,3 +37,4 @@ describe('mergeSvgs', function() {
   });
 
 });
+*/

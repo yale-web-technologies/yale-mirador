@@ -1,8 +1,7 @@
 // Karma configuration
 // Generated on Mon Aug 01 2016 09:41:41 GMT-0400 (EDT)
 
-var webpackConfig = require('./webpack.config.js');
-webpackConfig.entry = {}; // entry not wanted in karma
+var path = require('path');
 
 module.exports = function(config) {
   config.set({
@@ -16,36 +15,43 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'dist/mirador/mirador.min.js',
-      'lib/js.cookie.js',
-      'lib/semantic/dist/semantic.min.js',
-      'lib/goldenlayout/goldenlayout.min.js',
+      'node_modules/mirador-y/dist/mirador/mirador.min.js',
       'lib/dexie.js',
-      //'dist/yale-mirador/yale-mirador.bundle.js',
-      'src/js/app.js',
+      'node_modules/babel-polyfill/dist/polyfill.js',
       'test/**/*-test.js'
-    ],
-
-    // list of files to exclude
-    exclude: [
     ],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      './src/js/app.js': ['webpack', 'sourcemap'],
-      './test/**/*-test.js': ['webpack', 'sourcemap']
+      'src/js/**/*.js': ['webpack', 'sourcemap'],
+      'test/**/*-test.js': ['webpack', 'sourcemap']
     },
     
-    webpack: webpackConfig,
+    webpack: {
+      debug: true,
+      module: {
+        loaders: [{
+          test: /\.js$/,
+          include: [
+            path.resolve(__dirname, 'src/js'),
+            path.resolve(__dirname, 'test')
+          ],
+          loader: 'babel-loader',
+          query: {
+            presets: ['es2015', 'es2017']
+          }
+        }]
+      }
+    },
     
     plugins: [
       require('karma-webpack'),
       require('karma-sourcemap-loader'),
       require('karma-mocha'),
       require('karma-sinon'),
-      require('karma-phantomjs-launcher'),
-      require('karma-coverage')
+      require('karma-coverage'),
+      require('karma-phantomjs-launcher')
     ],
 
     // test results reporter to use

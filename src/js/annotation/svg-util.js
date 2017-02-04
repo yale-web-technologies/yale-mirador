@@ -5,16 +5,11 @@ export default {
     const doc2 = parser.parseFromString(svg2, 'application/xml');
     const svgNode1 = doc1.documentElement;
     const svgNode2 = doc2.documentElement;
-        
-    console.log('SVG ' + svgNode1.tagName);
-    console.log('SVG ' + svgNode2.tagName);
-    console.dir(doc1);
-    console.dir(doc2);
-    
+
     if (svgNode1.tagName !== 'svg' || svgNode2.tagName !== 'svg') {
       throw '<svg> not found';
     }
-    
+
     const firstChild1 = svgNode1.childNodes[0];
     const pathNodes1 = this.getSvgPathNodes(svgNode1);
     const pathNodes2 = this.getSvgPathNodes(svgNode2);
@@ -22,14 +17,14 @@ export default {
     
     if (firstChild1.tagName === 'g') {
       group = firstChild1;
-      jQuery.each(pathNodes2, function(index, pathNode) {
+      for (let pathNode of pathNodes2) {
         group.appendChild(pathNode);
-      });
+      }
     } else if (firstChild1.tagName === 'path') {
       group = doc1.createElement('g');
-      jQuery.each(pathNodes1.concat(pathNodes2), function (index, pathNode) {
+      for (let pathNode of pathNodes1.concat(pathNodes2)) {
         group.appendChild(pathNode);
-      });
+      }
       while (svgNode1.firstChild) {
         svgNode1.removeChild(svgNode1.firstChild);
       }
@@ -52,14 +47,13 @@ export default {
     const topChild = topChildren[0];
     
     if (topChild.tagName === 'g') {
-      console.log('toto');
-      jQuery.each(topChild.childNodes, function(index, childNode) {
+      for (let childNode of topChild.childNodes) {
         if (childNode.tagName === 'path') {
           pathNodes.push(childNode);
         } else {
           console.log('Error svgUtil.getSvgPathNodes expected <svg> but found <' + childNode.tagName + '>');
         }
-      });
+      }
     } else if (topChild.tagName === 'path') {
       pathNodes.push(topChild);
     } else {
