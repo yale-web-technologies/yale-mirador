@@ -10,6 +10,8 @@
   // Add strings or patterns to  array and
   // event names
   var excludePatterns = [];
+  
+  var scaffoldMap = {};
 
   var exclude = function(str) {
     for (var i = 0; i < excludePatterns.length; ++i) {
@@ -24,52 +26,65 @@
     (trace ? console.trace : console.log).apply(console, arguments);
   };
 
-  var okToLog = function(str) {
+  var logging = function(str) {
     return debug && !exclude(str);
   };
 
   var scaffoldHandler = function(eventId, handler) {
-    return function() {
+    var scaffold = function() {
       log('PubSub:handler', eventId, handler, Array.prototype.slice.call(arguments));
       handler.apply(null, arguments);
     };
+    scaffoldMap[handler] = scaffold;
+    return scaffold;
   };
+  
+  var unscaffold = function(handler) {
+    var scaffold = scaffoldMap[handler];
+    delete scaffoldMap[handler];
+    return scaffold;
+  }
 
-  var o = $({});
+  var publish = $.publish;
+  var subscribe = $.subscribe;
+  var unsubscribe = $.unsubscribe;
 
   $.subscribe = function() {
     var args = Array.prototype.slice.call(arguments);
     var eventId = args[0];
     var handler = args[1];
-    if (okToLog(eventId)) {
+    
+    if (logging(eventId)) {
       console.log('PubSub:subscribe', args);
       handler = scaffoldHandler(eventId, handler);
       args[1] = handler; 
     };
-    o.on.apply(o, args);
-    return handler;
+    console.log('S', Object.keys(scaffoldMap).length);
+    subscribe.apply(jQuery, args);
   };
 
   $.unsubscribe = function() {
     var args = Array.prototype.slice.call(arguments);
     var eventId = args[0];
-    if (okToLog(eventId)) {
+    var handler = args[1];
+    
+    if (logging(eventId)) {
       log('PubSub:unsubscribe', Array.prototype.slice.call(arguments));
       if (typeof args[1] === 'function') {
-        var handler = scaffoldHandler(eventId, argv[1]);
-        args[1] = handler;
+        args[1] = unscaffold(handler);
       }
     }
-    o.off.apply(o, args);
+    console.log('U', Object.keys(scaffoldMap).length);
+    unsubscribe.apply(jQuery, args);
   };
 
   $.publish = function() {
     var args = Array.prototype.slice.call(arguments);
     var eventId = args[0];
-    if (okToLog(eventId)) {
+    if (logging(eventId)) {
       log('PubSub:publish', args);
     }
-    o.trigger.apply(o, args);
+    publish.apply(jQuery, args);
   };
 
 }(jQuery));
