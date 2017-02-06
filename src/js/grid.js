@@ -147,15 +147,16 @@ export default class {
       _this.addWindows(config);
     });
   }
-  
+
   showAnnotation(miradorId, windowId, annoId) {
-    console.log('MiradorWindow#showAnnotation miradorId: ' + miradorId + 
+    console.log('Grid#showAnnotation miradorId: ' + miradorId + 
       ', windowId: ' + windowId + ', annoId: ' + annoId);
     const miradorProxy = this.miradorProxyManager.getMiradorProxy(miradorId);
-    const endpoint = miradorProxy.getEndPoint();
-    const annotation = endpoint.findAnnotationById(annoId);
+    const windowProxy = miradorProxy.getWindowProxyById(windowId);
+    const annotations = windowProxy.getAnnotationsList();
+    const annotation = annotations.filter(anno => anno['@id'] === annoId)[0];
     let found = false;
-    
+
     jQuery.each(this._annotationWindows, function(key, annoWindow) {
       let success = annoWindow.scrollToAnnotation(annoId);
       if (success) {
