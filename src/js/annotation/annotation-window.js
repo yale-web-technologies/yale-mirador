@@ -95,6 +95,7 @@ export default class AnnotationWindow {
   
   initLayerSelector() {
     const _this = this;
+    this.currentLayerId = this.initialLayerId;
     this.layerSelector = new LayerSelector({
       parent: this.element.find('.layer_selector_container'),
       annotationExplorer: this.explorer,
