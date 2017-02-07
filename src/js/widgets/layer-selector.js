@@ -35,12 +35,15 @@ export default class {
   reload(layers) {
     console.log('LayerSelector#reload');
     const _this = this;
-
+    const layerIndexMap = this.appState.getObject('layerIndexMap');
+    if (!layerIndexMap) {
+      console.log('ERROR LayerSelector#reload cannot retrieve layerIndexMap');
+    }
     this.selector.empty();
 
     for (let layer of layers) {
       let layerId = layer['@id'];
-      let layerIndex = this.appState.getObject('layerIndexMap')[layerId];
+      let layerIndex = layerIndexMap ? layerIndexMap[layerId] : 0;
       let colorClass = typeof layerIndex === 'number' ? 'layer_' + layerIndex % 10 : undefined;
       
       _this.selector.addItem({
@@ -52,16 +55,17 @@ export default class {
     return new Promise(function(resolve, reject) {
       if (layers.length > 0) {
         const layerId = _this.initialLayerId || layers[0]['@id'];
-        const layerIndex = _this.appState.getObject('layerIndexMap')[layerId];
+        const layerIndex = layerIndexMap ? layerIndexMap[layerId] : 0;
         _this.selector.val(layerId, true);
         _this.selector.setColorClass('layer_' + layerIndex % 10);
         _this._isLoaded = true;
       }
-      resolve();
+      resolve(_this);
     });
   }
 
   val(value, skipNotify) {
+    console.log('LayerSelector#val', value, skipNotify);
     const retVal = this.selector.val(value, skipNotify);
     if (value !== undefined) {
       console.log('val:', value);
@@ -77,6 +81,7 @@ export default class {
   bindEvents() {
     var _this = this;
     this.selector.changeCallback = function(layerId, text) {
+      console.log('LayerSelector#bindEvents changeCallback');
       const layerIndexMap = _this.appState.getObject('layerIndexMap');
       const layerIndex = layerIndexMap ? layerIndexMap[layerId] : 0;
       
