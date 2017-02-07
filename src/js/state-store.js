@@ -1,5 +1,6 @@
 const registeredKeys = new Set([
   'ANNO_CELL_FIXED',
+  'lastSelectedLayer',
   'layerIndexMap'
 ]);
 
@@ -34,13 +35,13 @@ class StateStore {
     const value = this.getString(key);
     return value ? JSON.parse(value) : null;
   }
-  
+
   setObject(key, value) {
     this._checkKey(key);
     const stringValue = JSON.stringify(value);
     this.setString(key, stringValue);
   }
-  
+
   _checkKey(key) {
     if (!registeredKeys.has(key)) {
       throw 'ERROR Invalid key for StateStore ' + key;
@@ -62,7 +63,7 @@ function storageAvailable(type) {
     return false;
   }
 }
-  
+
 let _instance = null;
 
 export default function getStateStore() {

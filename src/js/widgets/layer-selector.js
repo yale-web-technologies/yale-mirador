@@ -1,6 +1,5 @@
 import Selector from './selector';
 import getStateStore from '../state-store';
-import getUserSettings from '../config/user-settings';
 
 export default class {
   /**
@@ -66,7 +65,7 @@ export default class {
     const retVal = this.selector.val(value, skipNotify);
     if (value !== undefined) {
       console.log('val:', value);
-      getUserSettings().set('lastSelectedLayer', value);
+      getStateStore().setString('lastSelectedLayer', value);
     }
     return retVal;
   }
@@ -78,10 +77,11 @@ export default class {
   bindEvents() {
     var _this = this;
     this.selector.changeCallback = function(layerId, text) {
-      const layerIndex = _this.appState.getObject('layerIndexMap')[layerId];
+      const layerIndexMap = _this.appState.getObject('layerIndexMap');
+      const layerIndex = layerIndexMap ? layerIndexMap[layerId] : 0;
       
       _this.selector.setColorClass('layer_' + layerIndex % 10);
-      getUserSettings().set('lastSelectedLayer', layerId);
+      getStateStore().setString('lastSelectedLayer', layerId);
       if (typeof _this.changeCallback === 'function') {
         _this.changeCallback(layerId, text);
       }

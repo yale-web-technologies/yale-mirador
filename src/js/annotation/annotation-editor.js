@@ -1,6 +1,6 @@
 import {annoUtil} from '../import';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
-import getUserSettings from '../config/user-settings';
+import getStateStore from '../state-store';
 import LayerSelector from '../widgets/layer-selector';
 
 export default class AnnotationEditor {
@@ -61,7 +61,7 @@ export default class AnnotationEditor {
     this.layerSelector.init(layers).then(() => {
       if (_this._mode === 'create') {
         title.text('Create Annotation');
-        const lastLayer = getUserSettings().get('lastSelectedLayer');
+        const lastLayer = getStateStore().getString('lastSelectedLayer');
         _this.layerSelector.val(lastLayer);
       } else { // update
         title.text('');
