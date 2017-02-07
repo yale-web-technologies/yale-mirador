@@ -1,4 +1,5 @@
 import {annoUtil} from './import';
+import getLogger from './util/logger';
 import getMiradorProxyManager from './mirador-proxy/mirador-proxy-manager';
 import getModalAlert from './widgets/modal-alert';
 import MiradorConfigBuilder from './config/mirador-config-builder';
@@ -22,18 +23,17 @@ class MiradorWindow {
       grid: null,
       settings: null // settings retrieved from remote API
     }, options);
-
-    const _this = this;
+    this.logger = getLogger();
     const miradorId = Mirador.genUUID();
     const configOptions = jQuery.extend(this.options.settings, {
       miradorId: miradorId,
       defaultSettings: Mirador.DEFAULT_SETTINGS,
       isEditor: session.isEditor()
     });
-    console.log('MiradorWindow#init configOptions:', configOptions);
-    _this._miradorConfig = _this._buildMiradorConfig(configOptions);
-    _this._createMirador(_this._miradorConfig);
-    _this._bindEvents(configOptions);
+    this.logger.debug('MiradorWindow#init configOptions:', configOptions);
+    this._miradorConfig = this._buildMiradorConfig(configOptions);
+    this._createMirador(this._miradorConfig);
+    this._bindEvents(configOptions);
   }
 
   getConfig() {
@@ -57,14 +57,14 @@ class MiradorWindow {
   }
 
   _createAnnotationWindows(options) {
-    console.log('MiradorWindow#_createAnnotationWindows options:', options);
+    this.logger.debug('MiradorWindow#_createAnnotationWindows options:', options);
     const {annotationId, layerIds, tocTags} = options;
     const config = {
       miradorId: options.miradorId,
       windows: []
     };
 
-    console.log('tocTags:', tocTags);
+    this.logger.debug('tocTags:', tocTags);
 
     if (layerIds instanceof Array && layerIds.length > 0) {
       for (let layerId of layerIds) {
@@ -93,7 +93,7 @@ class MiradorWindow {
     });
 
     miradorProxy.subscribe('ANNOTATIONS_LIST_UPDATED', function(event, params) {
-      console.log('MiradorWindow#bindEvents received ANNOTATIONS_LIST_UPDATED');
+      _this.logger.debug('MiradorWindow#bindEvents received ANNOTATIONS_LIST_UPDATED');
 
       if (options.tagHierarchy) {
         const windowProxy = miradorProxy.getWindowProxyById(params.windowId);
@@ -105,7 +105,7 @@ class MiradorWindow {
     });
 
     miradorProxy.subscribe('YM_ANNOWIN_ANNO_SHOW', function(event, windowId, annoId) {
-      console.log('MiradorWindow SUB YM_ANNOWIN_ANNO_SHOW windowId: ' + windowId  + ', annoId: ' + annoId);
+      _this.logger.debug('MiradorWindow SUB YM_ANNOWIN_ANNO_SHOW windowId: ' + windowId  + ', annoId: ' + annoId);
       _this.options.grid.showAnnotation(_this._miradorId, windowId, annoId);
     });
 

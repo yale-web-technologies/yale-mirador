@@ -1,3 +1,5 @@
+import getLogger from '../util/logger';
+
 export default {
   mergeSvgs: function(svg1, svg2) {
     const parser = new DOMParser();
@@ -37,6 +39,7 @@ export default {
   },
   
   getSvgPathNodes: function(svgNode) {
+    const logger = getLogger();
     const topChildren = svgNode.childNodes;
     let pathNodes = [];
     
@@ -51,7 +54,7 @@ export default {
         if (childNode.tagName === 'path') {
           pathNodes.push(childNode);
         } else {
-          console.log('Error svgUtil.getSvgPathNodes expected <svg> but found <' + childNode.tagName + '>');
+          logger.error('svgUtil.getSvgPathNodes expected <svg> but found <' + childNode.tagName + '>');
         }
       }
     } else if (topChild.tagName === 'path') {

@@ -1,8 +1,9 @@
 import App from './app';
+import getLogger from './util/logger';
 
 // Separated this code out to its own file because it shouldn't run with the test.
 jQuery(document).ready(function() {
-  //console.log('Yale Mirador Extension document ready');
+  getLogger().debug('Yale Mirador Extension document ready');
   if (jQuery('#ym_grid').length > 0) {
     const app = new App({
       rootElement: 'ym_grid',

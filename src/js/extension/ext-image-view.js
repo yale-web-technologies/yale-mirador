@@ -1,6 +1,10 @@
+import getLogger from '../util/logger';
+
 (function($) {
   
   $.yaleExt = $.yaleExt || {};
+  
+  const logger = getLogger();
   
   /*
    * Functions in this file must be called in the context of an ImageView 
@@ -11,17 +15,17 @@
     zoomToAnnotation: function(annotation) {
       const viewport = this.osd.viewport;
       const currentZoom = viewport.getZoom();
-      console.log('panToAnnotation zoom: ' + currentZoom);
+      logger.debug('panToAnnotation zoom: ' + currentZoom);
       const shapes = $.yaleExt.getShapesForAnnotation.call(this.annotationsLayer.drawTool, annotation);
       const shapeBounds = $.yaleExt.getCombinedBounds(shapes); // in image coordinates
       const shapeWH = viewport.imageToViewportCoordinates(shapeBounds.width, shapeBounds.height);
       const viewportBounds = viewport.getBounds();
       const widthRatio = shapeWH.x / viewportBounds.width;
-      console.log('w ratio: ' + widthRatio);
+      logger.debug('w ratio: ' + widthRatio);
       const heightRatio = shapeWH.y / viewportBounds.height;
-      console.log('h ratio: ' + heightRatio);
+      logger.debug('h ratio: ' + heightRatio);
       const zoomFactor = 1.0 / Math.max(widthRatio, heightRatio) * 0.75;
-      console.log('zoomFactor: ' + zoomFactor);
+      logger.debug('zoomFactor: ' + zoomFactor);
       
       viewport.zoomBy(zoomFactor);
     },

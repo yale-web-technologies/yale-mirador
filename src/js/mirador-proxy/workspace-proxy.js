@@ -1,8 +1,10 @@
+import getLogger from '../util/logger';
 import WindowProxy from './window-proxy';
 
 export default class WorkspaceProxy {
   
   constructor(workspace) {
+    this.logger = getLogger();
     this.workspace = workspace;
   }
   
@@ -20,7 +22,7 @@ export default class WorkspaceProxy {
     });
     var numWindows = windows.length;
     if (numWindows > 1) {
-     console.log('Error MiradorProxy#getWindowById: more than one (' + numWindows + ') found for id: ' + windowId);
+     this.logger.debug('Error MiradorProxy#getWindowById: more than one (' + numWindows + ') found for id: ' + windowId);
    }
     return numWindows == 1 ? windows[0] : null;
   }

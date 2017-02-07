@@ -1,3 +1,5 @@
+import getLogger from './logger';
+
 export default {
   // Return true if the device is mobile or a tablet.
   isMobileOrTablet: function() {
@@ -27,15 +29,15 @@ export default {
       count = 1;
     }
     if (count > 5) {
-      console.log('util.waitUntil max try num exceeded: giving up');
-      console.log('testFunc: ' + testFunc);
-      console.log('execFunc: ' + execFunc);
+      this.logger.debug('util.waitUntil max try num exceeded: giving up');
+      this.logger.debug('testFunc: ' + testFunc);
+      this.logger.debug('execFunc: ' + execFunc);
       return;
     }
     if (testFunc()) {
       execFunc();
     } else {
-      console.log('util.waitUntil trial ' + count + ' failed. Retrying in ' + (ms*2) + ' ms.');
+      this.logger.debug('util.waitUntil trial ' + count + ' failed. Retrying in ' + (ms*2) + ' ms.');
       setTimeout(function() {
         _this.waitUntil(testFunc, execFunc, ms * 2, count + 1);
       }, ms);

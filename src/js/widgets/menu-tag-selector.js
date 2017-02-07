@@ -1,3 +1,4 @@
+import getLogger from '../util/logger';
 import Selector from './selector';
 import util from '../util/util';
 
@@ -10,6 +11,7 @@ export default class {
       changeCallback: null
     }, options);
     
+    this.logger = getLogger();
     this.init();
   };
   
@@ -18,7 +20,7 @@ export default class {
     this.selector = new Selector({
       appendTo: this.parent,
       changeCallback: function(value, text) {
-        console.log('SELECT value: ' + value + ', text: ' + text);
+        _this.logger.debug('SELECT value: ' + value + ', text: ' + text);
         if (typeof _this.changeCallback === 'function') {
           _this.changeCallback(value, text);
         }
@@ -40,7 +42,7 @@ export default class {
       
       var layers = [];
       var menu = _this.buildMenu(annoHierarchy);
-      console.log('MenuTagSelector menu:', menu);
+      _this.logger.debug('MenuTagSelector menu:', menu);
       
       _this.selector.setItems(menu);
       

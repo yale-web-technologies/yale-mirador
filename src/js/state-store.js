@@ -1,3 +1,5 @@
+import getLogger from './util/logger';
+
 const registeredKeys = new Set([
   'ANNO_CELL_FIXED',
   'lastSelectedLayer',
@@ -7,12 +9,13 @@ const registeredKeys = new Set([
 // Holds states for the app, which will persist if local storgae is available.
 class StateStore {
   constructor() {
+    this.logger = getLogger();
     this._settings = {};
     this._localStorageAvailable = storageAvailable('localStorage');
   }
 
   getString(key) {
-    console.log('getString', key);
+    this.logger.debug('StateStore#getString', key);
     this._checkKey(key);
     let value = this._settings[key];
     if (!value) {
@@ -23,9 +26,8 @@ class StateStore {
   }
 
   setString(key, value) {
-    console.log('setString', key, value);
+    this.logger.debug('StateStore#setString', key, value, this._localStorageAvailable);
     this._checkKey(key);
-    console.log('State#setString key:', key, 'val:', value, 'localStorage:', this._localStorageAvailable);
     this._settings[key] = value;
     if (this._localStorageAvailable) {
       localStorage.setItem(key, value);
@@ -33,14 +35,14 @@ class StateStore {
   }
 
   getObject(key) {
-    console.log('getObject', key);
+    this.logger.debug('StateStore#getObject', key);
     this._checkKey(key);
     const value = this.getString(key);
     return value ? JSON.parse(value) : null;
   }
 
   setObject(key, value) {
-    console.log('setObject', key, value);
+    this.logger.debug('StateStore#setObject', key, value);
     this._checkKey(key);
     const stringValue = JSON.stringify(value);
     this.setString(key, stringValue);

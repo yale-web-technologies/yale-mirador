@@ -1,4 +1,5 @@
 import {annoUtil} from '../import';
+import getLogger from '../util/logger';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 
 class YmAnnotationSelector {
@@ -6,6 +7,7 @@ class YmAnnotationSelector {
   constructor(elem) {
     const _this = this;
     
+    this.logger = getLogger();
     this.elem = elem;
     elem.modal({
       onApprove: function(elem) {
@@ -222,7 +224,7 @@ class YmAnnotationSelector {
     const canvasElems = this.canvasesPanel.find('.canvas');
     let scrollTo = null;
     
-    console.log('scrollToCurrentCanvas ' + canvasElems.length);
+    this.logger.debug('scrollToCurrentCanvas ' + canvasElems.length);
     
     canvasElems.each(function(index, canvasElem) {
       const elem = $(canvasElem);

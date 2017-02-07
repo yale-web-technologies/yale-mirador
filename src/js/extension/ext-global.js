@@ -1,12 +1,16 @@
+import getLogger from '../util/logger';
+
 (function($) {
   
   $.yaleExt = $.yaleExt || {};
+  
+  const logger = getLogger();
   
   jQuery.extend($.yaleExt, {
 
     // Get bounds of multiple paper.js shapes.
     getCombinedBounds: function (shapes) {
-      console.log('shapes: ' + shapes);
+      logger.debug('shapes: ' + shapes);
       var bounds = null;
       jQuery.each(shapes, function (index, shape) {
         if (bounds) {
@@ -14,7 +18,7 @@
         } else {
           bounds = shape.strokeBounds;
         }
-        console.log('index: ' + index + ', bounds: ' + bounds);
+        logger.debug('index: ' + index + ', bounds: ' + bounds);
       });
       return bounds;
     },

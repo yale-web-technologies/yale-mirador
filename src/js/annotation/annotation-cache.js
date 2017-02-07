@@ -1,4 +1,5 @@
 import {annoUtil} from '../import';
+import getLogger from '../util/logger';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 
 export default function getAnnotationCache() {
@@ -16,6 +17,7 @@ let instance = null;
 
 class AnnotationCache {
   constructor() {
+    this.logger = getLogger();
     this._dbName = 'anno_cache';
     this._valid = false;
     this._expiresInMS = 2 * 60 * 60 * 1000; // milliseconds
@@ -29,12 +31,12 @@ class AnnotationCache {
           _this._valid = true;
           resolve(_this);
         }).catch(function(reason) {
-          console.log('ERROR AnnotationCache#constructor promise rejected - ' + reason);
+          _this.logger.error('AnnotationCache#constructor promise rejected - ', reason);
           reject(_this);
         });
       } else {
         reject(_this);
-        console.log('IndexedDB is not available on this browser.');
+        _this.logger.info('IndexedDB is not available on this browser.');
       }
     });
   }
@@ -45,7 +47,7 @@ class AnnotationCache {
   _initIndexedDb() {
     const _this = this;
     this._db = new Dexie(this._dbName).on('versionchange', function(event) {
-      console.log('versionchange ' + event.newVersion);
+      _this.logger.debug('versionchange ' + event.newVersion);
     });
     
     this._db.version(1).stores({
@@ -53,7 +55,7 @@ class AnnotationCache {
       annosPerCanvas: 'canvasId,jsonData,timestamp'
     });
     return this._db.open().catch(function(e) {
-      console.log('ERROR AnnotationCache#setupIndexDb open failed: ' + e);
+      _this.logger.error('AnnotationCache#setupIndexDb open failed: ' + e);
       _this._valid = false;
     });
   }
@@ -62,9 +64,10 @@ class AnnotationCache {
    * @returns {object} a Promise
    */
   clear() {
-    console.log('AnnotationCache#clear');
+    const _this = this;
+    this.logger.debug('AnnotationCache#clear');
     return (new Dexie(this._dbName)).delete().catch(function(e) {
-      console.log('AnnotationCache#clear exception: ' + e.stack);
+      _this.logger.error('AnnotationCache#clear exception: ' + e.stack);
     });
   }
   
@@ -72,12 +75,13 @@ class AnnotationCache {
    * @returns {object} a Promise
    */
   emptyTable(name) {
+    const _this = this;
     const table = this._db.table(name);
     return this._db.transaction('rw', table, function() {
       table.each(function (item, cursor) {
-        console.log('deleting ' + cursor.key);
+        _this.logger.debug('AnnotationCache#emptyTable deleting', cursor.key);
         table.delete(cursor.key).catch(function(e) {
-          console.log('ERROR deleting from table ' + name + ': ' + e);
+          _this.logger.error('AnnotationCache#emptyTable deleting from table ' + name + ': ' + e);
         });
       });
     });
@@ -102,7 +106,7 @@ class AnnotationCache {
       .then(function() {
         return _this._db.layers.add({ id: 1, jsonData: layersJson})
           .catch(function(e) {
-            console.log('ERROR AnnotatinCache#setLayers update failed: ' + e);
+            _this.logger.error('AnnotatinCache#setLayers update failed: ' + e);
             throw e;
           });
       });
@@ -116,12 +120,8 @@ class AnnotationCache {
     const coll = this._db.annosPerCanvas.where('canvasId').equals(canvasId)
       .and(function(rec) {
         const nowMS = new Date().valueOf();
-        console.log('rec.timestamp: ' + rec.timestamp);
-        console.log('now: ' + nowMS);
-        console.log('exp: ' + _this._expiresInMS);
-        console.log('diff: ' + (nowMS - rec.timestamp));
-        console.log('test: ' + (rec.timestamp > nowMS - _this._expiresInMS));
-        return rec.timestamp > new Date().valueOf() - _this._expiresInMS;
+        _this.logger.debug('AnnotationCache#getAnnotationsPerCanvas expiration test: ' + (rec.timestamp > nowMS - _this._expiresInMS));
+        return rec.timestamp > nowMS - _this._expiresInMS;
       });
     return coll.first(function(row) {
       return row ? row.jsonData : null;
@@ -144,10 +144,11 @@ class AnnotationCache {
   }
   
   deleteAnnotationsPerCanvas(canvasId) {
+    const _this = this;
     const table = this._db.annosPerCanvas;
     const coll = table.where('canvasId').equals(canvasId);
     return coll.delete().catch(function(e) {
-      console.log('ERROR AnnotationCache#deleteAnnotationsPerCanvas failed to delete canvasId: ' + canvasId);
+      _this.logger.error('AnnotationCache#deleteAnnotationsPerCanvas failed to delete canvasId: ' + canvasId);
     });
   }
   
@@ -156,7 +157,7 @@ class AnnotationCache {
   }
   
   invalidateCanvasId(canvasId) {
-    console.log('CACHE INVALIDATED: ' + canvasId);
+    this.logger.debug('CACHE INVALIDATED: ' + canvasId);
     return this.deleteAnnotationsPerCanvas(canvasId);
   }
   
@@ -165,7 +166,7 @@ class AnnotationCache {
   }
   
   invalidateAnnotationId(annotationId) {
-    console.log('invalidateAnnotationId: ' + annotationId);
+    this.logger.debug('invalidateAnnotationId: ' + annotationId);
     const proxyMgr = getMiradorProxyManager();
     const canvasIdSet = new Set();
     for (let windowProxy of proxyMgr.getAllWindowProxies()) {
@@ -174,7 +175,6 @@ class AnnotationCache {
         if (annotation['@id'] === annotationId) {
           const targetCanvasIds = annoUtil.getTargetCanvasIds(annotation, {
             annotations: annotations});
-          console.log('targetCanvasIds: ' + targetCanvasIds);
           for (let canvasId of targetCanvasIds) {
             canvasIdSet.add(canvasId);
           }

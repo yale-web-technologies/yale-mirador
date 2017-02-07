@@ -1,5 +1,6 @@
 import {annoUtil} from '../import';
 import AnnotationEditor from './annotation-editor';
+import getLogger from '../util/logger';
 import getStateStore from '../state-store';
 
 /**
@@ -8,6 +9,7 @@ import getStateStore from '../state-store';
  */
 export default class AnnotationListRenderer {
   constructor() {
+    this.logger = getLogger();
   }
 
   /*
@@ -15,7 +17,7 @@ export default class AnnotationListRenderer {
    * @param {object} options
    */
   render(options) {
-    console.log('AnnotationListRenderer#render');
+    this.logger.debug('AnnotationListRenderer#render options:', options);
     options.parentElem.empty();
     if (options.toc) {
       return this.renderWithToc(options);
@@ -25,7 +27,7 @@ export default class AnnotationListRenderer {
   }
   
   renderDefault(options) {
-    console.log('AnnotationListRenderer#renderDefault');
+    this.logger.debug('AnnotationListRenderer#renderDefault options:', options);
     const _this = this;
     let count = 0;
     
@@ -39,7 +41,7 @@ export default class AnnotationListRenderer {
           }
         }
       } catch (e) {
-        console.log('ERROR AnnotationListRenderer#render ' + e);
+        _this.logger.error('ERROR AnnotationListRenderer#render', e);
         throw e;
       }
     });
@@ -50,7 +52,7 @@ export default class AnnotationListRenderer {
    * Consult the table of contents structure to populate the annotations list.
    */
   renderWithToc(options) {
-    console.log('AnnotationListRenderer#renderWithToc');
+    this.logger.debug('AnnotationListRenderer#renderWithToc options:', options);
     const _this = this;
     
     options.toc.walk(function(node) {
@@ -167,7 +169,7 @@ export default class AnnotationListRenderer {
   }
 
   createAnnoElem(annotation, options) {
-    console.log('AnnotationWindow#createAnnoElem anno:', annotation);
+    this.logger.debug('AnnotationWindow#createAnnoElem anno:', annotation);
     const content = annoUtil.getText(annotation);
     const tags = annoUtil.getTags(annotation);
     const tagsHtml = this.getTagsHtml(tags);
@@ -206,12 +208,13 @@ export default class AnnotationListRenderer {
   }
 
   bindAnnotationItemEvents(annoElem, annotation, options) {
+    const _this = this;
     const annoWin = options.annotationWindow;
     const finalTargetAnno = annoUtil.findFinalTargetAnnotation(annotation, 
       options.annotationsList);
 
     annoElem.click(function(event) {
-      console.log('Clicked: Annotation ' + annotation['@id']);
+      _this.logger.debug('Clicked annotation:', annotation);
       annoWin.clearHighlights();
       annoWin.highlightAnnotation(annotation['@id']);
       annoWin.miradorProxy.publish('ANNOTATION_FOCUSED', [annoWin.id, finalTargetAnno]);

@@ -1,5 +1,6 @@
 import AnnotationSource from '../annotation/annotation-source';
 import AnnotationSourceFb from '../annotation/annotation-source-fb';
+import getLogger from '../util/logger';
 
 export default class MiradorConfigBuilder {
   constructor(options) {
@@ -15,6 +16,7 @@ export default class MiradorConfigBuilder {
       miradorId: null, // ID of Mirador instance
       tagHierarchy: null
     }, options);
+    this.logger = getLogger();
   }
 
   buildConfig() {
@@ -52,7 +54,7 @@ export default class MiradorConfigBuilder {
       config.windowSettings.canvasControls.annotations.annotationCreation = false;
     }
 
-    //console.log('MiradorConfigBuilder#buildConfig config: ' + JSON.stringify(config, null, 2));
+    this.logger.debug('MiradorConfigBuilder#buildConfig config:', config);
     return config;
   }
   

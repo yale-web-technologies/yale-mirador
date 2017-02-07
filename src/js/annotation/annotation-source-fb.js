@@ -1,24 +1,27 @@
 import {annoUtil} from '../import';
 import FirebaseProxy from './firebase-proxy';
+import getLogger from '../util/logger';
 import getMiradorWindow from '../mirador-window';
 
 // Implements inteface between Joosugi annotation explorer and the annotation server
 export default class AnnotationSourceFb {
   constructor() {
+    this.logger = getLogger();
     const fbSettings = getMiradorWindow().getConfig().extension.firebase;
     this.fbProxy = new FirebaseProxy(fbSettings);
     this.fbKeyMap = {}; // key: annotation['@id], value: firebase key.
   }
 
   getLayers() {
-    console.log('AnnotationSourceFb#getLayers');
+    const _this = this;
+    this.logger.debug('AnnotationSourceFb#getLayers');
     const promise = new Promise(function(resolve, reject) {
       const ref = firebase.database().ref('layers');
 
       ref.once('value', function (snapshot) {
         const data = snapshot.val();
         const layers = [];
-        console.log('Layers:', data);
+        _this.logger.debug('Layers:', data);
         jQuery.each(data, function (key, value) {
           layers.push(value);
         });
@@ -29,7 +32,7 @@ export default class AnnotationSourceFb {
   }
 
   getAnnotations(canvasId) {
-    console.log('AnnotationSourceFb#getAnnotations canvasId: ' + canvasId);
+    this.logger.debug('AnnotationSourceFb#getAnnotations canvasId:', canvasId);
     const _this = this;
 
     return new Promise((resolve, reject) => {
@@ -37,7 +40,7 @@ export default class AnnotationSourceFb {
       const annotations = [];
 
       fbDfd.done(function(annoInfos) {
-        console.log('AnnotationSourceFb#_search annoInfos: ', annoInfos);
+        _this.logger.debug('AnnotationSourceFb#_search annoInfos:', annoInfos);
         jQuery.each(annoInfos, function(index, annoInfo) {
           var oaAnnotation = _this._getAnnotationInOA(annoInfo.annotation);
           oaAnnotation.layerId = annoInfo.layerId;
@@ -50,7 +53,7 @@ export default class AnnotationSourceFb {
   }
 
   createAnnotation(oaAnnotation) {
-    console.log('AnnotationSourceFb#createAnnotation oaAnnotation:', oaAnnotation);
+    this.logger.debug('AnnotationSourceFb#createAnnotation oaAnnotation:', oaAnnotation);
     const _this = this;
     const layerId = oaAnnotation.layerId;
     const annotation = this._getAnnotationInEndpoint(oaAnnotation);
@@ -68,8 +71,7 @@ export default class AnnotationSourceFb {
   }
 
   updateAnnotation(oaAnnotation) {
-    console.log('AnnotationSourceFb#updateAnnotation annotation:', oaAnnotation);
-    console.dir(oaAnnotation);
+    this.logger.debug('AnnotationSourceFb#updateAnnotation annotation:', oaAnnotation);
     
     var _this = this;
     var canvasId = this._getTargetCanvasId(oaAnnotation);
@@ -87,7 +89,7 @@ export default class AnnotationSourceFb {
           // Delete from all lists except for this canvas/layer.
           _this.fbProxy.deleteAnnoFromListExcludeCanvasLayer(annotation, canvasId, layerId);
           _this.fbProxy.addAnnoToList(annotation, canvasId, layerId);
-          console.log('Firbase update succeeded');
+          _this.logger.debug('Firbase update succeeded');
           resolve(oaAnnotation);
         }
       });
@@ -95,7 +97,7 @@ export default class AnnotationSourceFb {
   }
 
   deleteAnnotation(annotationId) {
-    console.log('YaleDemoEndpoint#delete annotationId: ' + annotationId);
+    this.logger.debug('YaleDemoEndpoint#delete annotationId:' + annotationId);
     const _this = this;
     const fbKey = this.fbKeyMap[annotationId];
     const ref = firebase.database().ref('annotations/' + fbKey);
@@ -114,17 +116,18 @@ export default class AnnotationSourceFb {
   }
 
   updateAnnotationListOrder(canvasId, layerId, annoIds) {
-    console.log('AnnotationSourceFb#updateAnnotationListOrder');
-    var combinedId = canvasId + layerId;
-    var ref = firebase.database().ref('lists');
-    var query = ref.orderByChild('combinedId').equalTo(combinedId);
+    this.logger.debug('AnnotationSourceFb#updateAnnotationListOrder');
+    const _this = this;
+    const combinedId = canvasId + layerId;
+    const ref = firebase.database().ref('lists');
+    const query = ref.orderByChild('combinedId').equalTo(combinedId);
     
     return new Promise((resolve, reject) => {
       query.once('value', function(snapshot) {
         if (snapshot.exists()) { // child with combiedId exists
           resolve();
         } else {
-          console.log('ERROR updateOrder: list not found for ' + combinedId);
+          _this.logger.debug('ERROR updateOrder: list not found for', combinedId);
           reject();
         }
       });
@@ -132,7 +135,6 @@ export default class AnnotationSourceFb {
     .then(() => {
       query.once('child_added', function(snapshot, prevChildKey) {
         snapshot.ref.update({ annotationIds: annoIds});
-        console.log('xxxx 1');
       });
     });
   }
@@ -147,7 +149,7 @@ export default class AnnotationSourceFb {
     }
     
     var canvasId = targetAnno.on.full;
-    console.log('_getTargetCanvasId canvas ID: ' + canvasId);
+    this.logger.debug('_getTargetCanvasId canvas ID:', canvasId);
     return canvasId;
   }
   
@@ -156,7 +158,7 @@ export default class AnnotationSourceFb {
     var motivation = annotation.motivation;
     if (!(motivation instanceof Array)) {
       if (motivation !== 'oa:commenting') {
-        console.log('ERROR YaleEndpoint#getAnnotationInOA unexpected motivation value: ', motivation, ', id: ' + annotation['@id']);
+        this.logger.error('YaleEndpoint#getAnnotationInOA unexpected motivation value: ', motivation, ', id: ' + annotation['@id']);
       }
       motivation = ['oa:commenting'];
     }
@@ -171,7 +173,6 @@ export default class AnnotationSourceFb {
       within: annotation.within,
     };
     oaAnnotation.layerId = annotation.layerId;
-    //console.log('YaleEndpoint#getAnnotationInOA oaAnnotation:', oaAnnotation);
     return oaAnnotation;
   }
 

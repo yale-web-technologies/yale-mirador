@@ -1,4 +1,5 @@
 import {annoUtil} from '../import';
+import getLogger from '../util/logger';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import getStateStore from '../state-store';
 import MenuTagSelector from '../widgets/menu-tag-selector';
@@ -22,6 +23,8 @@ export default class AnnotationWindow {
       initialTocTags: null,
       annotationId: null
     }, options);
+    
+    this.logger = getLogger();
 
     return new Promise(function(resolve, reject) {
       _this.init().then(function() {
@@ -86,7 +89,7 @@ export default class AnnotationWindow {
       annotationExplorer: this.explorer,
       initialTags: this.initialTocTags,
       changeCallback: function(value, text) {
-        console.log('Change from TOC selector: ', value);
+        _this.logger.debug('Change from TOC selector: ', value);
         _this.updateList();
       }
     });
@@ -101,7 +104,7 @@ export default class AnnotationWindow {
       annotationExplorer: this.explorer,
       initialLayerId: this.initialLayerId,
       changeCallback: function(value, text) {
-        console.log('Change from Layer selector: ', value);
+        _this.logger.debug('Change from Layer selector: ', value);
         _this.currentLayerId = value;
         _this.updateList();
       }
@@ -110,7 +113,7 @@ export default class AnnotationWindow {
   }
 
   reload() {
-    console.log('AnnotationWindow#reload');
+    this.logger.debug('AnnotationWindow#reload');
     const _this = this;
     const state = getStateStore();
 
@@ -168,7 +171,7 @@ export default class AnnotationWindow {
   }
   
   updateList() {
-    console.log('AnnotationWindow#updateList');
+    this.logger.debug('AnnotationWindow#updateList');
     const _this = this;
     const state = getStateStore();
     const options = {};
@@ -244,8 +247,8 @@ export default class AnnotationWindow {
   }
   
   scrollToElem(annoElem) {
-    console.log('annoElem.position().top: ' + annoElem.position().top);
-    console.log('element.scrollTop(): ' + this.element.scrollTop());
+    this.logger.debug('annoElem.position().top:', annoElem.position().top);
+    this.logger.debug('element.scrollTop():' + this.element.scrollTop());
     
     //this.listElem.animate({
     this.element.animate({
@@ -255,7 +258,7 @@ export default class AnnotationWindow {
   }
   
   scrollToAnnotation(annoId) {
-    console.log('AnnotationWindow#scrollToAnnotation annoId: ' + annoId);
+    this.logger.debug('AnnotationWindow#scrollToAnnotation annoId: ' + annoId);
     const _this = this;
     let found = false;
     
@@ -342,7 +345,7 @@ export default class AnnotationWindow {
     });
     
     jQuery.subscribe('ANNOTATION_FOCUSED', function(event, annoWinId, annotation) {
-      console.log('Annotation window ' + _this.id + ' received annotation_focused event from ' + annoWinId);
+      _this.logger.debug('Annotation window ' + _this.id + ' received annotation_focused event from ' + annoWinId);
       if (annoWinId === _this.id) {
         return;
       }

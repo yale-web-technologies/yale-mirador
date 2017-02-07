@@ -1,3 +1,5 @@
+import getLogger from '../util/logger';
+
 /**
  * Overrides the same-named file in Mirador core to prevent
  * Bootstrap or Bootbox code being called, which collides with Semantic UI.
@@ -19,6 +21,7 @@
   ].join(''));
     
   $.DialogBuilder = function (container) {
+    this.logger = getLogger();
     var id = 'ym_dialog';
     var elem = jQuery('#' + id);
     if (elem.length === 0) {
@@ -38,7 +41,7 @@
     },
     
     dialog: function(opts){
-      console.log('DialogBuilder#dialog');
+      this.logger.debug('DialogBuilder#dialog opts:', opts);
       var yes = opts.buttons.yes;
       var no = opts.buttons.no;
       

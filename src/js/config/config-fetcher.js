@@ -1,3 +1,5 @@
+import getLogger from '../util/logger';
+
 export default function getConfigFetcher() {
   if (!instance) {
     instance = new ConfigFetcher();
@@ -8,6 +10,9 @@ export default function getConfigFetcher() {
 let instance = null;
 
 class ConfigFetcher {
+  constructor() {
+    this.logger = getLogger();
+  }
 
   /**
    * Retrieves parameters passed via HTML attributes.
@@ -36,7 +41,7 @@ class ConfigFetcher {
    */
   fetchSettingsFromApi(baseUrl, roomId) {
     const url = baseUrl + '?room_id=' + roomId;
-    console.log('ConfigFetcher#fetchSettingsFromApi url:', url);
+    this.logger.debug('ConfigFetcher#fetchSettingsFromApi url:', url);
 
     return new Promise(function(resolve, reject) {
       const dfd = jQuery.Deferred();

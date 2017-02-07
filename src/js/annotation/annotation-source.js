@@ -1,4 +1,5 @@
 import getAnnotationCache from './annotation-cache';
+import getLogger from '../util/logger';
 import getMiradorWindow from '../mirador-window';
 import getStateStore from '../state-store';
 
@@ -8,15 +9,16 @@ export default class AnnotationSource {
     this.options = jQuery.extend({
       prefix: null
     }, options);
+    this.logger = getLogger();
     this.layers = null;
   }
 
   async getLayers() {
-    console.log('AnnotationSource#getLayers');
+    this.logger.debug('AnnotationSource#getLayers');
     let layers = null;
 
     if (this.layers) {
-      console.log('AnnotationSource#getLayers hit cache', this.layers);
+      this.logger.debug('AnnotationSource#getLayers hit cache', this.layers);
       layers = this.layers;
     } else {
       layers = await this._getRemoteLayers();
@@ -35,7 +37,7 @@ export default class AnnotationSource {
       if (settings.projectId && !settings.disableAuthz) {
         url += '?group_id=' + settings.projectId;
       }
-      console.log('AnnotationSource#getLayers url:', url);
+      _this.logger.debug('AnnotationSource#getLayers url:', url);
 
       jQuery.ajax({
         url: url,
@@ -43,7 +45,7 @@ export default class AnnotationSource {
         dataType: 'json',
         contentType: 'application/json; charset=utf-8',
         success: function (data, textStatus, jqXHR) {
-          console.log('AnnotationSource#getLayers layers: ', data);
+          _this.logger.debug('AnnotationSource#getLayers layers: ', data);
           _this.layers = data;
           resolve(data);
         },
@@ -51,7 +53,7 @@ export default class AnnotationSource {
           const msg = 'AnnotationSource#getLayers error status code: ' +
             jqXHR.status + ', textStatus: ' + textStatus +
             ', errorThrown: ' + errorThrown + ', URL: ' + url;
-          console.log(msg);
+          _this.logger.error(msg);
           reject(msg);
         }
       });
@@ -59,7 +61,7 @@ export default class AnnotationSource {
   }
 
   _updateLayerIndex(layers) {
-    console.log('AnnotationSource#_updateLayerIndex');
+    this.logger.debug('AnnotationSource#_updateLayerIndex');
     const state = getStateStore();
     
     if (!state.getObject('layerIndexMap')) {
@@ -67,7 +69,6 @@ export default class AnnotationSource {
       let count = 0;
       layers.forEach((layer) => {
         map[layer['@id']] = count;
-        console.log('count:', count);
         ++count;
       });
       state.setObject('layerIndexMap', count > 0 ? map : null);
@@ -84,7 +85,7 @@ export default class AnnotationSource {
 
     if (cache) {
       annotations = await cache.getAnnotationsPerCanvas(canvasId);
-      console.log('AnnotationSource#getAnnotations from cache:', annotations);
+      this.logger.debug('AnnotationSource#getAnnotations from cache:', annotations);
     }
 
     if (!annotations) {
@@ -104,11 +105,11 @@ export default class AnnotationSource {
   }
 
   _getRemoteAnnotations(canvasId) {
-    console.log('AnnotationSource#_getRemoteAnnotation canvas: ' + canvasId);
+    this.logger.debug('AnnotationSource#_getRemoteAnnotation canvas: ' + canvasId);
     const _this = this;
     return new Promise(function(resolve, reject) {
       const url = _this.options.prefix + '/getAnnotationsViaList?canvas_id=' + encodeURIComponent(canvasId);
-      console.log('AnnotationSource#_getRemoteAnnotations url: ', url);
+      _this.logger.debug('AnnotationSource#_getRemoteAnnotations url: ', url);
       const annotations = [];
 
       jQuery.ajax({
@@ -117,7 +118,7 @@ export default class AnnotationSource {
         dataType: 'json',
         contentType: 'application/json; charset=utf-8',
         success: function (data, textStatus, jqXHR) {
-          console.log('AnnotationSource#_getAnnotations data: ', data);
+          _this.logger.debug('AnnotationSource#_getAnnotations data: ', data);
           for (let value of data) {
             let annotation = value.annotation;
             annotation.layerId = value.layer_id;
@@ -134,7 +135,7 @@ export default class AnnotationSource {
   }
   
   async createAnnotation(oaAnnotation) {
-    console.log('AnnotationSource#createAnnotation oaAnnotation:', oaAnnotation);
+    this.logger.debug('AnnotationSource#createAnnotation oaAnnotation:', oaAnnotation);
     const _this = this;
     const cache = await getAnnotationCache();
     const layerId = oaAnnotation.layerId;
@@ -153,7 +154,7 @@ export default class AnnotationSource {
         data: JSON.stringify(request),
         contentType: 'application/json; charset=utf-8',
         success: function (data) {
-          console.log('AnnotationSource#createAnnotation creation successful on the annotation server:', data);
+          _this.logger.debug('AnnotationSource#createAnnotation creation successful on the annotation server:', data);
           const annotation = data;
           const oaAnnotation = _this._getAnnotationInOA(annotation);
           oaAnnotation.layerId = layerId;
@@ -166,7 +167,7 @@ export default class AnnotationSource {
         },
         error: function (jqXHR, textStatus, errorThrown) {
           const msg = 'Failed to create annotation: ' + textStatus + ' ' + jqXHR.status + ' ' + errorThrown;
-          console.log(msg);
+          _this.logger.error(msg);
           reject(msg);
         }
       });
@@ -183,7 +184,7 @@ export default class AnnotationSource {
       annotation: annotation
     };
     
-    console.log('AnnotationSource#updateAnnotation payload:', data);
+    this.logger.debug('AnnotationSource#updateAnnotation payload:', data);
 
     return new Promise((resolve, reject) => {
       jQuery.ajax({
@@ -193,7 +194,7 @@ export default class AnnotationSource {
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify(data),
         success: function(data, textStatus, jqXHR) {
-            console.log('Update was successful: ', data);
+            _this.logger.debug('AnnotationSource#updateAnnotation successful', data);
             data.layerId = oaAnnotation.layerId;
             if (cache) {
               cache.invalidateAnnotation(oaAnnotation);
@@ -209,7 +210,7 @@ export default class AnnotationSource {
   }
   
   async deleteAnnotation (annotationId) {
-    console.log('AnnotationSource#deleteAnnotations annotationId:', annotationId);
+    this.log.debug('AnnotationSource#deleteAnnotations annotationId:', annotationId);
     const _this = this;
     const cache = await getAnnotationCache();
     const url = annotationId;
@@ -221,7 +222,7 @@ export default class AnnotationSource {
         dataType: 'json',
         contentType: 'application/json; charset=utf-8',
         success: function (data, textStatus, jqXHR) {
-          console.log('AnnotationSource#deleteAnnotation success data:', data);
+          _this.logger.debug('AnnotationSource#deleteAnnotation success data:', data);
           if (cache) {
             cache.invalidateAnnotationId(annotationId);
           }
@@ -236,6 +237,7 @@ export default class AnnotationSource {
   }
 
   async updateAnnotationListOrder(canvasId, layerId, annoIds) {
+    const _this = this;
     const cache = await getAnnotationCache();
     const url = this.options.prefix + '/resequenceList';
     const data = {
@@ -252,15 +254,15 @@ export default class AnnotationSource {
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify(data),
         success: function (data, textStatus, jqXHR) {
-          console.log('Updating order was successful:', data);
+          _this.logger.debug('AnnotationSource#updateAnnotationListOrder successful', data);
           if (cache) {
             cache.invalidateCanvasId(canvasId);
           }
           resolve(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
-          console.log('AnnotationSource#updateAnnotationListOrder failed for request', data);
           const msg = 'AnnotationSource#updateAnnotation failed: ' + textStatus + ' ' + jqXHR.status + ' ' + errorThrown;
+          _this.logger.error(msg);
           reject(msg);
         }
       });
@@ -272,7 +274,7 @@ export default class AnnotationSource {
     let motivation = annotation.motivation;
     if (!(motivation instanceof Array)) {
       if (motivation !== 'oa:commenting') {
-        console.log('ERROR YaleEndpoint#getAnnotationInOA unexpected motivation value: ', motivation, ', id: ' + annotation['@id']);
+        this.logger.error('ERROR YaleEndpoint#getAnnotationInOA unexpected motivation value: ', motivation, ', id: ' + annotation['@id']);
       }
       motivation = ['oa:commenting'];
     }
@@ -290,7 +292,6 @@ export default class AnnotationSource {
     oaAnnotation.layerId = annotation.layerId;
     oaAnnotation.endpoint = this;
 
-    //console.log('YaleEndpoint#getAnnotationInOA oaAnnotation:', oaAnnotation);
     return oaAnnotation;
   }
 

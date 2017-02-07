@@ -1,3 +1,5 @@
+import getLogger from '../util/logger';
+
 export default class {
   /**
    * A selector dropdown implemented with Semantic UI.
@@ -8,9 +10,10 @@ export default class {
       changeCallback: null
     }, options);
 
+    this.logger = getLogger();
     this.init();
   }
-  
+
   init() {
     var _this = this;
     this.element = jQuery(template());
@@ -18,7 +21,7 @@ export default class {
     this.element.dropdown({
       direction: 'downward',
       onChange: function(value, text) {
-        console.log('Selector#init onChange ', value, text, _this._skipNotify);
+        _this.logger.debug('Selector#init onChange ', value, text, _this._skipNotify);
         if (typeof _this.changeCallback === 'function' && !_this._skipNotify) {
           _this.changeCallback(value, text);
         }
@@ -31,13 +34,13 @@ export default class {
     });
     this.values = [];
   }
-  
+
   setItems(itemsConfig) {
     var root = this.element.find('.menu');
     root.empty();
     this._setItems(itemsConfig, root);
   }
-  
+
   _setItems(itemsConfig, parent) {
     var _this = this;
     jQuery.each(itemsConfig, function(index, value) {
@@ -54,7 +57,7 @@ export default class {
       }
     });
   }
-  
+
   addMenuItem(label, value, parent) {
     var item = jQuery('<div/>')
       .addClass('item')
@@ -70,7 +73,7 @@ export default class {
     this.values.push(value);
     return menu;
   }
-  
+
   addItem(options) {
     const item = jQuery(itemTemplate({
       label: options.label,
@@ -82,13 +85,13 @@ export default class {
     parent = options.parent || this.element.find('.menu');
     parent.append(item);
   }
-  
+
   empty() {
     this.element.find('.menu').empty();
   }
-  
+
   val(value, skipNotify) {
-    console.log('Selector#val', value, skipNotify);
+    this.logger.debug('Selector#val', value, skipNotify);
     const dd = this.element;
     this._skipNotify = skipNotify || false;
     dd.dropdown('refresh');
@@ -105,7 +108,7 @@ export default class {
       }
     }
   }
-  
+
   setColorClass(newClass) {
     if (this._oldClass) {
       this.element.removeClass(this._oldClass);

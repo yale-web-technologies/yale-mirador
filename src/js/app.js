@@ -10,6 +10,7 @@ import './annotation/yale-endpoint';
 import './annotation/annotation-editor';
 import './annotation/ym-annotation-selector';
 import getConfigFetcher from './config/config-fetcher';
+import getLogger from './util/logger';
 import Grid from './grid';
 import MainMenu from './widgets/main-menu';
 import getMiradorWindow from './mirador-window';
@@ -20,7 +21,8 @@ import getStateStore from './state-store';
 
 export default class App {
   constructor(options) {
-    //console.log('App#constructor');
+    this.logger = this.setupLogger();
+    this.logger.debug('App#constructor');
     this.options = jQuery.extend({
       rootElement: null,
       dataElement: null
@@ -41,7 +43,7 @@ export default class App {
       throw msg;
     })
     .then(settingsFromApi => {
-      console.log('Settings from API:', settingsFromApi);
+      _this.logger.debug('Settings from API:', settingsFromApi);
       const mainMenu = new MainMenu();
       const grid = new Grid(_this.options.rootElement);
       const settings = jQuery.extend(settingsFromHtml, settingsFromApi);
@@ -53,7 +55,19 @@ export default class App {
       });
     })
     .catch(reason => {
-      alert('ERROR failed to init Mirador - ' + reason);
+      const msg = 'ERROR failed to init Mirador - ' + reason;
+      alert(msg);
+      throw msg;
     });
+  }
+
+  setupLogger() {
+    const logger = getLogger();
+    if (window.location.hash === '#debug') {
+      logger.setLogLevel(logger.DEBUG);
+    } else {
+      logger.setLogLevel(logger.INFO);
+    }
+    return logger;
   }
 }

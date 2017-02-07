@@ -1,7 +1,9 @@
 import {annoUtil} from '../import';
+import getLogger from '../util/logger';
 
 export default class FirebaseProxy {
   constructor(settings) {
+    this.logger = getLogger();
     var config = {
       apiKey: settings.apiKey,
       authDomain: settings.authDomain,
@@ -12,11 +14,12 @@ export default class FirebaseProxy {
   }
   
   getAnnosByCanvasId(canvasId) {
-    var dfd = jQuery.Deferred();
-    var ref =  firebase.database().ref('annotations');
-    var fbAnnos = {};
-    var fbKeys = {};
-    var annoInfos = [];
+    const _this = this;
+    const dfd = jQuery.Deferred();
+    const ref =  firebase.database().ref('annotations');
+    const fbAnnos = {};
+    const fbKeys = {};
+    const annoInfos = [];
     
     ref.once('value', function(snapshot) {
       var data = snapshot.val() || [];
@@ -43,7 +46,7 @@ export default class FirebaseProxy {
                   layerId: listObj.layerId
                 });
               } else {
-                console.log("ERROR anno in the list doesn't exist: " + annotationId);
+                _this.logger.error("Anno in the list doesn't exist: " + annotationId);
               }
             });
           }
@@ -118,7 +121,7 @@ export default class FirebaseProxy {
   }
   
   deleteAnnoFromListExcludeCanvasLayer(annotation, canvasId, layerId) {
-    console.log('FirebaseProxy#_fbDeleteAnnoFromListExcludeCanvasLayer');
+    this.logger.debug('FirebaseProxy#_fbDeleteAnnoFromListExcludeCanvasLayer');
     var annoId = annotation['@id'];
     var combinedId = canvasId + layerId;
     var ref = firebase.database().ref('lists');

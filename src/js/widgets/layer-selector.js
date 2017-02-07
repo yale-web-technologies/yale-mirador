@@ -1,5 +1,6 @@
-import Selector from './selector';
+import getLogger from '../util/logger';
 import getStateStore from '../state-store';
+import Selector from './selector';
 
 export default class {
   /**
@@ -13,6 +14,7 @@ export default class {
       changeCallback: null,
       initialLayerId: null
     }, options);
+    this.logger = getLogger();
     this.appState = getStateStore();
   }
 
@@ -20,7 +22,7 @@ export default class {
    * @returns {Promise}
    */
   init(layers) {
-    console.log('LayerSelector#init layers:', layers);
+    this.logger.debug('LayerSelector#init layers:', layers);
     this._isLoaded = false;
     this.selector = new Selector({
       appendTo: this.parent
@@ -33,11 +35,11 @@ export default class {
    * @returns {Promise}
    */
   reload(layers) {
-    console.log('LayerSelector#reload');
+    this.logger.debug('LayerSelector#reload');
     const _this = this;
     const layerIndexMap = this.appState.getObject('layerIndexMap');
     if (!layerIndexMap) {
-      console.log('ERROR LayerSelector#reload cannot retrieve layerIndexMap');
+      this.logger.error('LayerSelector#reload cannot retrieve layerIndexMap');
     }
     this.selector.empty();
 
@@ -45,7 +47,7 @@ export default class {
       let layerId = layer['@id'];
       let layerIndex = layerIndexMap ? layerIndexMap[layerId] : 0;
       let colorClass = typeof layerIndex === 'number' ? 'layer_' + layerIndex % 10 : undefined;
-      
+
       _this.selector.addItem({
         label: layer.label,
         value: layerId,
@@ -65,10 +67,10 @@ export default class {
   }
 
   val(value, skipNotify) {
-    console.log('LayerSelector#val', value, skipNotify);
+    this.logger.debug('LayerSelector#val', value, skipNotify);
     const retVal = this.selector.val(value, skipNotify);
     if (value !== undefined) {
-      console.log('val:', value);
+      this.logger.debug('val:', value);
       getStateStore().setString('lastSelectedLayer', value);
     }
     return retVal;
@@ -81,10 +83,10 @@ export default class {
   bindEvents() {
     var _this = this;
     this.selector.changeCallback = function(layerId, text) {
-      console.log('LayerSelector#bindEvents changeCallback');
+      _this.logger.debug('LayerSelector#bindEvents changeCallback');
       const layerIndexMap = _this.appState.getObject('layerIndexMap');
       const layerIndex = layerIndexMap ? layerIndexMap[layerId] : 0;
-      
+
       _this.selector.setColorClass('layer_' + layerIndex % 10);
       getStateStore().setString('lastSelectedLayer', layerId);
       if (typeof _this.changeCallback === 'function') {

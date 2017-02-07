@@ -1,11 +1,13 @@
 import {annoUtil} from '../import';
+import getLogger from '../util/logger';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import getStateStore from '../state-store';
 import LayerSelector from '../widgets/layer-selector';
 
 export default class AnnotationEditor {
   constructor(options) {
-    console.log('AnnotationEditor#constructor options:', options);
+    this.logger = getLogger();
+    this.logger.debug('AnnotationEditor#constructor options:', options);
     jQuery.extend(this, {
       windowId: null,
       miradorDriven: false, // true if created and managed by Mirador core.
@@ -43,7 +45,7 @@ export default class AnnotationEditor {
   }
   
   async reload(parent) {
-    console.log('AnnotationEditor#reload parent:', parent);
+    this.logger.debug('AnnotationEditor#reload parent:', parent);
     const _this = this;
     
     parent.prepend(this.element);
@@ -56,7 +58,6 @@ export default class AnnotationEditor {
     });
 
     const layers = await this.endpoint.getLayers();
-    console.log(layers);
 
     this.layerSelector.init(layers).then(() => {
       if (_this._mode === 'create') {
@@ -80,10 +81,10 @@ export default class AnnotationEditor {
         _this.bindEvents();
       }, 0);
     }).catch(function(reason) {
-      console.log('ERROR AnnotationEditor#reload layerSelector.init failed - ' + reason);
+      _this.logger.error('ERROR AnnotationEditor#reload layerSelector.init failed - ' + reason);
     });
   }
-  
+
   initTinyMce(textAreaSelector) {
     tinymce.init({
       selector: '#' + this.id + ' textarea',
@@ -109,12 +110,11 @@ export default class AnnotationEditor {
   
   // Called by Mirador core
   show(selector) {
-    console.log('selector: ', selector);
+    this.logger.debug('AnnotationEditor#show', selector);
     if (selector) {
       this.reload(jQuery(selector));
     }
     this.element.show();
-    console.log('display: ', this.element.css('display'));
   }
   
   hide() {
@@ -186,7 +186,7 @@ export default class AnnotationEditor {
         full: targetAnnotation['@id']
       };
     }
-    console.log('AnnotationEditor#createAnnotation anno: ' + JSON.stringify(annotation, null, 2));
+    this.logger.debug('AnnotationEditor#createAnnotation anno:', annotation);
     return annotation;
   }
   
@@ -280,10 +280,9 @@ export default class AnnotationEditor {
   }
   
   validate () {
-    console.log('AnnotationEditor#validate target anno: ');
-    console.dir(this.targetAnnotation);
+    this.logger.debug('AnnotationEditor#validate target anno:', this.targetAnnotation);
+    let msg = '';
 
-    var msg = '';
     if (this._mode === 'create') {
       if (!this.targetAnnotation) {
         msg += 'Target annotation is missing.\n';
