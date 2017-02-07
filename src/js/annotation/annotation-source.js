@@ -236,7 +236,7 @@ export default class AnnotationSource {
   }
 
   async updateAnnotationListOrder(canvasId, layerId, annoIds) {
-    const cache = getAnnotationCache();
+    const cache = await getAnnotationCache();
     const url = this.options.prefix + '/resequenceList';
     const data = {
       canvas_id: canvasId,
