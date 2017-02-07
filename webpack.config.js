@@ -8,7 +8,7 @@ function header() {
   return '// Yale-Mirador version ' + npmPackage.version + ' - ' + new Date() + '\n\n';
 }
 module.exports = {
-  debug: true,
+  debug: false,
   entry: { 
     'yale-mirador': [
       './src/js/app.js', 

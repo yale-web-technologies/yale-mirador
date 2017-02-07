@@ -17,15 +17,16 @@ module.exports = function(config) {
     files: [
       'node_modules/mirador-y/dist/mirador/mirador.min.js',
       'lib/dexie.js',
+      'lib/semantic/dist/semantic.min.js',
       'node_modules/babel-polyfill/dist/polyfill.js',
-      'test/**/*-test.js'
+      'test/**/*.test.js'
     ],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
       'src/js/**/*.js': ['webpack', 'sourcemap'],
-      'test/**/*-test.js': ['webpack', 'sourcemap']
+      'test/**/*.test.js': ['webpack', 'sourcemap']
     },
     
     webpack: {
