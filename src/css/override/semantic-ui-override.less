@@ -1,7 +1,7 @@
-/* 
+/*
  * Overriding Semantic UI
  */
- 
+
  .ui.text.menu {
    margin: 0;
    min-height: 0;
@@ -11,7 +11,7 @@
   padding: @annowin-v-padding @annowin-h-padding;
   min-height: 1em;
   //min-width: 125px;
-  
+
   .menu > .item .dropdown.icon {
     float: none; // to prevent the dropdown icon from line-wrapping
   }
@@ -29,4 +29,11 @@
     width: 1000px; // increased width (fron 900) for large window
     margin: -50% 0 0 -450px;
   }
+}
+
+a.hud-control.hud-dropdown {
+  // Some menu icons in Mirador HUD was being messed up
+  // because Semantic UI sets box-sizing to inherit to all
+  // elements and pseudo elements.
+  box-sizing: initial;
 }
