@@ -143,7 +143,7 @@ export default class {
   }
 
   showAnnotation(miradorId, windowId, annoId) {
-    _this.logger.debug('Grid#showAnnotation miradorId: ' + miradorId +
+    this.logger.debug('Grid#showAnnotation miradorId: ' + miradorId +
       ', windowId: ' + windowId + ', annoId: ' + annoId);
     const miradorProxy = this.miradorProxyManager.getMiradorProxy(miradorId);
     const windowProxy = miradorProxy.getWindowProxyById(windowId);
