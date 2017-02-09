@@ -8,15 +8,14 @@ export default class {
     this.logger = getLogger();
     this.init(rootElementId);
   }
-  
+
   init(rootElementId) {
     this.logger.debug('Grid#init');
     this.element = jQuery('#' + rootElementId);
     this.miradorProxyManager = getMiradorProxyManager();
-    this.annotationListRenderer = new AnnotationListRenderer();
-    
+
     this._annotationWindows = {};
-    
+
     this.initLayout();
     this.bindEvents();
   }
@@ -44,15 +43,15 @@ export default class {
         }*/]
       }]
     };
-    
+
     this.layout = new GoldenLayout(config, this.element);
-    
+
     this.layout.registerComponent('Mirador', function (container, componentState) {
       const id = componentState.miradorId;
       const template = Handlebars.compile(jQuery('#viewer_template').html());
       container.getElement().html(template({ id: id }));
     });
-    
+
     this.layout.registerComponent('Annotations', function (container, componentState) {
       const id = componentState.windowId;
       const appendTo = jQuery('<div/>').attr('id', id);
@@ -66,16 +65,16 @@ export default class {
       });
       return true;
     });
-    
+
     this.layout.init();
   }
-  
+
   resize() {
     this.logger.debug('Grid#resize');
     this.element.css('bottom', 0);
     this.layout.updateSize();
   }
-  
+
   addMiradorWindow(miradorId) {
     this.logger.debug('Grid#addMiradorWindow');
     const windowId = Mirador.genUUID();
@@ -86,7 +85,7 @@ export default class {
     };
     this.layout.root.contentItems[0].addChild(itemConfig);
   }
-  
+
   addWindows(config) {
     this.logger.debug('Grid#addWindows config:', config);
     for (let windowConfig of config.windows) {
@@ -94,7 +93,7 @@ export default class {
       this.addWindow(windowConfig);
     }
   }
-  
+
   addWindow(options) {
     this.logger.debug('Grid#addWindow', options);
     const _this = this;
@@ -105,9 +104,9 @@ export default class {
       componentState: { windowId: windowId }
     };
     this.layout.root.contentItems[0].addChild(itemConfig);
-    
+
     return new AnnotationWindow({ appendTo: jQuery('#' + windowId),
-      annotationListRenderer: this.annotationListRenderer,
+      annotationListRenderer: new AnnotationListRenderer(),
       miradorId: options.miradorId,
       initialLayerId: options.layerId || null,
       initialTocTags: options.tocTags || null,
@@ -122,7 +121,7 @@ export default class {
 
   bindEvents() {
     const _this = this;
-    
+
     this.layout.on('itemDestroyed', function(item) {
       _this.logger.debug('itemDestroyed', item);
 
@@ -132,11 +131,11 @@ export default class {
         delete _this._annotationWindows[windowId];
       }
     });
-    
+
     jQuery.subscribe('YM_ADD_WINDOW', function(event, options) {
       _this.addWindow(options || {});
     });
-    
+
     jQuery.subscribe('YM_ADD_WINDOWS', function(event, config) {
       _this.logger.debug('Received YM_ADD_WINDOWS config:', config);
       _this.addWindows(config);

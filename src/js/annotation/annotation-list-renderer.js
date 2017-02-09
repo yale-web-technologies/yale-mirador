@@ -10,6 +10,7 @@ import getStateStore from '../state-store';
 export default class AnnotationListRenderer {
   constructor() {
     this.logger = getLogger();
+    this.state = getStateStore();
   }
 
   /*
@@ -18,6 +19,7 @@ export default class AnnotationListRenderer {
    */
   render(options) {
     this.logger.debug('AnnotationListRenderer#render options:', options);
+    this.layerIndexMap = this.state.getObject('layerIndexMap');
     options.parentElem.empty();
     if (options.toc) {
       return this.renderWithToc(options);
@@ -25,12 +27,12 @@ export default class AnnotationListRenderer {
       return this.renderDefault(options);
     }
   }
-  
+
   renderDefault(options) {
     this.logger.debug('AnnotationListRenderer#renderDefault options:', options);
     const _this = this;
     let count = 0;
-    
+
     jQuery.each(options.annotationsList, function(index, annotation) {
       try {
         if (options.layerId === annotation.layerId) {
@@ -47,14 +49,14 @@ export default class AnnotationListRenderer {
     });
     return count;
   }
-  
+
   /**
    * Consult the table of contents structure to populate the annotations list.
    */
   renderWithToc(options) {
     this.logger.debug('AnnotationListRenderer#renderWithToc options:', options);
     const _this = this;
-    
+
     options.toc.walk(function(node) {
       if (node.isRoot) {
         return; // do nothing with root node
@@ -65,7 +67,7 @@ export default class AnnotationListRenderer {
     });
     _this.appendUnattachedAnnotations(options);
   }
-  
+
   appendHeader(node, options) {
     const layerId = options.layerId;
     const selectedTags = options.selectedTags;
@@ -79,10 +81,10 @@ export default class AnnotationListRenderer {
       }
       return true;
     }
-    
+
     // We are distinguishing between leaf and non-leaf nodes to ensure
     // only one header will show over any set of annotations.
-    
+
     // True if node is a non-leaf and there are annotations to show under the header
     function nonLeafHasAnnotationsToShow() {
       function hasChildAnnotationsToShow() {
@@ -105,7 +107,7 @@ export default class AnnotationListRenderer {
     function leafHasAnnotationsToShow() {
       return numChildNodes === 0 && node.layerIds.has(layerId); // node is a leaf and there are annotations with matching layer
     }
-    
+
     if ((showAll || arrayContains(node.cumulativeTags, selectedTags)) &&
       (nonLeafHasAnnotationsToShow() || leafHasAnnotationsToShow()))
     {
@@ -113,25 +115,25 @@ export default class AnnotationListRenderer {
       options.parentElem.append(headerElem);
     }
   }
-  
+
   appendAnnotationForTocNode(node, options) {
     const layerId = options.layerId;
     const selectedTags = options.selectedTags;
     const showAll = (selectedTags[0] === 'all'); // show all chapters/scenes if true
-    
+
     if (node.annotation && layerId === node.annotation.layerId &&
       (showAll || options.toc.matchHierarchy(node.annotation, selectedTags)))
     {
       options.parentElem.append(this.createAnnoElem(node.annotation, options));
     }
   }
-  
+
   appendAnnotationsForChildNodes(node, options) {
     const _this = this;
     const layerId = options.layerId;
     const selectedTags = options.selectedTags;
     const showAll = (selectedTags[0] === 'all');
-    
+
     jQuery.each(node.childAnnotations, function(index, annotation) {
       if (layerId === annotation.layerId &&
         (showAll || options.toc.matchHierarchy(annotation, selectedTags)))
@@ -161,7 +163,7 @@ export default class AnnotationListRenderer {
       }
     }
   }
-  
+
   createHeaderElem(node) {
     const text = node.cumulativeLabel;
     const headerHtml = headerTemplate({ text: text });
@@ -181,7 +183,7 @@ export default class AnnotationListRenderer {
       isEditor: options.isEditor,
       orderable: options.isCompleteList
     });
-    const layerIndex = state.getObject('layerIndexMap')[annotation.layerId];
+    const layerIndex = this.layerIndexMap[annotation.layerId];
     const annoElem = jQuery(annoHtml);
     const menuBar = annoElem.find('.menu_bar');
 
@@ -210,7 +212,7 @@ export default class AnnotationListRenderer {
   bindAnnotationItemEvents(annoElem, annotation, options) {
     const _this = this;
     const annoWin = options.annotationWindow;
-    const finalTargetAnno = annoUtil.findFinalTargetAnnotation(annotation, 
+    const finalTargetAnno = annoUtil.findFinalTargetAnnotation(annotation,
       options.annotationsList);
 
     annoElem.click(function(event) {
@@ -232,7 +234,7 @@ export default class AnnotationListRenderer {
         saveCallback: function(annotation) {
           dialogElement.dialog('close');
           annoWin.canvasWindow.annotationsList.push(annotation);
-          annoWin.miradorProxy.publish('ANNOTATIONS_LIST_UPDATED', 
+          annoWin.miradorProxy.publish('ANNOTATIONS_LIST_UPDATED',
             { windowId: annoWin.canvasWindow.id, annotationsList: annoWin.canvasWindow.annotationsList });
         },
         cancelCallback: function() {
@@ -248,7 +250,7 @@ export default class AnnotationListRenderer {
       });
       editor.show();
     });
-    
+
     annoElem.find('.edit').click(function(event) {
       const editor = new AnnotationEditor({
         parent: annoElem,
@@ -271,18 +273,18 @@ export default class AnnotationListRenderer {
           annoElem.data('editing', false);
         }
       });
-      
+
       annoElem.data('editing', true);
       annoElem.find('.normal_view').hide();
       editor.show();
     });
-    
+
     annoElem.find('.delete').click(function(event) {
       if (window.confirm('Do you really want to delete the annotation?')) {
         annoWin.miradorProxy.publish('annotationDeleted.' + annoWin.canvasWindow.id, [annotation['@id']]);
       }
     });
-    
+
     annoElem.find('.up.icon').click(function(event) {
       const sibling = annoElem.prev();
       if (sibling.length > 0 && sibling.hasClass('annowin_anno')) {
@@ -342,4 +344,3 @@ const headerTemplate = Handlebars.compile([
   '<div class="annowin_group_header">{{text}}',
   '</div>'
 ].join(''));
-

@@ -34,7 +34,7 @@ class Logger {
     args.unshift('ERROR');
     this.log.apply(this, args);
   }
-  
+
   info() {
     if (this.logLevel <= this.INFO) {
       let args = Array.prototype.slice.call(arguments);

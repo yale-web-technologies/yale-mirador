@@ -23,7 +23,7 @@ export default class AnnotationWindow {
       initialTocTags: null,
       annotationId: null
     }, options);
-    
+
     this.logger = getLogger();
 
     return new Promise(function(resolve, reject) {
@@ -42,7 +42,7 @@ export default class AnnotationWindow {
   async init() {
     const _this = this;
     let annosToShow = [];
-    
+
     this.miradorProxy = getMiradorProxyManager().getMiradorProxy(this.miradorId);
     if (!this.id) {
       this.id = Mirador.genUUID();
@@ -53,7 +53,7 @@ export default class AnnotationWindow {
     this.element = jQuery(template({}));
     this.appendTo.append(this.element);
     this.listElem = this.element.find('.annowin_list');
-    
+
     if (!this.initialLayerId && this.annotationId) {
       annosToShow = this.canvasWindow.annotationsList.filter(anno => anno['@id'] === _this.annotationId);
       if (annosToShow.length > 0) {
@@ -65,7 +65,7 @@ export default class AnnotationWindow {
     this.tempMenuRow = this.element.find('.annowin_temp_row');
     this.placeholder = this.element.find('.placeholder');
     this.placeholder.text('Loading...').show();
-    
+
     return this.reload().then(function() {
       if (annosToShow.length > 0) {
         const finalTargetAnno = annoUtil.findFinalTargetAnnotation(annosToShow[0],
@@ -78,7 +78,7 @@ export default class AnnotationWindow {
       throw 'AnnotationWindow#init promise failed - ' + reason;
     });
   }
-  
+
   initMenuTagSelector() {
     var _this = this;
     if (this.menuTagSelector) {
@@ -95,21 +95,25 @@ export default class AnnotationWindow {
     });
     this.initialTocTags = null;
   }
-  
+
   initLayerSelector() {
     const _this = this;
-    this.currentLayerId = this.initialLayerId;
+    this._setCurrentLayerId(this.initialLayerId);
     this.layerSelector = new LayerSelector({
       parent: this.element.find('.layer_selector_container'),
       annotationExplorer: this.explorer,
       initialLayerId: this.initialLayerId,
       changeCallback: function(value, text) {
         _this.logger.debug('Change from Layer selector: ', value);
-        _this.currentLayerId = value;
+        _this._setCurrentLayerId(value);
         _this.updateList();
       }
     });
-    this.initialLayerId = null;
+  }
+
+  _setCurrentLayerId(layerId) {
+    this.logger.debug('AnnotationWindow#_setCurrentLayerId layerId:', layerId);
+    this.currentLayerId = layerId;
   }
 
   reload() {
@@ -140,7 +144,8 @@ export default class AnnotationWindow {
           if (_this.layerSelector.isLoaded()) {
             resolve();
           } else {
-            _this.layerSelector.init(layers).then(function() {
+            _this.layerSelector.init(layers).then(function(layerSelector) {
+              _this._setCurrentLayerId(layerSelector.val());
               resolve();
             }).catch(function(reason) {
               reject('layerSelector.init failed - ' + reason);
@@ -151,7 +156,7 @@ export default class AnnotationWindow {
         }
       });
     });
-    
+
     const tocPromise = new Promise(function(resolve, reject) {
       if (_this.explorer.getAnnotationToc()) {
         _this.menuTagSelector.reload().then(function() {
@@ -163,13 +168,13 @@ export default class AnnotationWindow {
         resolve();
       }
     });
-    
+
     return Promise.all([layersPromise, tocPromise]).then(function() {
       _this.updateList();
       return _this;
     });
   }
-  
+
   updateList() {
     this.logger.debug('AnnotationWindow#updateList');
     const _this = this;
@@ -189,14 +194,14 @@ export default class AnnotationWindow {
     options.layerId  = this.layerSelector.val();
 
     const count = this.annotationListRenderer.render(options);
-    
+
     if (count === 0) {
       this.placeholder.text('No annotations found.').show();
     } else {
       this.placeholder.hide();
     }
   }
-  
+
   getCurrentCanvas() {
     var window = this.canvasWindow;
     var id = window.canvasID;
@@ -205,7 +210,7 @@ export default class AnnotationWindow {
       return canvas['@id'] === id;
     })[0];
   }
-  
+
   highlightAnnotation(annoId) {
     this.listElem.find('.annowin_anno').each(function(index, value) {
       var annoElem = jQuery(value);
@@ -220,10 +225,10 @@ export default class AnnotationWindow {
 
   highlightAnnotations(annotations, flag) {
     const _this = this;
-    const klass = (flag === 'TARGETING' ? 'ym_anno_targeting' : 
+    const klass = (flag === 'TARGETING' ? 'ym_anno_targeting' :
       (flag === 'TARGETED' ? 'ym_anno_targeted' : 'ym_anno_selected'));
     let firstMatch = true;
-    
+
     this.listElem.find('.annowin_anno').each(function(index, value) {
       const annoElem = jQuery(value);
       const annoId = annoElem.data('annotationId');
@@ -245,23 +250,23 @@ export default class AnnotationWindow {
       }
     });
   }
-  
+
   scrollToElem(annoElem) {
     this.logger.debug('annoElem.position().top:', annoElem.position().top);
     this.logger.debug('element.scrollTop():' + this.element.scrollTop());
-    
+
     //this.listElem.animate({
     this.element.animate({
       //scrollTop: annoElem.position().top + this.listElem.scrollTop()
       scrollTop: annoElem.position().top + this.listElem.position().top + this.element.scrollTop()
     }, 250);
   }
-  
+
   scrollToAnnotation(annoId) {
     this.logger.debug('AnnotationWindow#scrollToAnnotation annoId: ' + annoId);
     const _this = this;
     let found = false;
-    
+
     this.listElem.find('.annowin_anno').each(function(index, value) {
       const elem = jQuery(value);
       if (elem.data('annotationId') === annoId) {
@@ -272,20 +277,20 @@ export default class AnnotationWindow {
     });
     return found;
   }
-  
+
   clearHighlights() {
     this.listElem.find('.annowin_anno').each(function(index, value) {
       jQuery(value).removeClass('annowin_targeted')
         .removeClass('ym_anno_selected ym_anno_targeting ym_anno_targeted');
     });
   }
-  
+
   createInfoDiv(annotation, callback) {
     var targetAnnoID = annotation.on.full;
     var targetLink = '<a target="_blank" href="' + targetAnnoID + '">' + targetAnnoID + '</a>';
     return jQuery(infoTemplate({ on: targetLink }));
   }
-  
+
   hasOpenEditor() {
     var hasOne = false;
     this.listElem.find('.annowin_anno').each(function(index, value) {
@@ -296,7 +301,7 @@ export default class AnnotationWindow {
     });
     return hasOne;
   }
-  
+
   saveOrder() {
     var _this = this;
     var annoElems = this.listElem.find('.annowin_anno');
@@ -314,49 +319,50 @@ export default class AnnotationWindow {
         _this.tempMenuRow.hide();
       });
   }
-  
+
   fadeUp(elem, onComplete) {
-    elem.transition({ 
-      animation: 'fade up', 
+    elem.transition({
+      animation: 'fade up',
       duration: '0.3s',
       onComplete: onComplete
     });
   }
-  
+
   fadeDown(elem, onComplete) {
-    elem.transition({ 
-      animation: 'fade down', 
+    elem.transition({
+      animation: 'fade down',
       duration: '0.3s',
       onComplete: onComplete
     });
   }
-  
+
   bindEvents() {
     var _this = this;
-    
+
     this.element.find('.annowin_temp_row .ym_button').click(function(event) {
       _this.saveOrder();
     });
-    
+
     jQuery.subscribe('YM_READY_TO_RELOAD_ANNO_WIN', function(event) {
       if (! _this.hasOpenEditor()) {
         _this.reload();
       }
     });
-    
+
     jQuery.subscribe('ANNOTATION_FOCUSED', function(event, annoWinId, annotation) {
       _this.logger.debug('Annotation window ' + _this.id + ' received annotation_focused event from ' + annoWinId);
       if (annoWinId === _this.id) {
         return;
       }
       _this.clearHighlights();
-      
+
       const annotationsList = _this.canvasWindow.annotationsList;
       const layerId = _this.currentLayerId;
       const toc = _this.explorer.getAnnotationToc();
-      
+
       if (toc) {
         const siblings = annoUtil.findTocSiblings(annotation, annotationsList, layerId, toc);
+        _this.logger.debug('AnnotationWindow SUB ANNOTATION_FOCUSED siblings:', siblings);
         if (siblings.length > 0) {
           _this.highlightAnnotations(siblings, 'SIBLING');
           return;
@@ -373,7 +379,7 @@ export default class AnnotationWindow {
         return;
       }
     });
-    
+
     jQuery.subscribe('YM_ANNO_HEIGHT_FIXED', function(event, fixedHeight) {
       if (fixedHeight) {
         _this.element.addClass('fixed_height_cells');
@@ -381,17 +387,17 @@ export default class AnnotationWindow {
         _this.element.removeClass('fixed_height_cells');
       }
     });
-    
+
     this.miradorProxy.subscribe(('currentCanvasIDUpdated.' + this.canvasWindow.id), function(event) {
       _this.placeholder.text('Loading...').show();
     });
   }
 }
-  
+
 const template = Handlebars.compile([
   '<div class="ym_annotation_window">',
   '  <div class="annowin_header">',
-  '    <div class="annowin_layer_row">', 
+  '    <div class="annowin_layer_row">',
   '      <span class="layer_selector_container"></span>',
   '    </div>',
   '    <div class="annowin_menu_tag_row">',
@@ -406,4 +412,3 @@ const template = Handlebars.compile([
   '  </div>',
   '</div>'
 ].join(''));
-
