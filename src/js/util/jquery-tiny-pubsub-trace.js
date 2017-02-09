@@ -1,7 +1,7 @@
 /**
  * Replaces/overrides jquery-tiny-pubsub code to print traces.
- * Include this file for debugging only! 
- */ 
+ * Include this file for debugging only!
+ */
 (function($) {
 
   var debug = true;
@@ -10,7 +10,7 @@
   // Add strings or patterns to  array and
   // event names
   var excludePatterns = [];
-  
+
   var scaffoldMap = {};
 
   var exclude = function(str) {
@@ -38,12 +38,12 @@
     scaffoldMap[handler] = scaffold;
     return scaffold;
   };
-  
+
   var unscaffold = function(handler) {
     var scaffold = scaffoldMap[handler];
     delete scaffoldMap[handler];
     return scaffold;
-  }
+  };
 
   var publish = $.publish;
   var subscribe = $.subscribe;
@@ -53,11 +53,11 @@
     var args = Array.prototype.slice.call(arguments);
     var eventId = args[0];
     var handler = args[1];
-    
+
     if (logging(eventId)) {
       console.log('PubSub:subscribe', args);
       handler = scaffoldHandler(eventId, handler);
-      args[1] = handler; 
+      args[1] = handler;
     };
     console.log('S', Object.keys(scaffoldMap).length);
     subscribe.apply(jQuery, args);
@@ -67,7 +67,7 @@
     var args = Array.prototype.slice.call(arguments);
     var eventId = args[0];
     var handler = args[1];
-    
+
     if (logging(eventId)) {
       log('PubSub:unsubscribe', Array.prototype.slice.call(arguments));
       if (typeof args[1] === 'function') {
