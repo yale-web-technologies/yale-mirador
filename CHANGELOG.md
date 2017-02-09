@@ -2,6 +2,9 @@
 
 This file should be updated before a new release is deployed.
 
+## 0.4.2 <small>2/7/2017</small>
+* Bug fix: clicking on an annotation cell wouldn't let other annotations windows scroll to the "sibling" item, because currentLayerId wasn't being set when the annotation windows get first created.
+
 ## 0.4.1 <small>2/7/2017</small>
 * Bug fixes + refactoring
 
