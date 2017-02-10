@@ -7,6 +7,7 @@
   "endpointUrl": "http://mirador-annotations-lotb-stg.herokuapp.com",
   "__endpointUrl": "firebase",
   "disableAuthz": true,
+  "fixAnnoCellHeight": true,
   "__firebase": {},
   "firebase": {
     "apiKey": "AIzaSyAmsETcxLRWXpkGd4r-EFpyBGk1Q5ejuHc",
@@ -18,7 +19,7 @@
   "tagHierarchy": {
     "shortLabelSeparator": ".",
     "nodeSpecs": [
-      [ 
+      [
         { "tag" : "chapter1", "label": "Chapter 1", "short": "1" },
         { "tag" : "chapter2", "label": "Chapter 2", "short": "2" },
         { "tag" : "chapter3", "label": "Chapter 3", "short": "3" },

@@ -25,7 +25,8 @@ app.get('/api/settings', function(req, res) {
     tagHierarchy: config.tagHierarchy,
     endpointUrl: config.endpointUrl,
     firebase: config.firebase,
-    disableAuthz: config.disableAuthz
+    disableAuthz: config.disableAuthz,
+    fixAnnoCellHeight: config.fixAnnoCellHeight
   };
   res.setHeader('Content-Type', 'application/json');
   res.cookie('isEditor', config.isEditor);

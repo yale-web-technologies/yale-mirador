@@ -44,9 +44,13 @@ export default class App {
     })
     .then(settingsFromApi => {
       _this.logger.debug('Settings from API:', settingsFromApi);
-      const mainMenu = new MainMenu();
-      const grid = new Grid(_this.options.rootElement);
       const settings = jQuery.extend(settingsFromHtml, settingsFromApi);
+      const grid = new Grid(_this.options.rootElement);
+      const mainMenu = new MainMenu();
+
+      if (settings.fixAnnoCellHeight) {
+        getStateStore().setString('ANNO_CELL_FIXED', 'true');
+      }
 
       getMiradorWindow().init({
         mainMenu: mainMenu,
