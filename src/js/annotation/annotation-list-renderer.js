@@ -144,6 +144,7 @@ export default class AnnotationListRenderer {
   }
 
   appendUnattachedAnnotations(options) {
+    this.logger.debug('AnnotationListRenderer#appendUnattachedAnnotations');
     const _this = this;
     const layerId = options.layerId;
     const showAll = (options.selectedTags[0] === 'all');

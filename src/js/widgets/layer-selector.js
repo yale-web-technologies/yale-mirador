@@ -22,7 +22,7 @@ export default class {
    * @returns {Promise}
    */
   init(layers) {
-    this.logger.debug('LayerSelector#init layers:', layers);
+    this.logger.debug('LayerSelector#init layers:', layers, 'initialLayerId:', this.initialLayerId);
     this._isLoaded = false;
     this.selector = new Selector({
       appendTo: this.parent
