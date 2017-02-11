@@ -63,7 +63,7 @@ export default class AnnotationSource {
   _updateLayerIndex(layers) {
     this.logger.debug('AnnotationSource#_updateLayerIndex');
     const state = getStateStore();
-    
+
     if (!state.getObject('layerIndexMap')) {
       const map = {};
       let count = 0;
@@ -133,7 +133,7 @@ export default class AnnotationSource {
       });
     });
   }
-  
+
   async createAnnotation(oaAnnotation) {
     this.logger.debug('AnnotationSource#createAnnotation oaAnnotation:', oaAnnotation);
     const _this = this;
@@ -173,7 +173,7 @@ export default class AnnotationSource {
       });
     });
   }
-  
+
   async updateAnnotation(oaAnnotation) {
     const _this = this;
     const cache = await getAnnotationCache();
@@ -183,7 +183,7 @@ export default class AnnotationSource {
       layer_id: [oaAnnotation.layerId],
       annotation: annotation
     };
-    
+
     this.logger.debug('AnnotationSource#updateAnnotation payload:', data);
 
     return new Promise((resolve, reject) => {
@@ -208,9 +208,9 @@ export default class AnnotationSource {
       });
     });
   }
-  
-  async deleteAnnotation (annotationId) {
-    this.log.debug('AnnotationSource#deleteAnnotations annotationId:', annotationId);
+
+  async deleteAnnotation(annotationId) {
+    this.logger.debug('AnnotationSource#deleteAnnotations annotationId:', annotationId);
     const _this = this;
     const cache = await getAnnotationCache();
     const url = annotationId;

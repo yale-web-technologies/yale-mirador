@@ -30,7 +30,7 @@ export default class YaleEndpoint {
 
     progressPane.show();
     explorer.getAnnotations({ canvasId: canvasId })
-    .catch(reason => { 
+    .catch(reason => {
       const msg = 'ERROR YaleEndpoint#search getAnnotations - ' + reason;
       throw(msg);
     })
@@ -97,7 +97,7 @@ export default class YaleEndpoint {
   update(oaAnnotation, successCallback, errorCallback) {
     const _this = this;
     const annotationId = oaAnnotation['@id'];
-    
+
     if (this.userAuthorize('update', oaAnnotation)) {
       this._update(oaAnnotation)
       .catch((reason) => {
@@ -123,7 +123,7 @@ export default class YaleEndpoint {
     const _this = this;
     const explorer = this.getAnnotationExplorer();
     const annotationId = oaAnnotation['@id'];
-    
+
     const promise = Promise.resolve().then(() => {
       return explorer.updateAnnotation(oaAnnotation);
     })
@@ -146,7 +146,7 @@ export default class YaleEndpoint {
   deleteAnnotation(annotationId, successCallback, errorCallback) {
     this.logger.debug('YaleEndpoint#deleteAnnotation annotationId: ' + annotationId);
     const _this = this;
-     
+
     if (this.userAuthorize('delete', null)) {
       this._deleteAnnotation(annotationId)
       .then(() => {
@@ -154,7 +154,8 @@ export default class YaleEndpoint {
           successCallback();
         }
       })
-      .catch((reason) => {
+      .catch(reason => {
+        _this.logger.error('YaleEndpoint#deleteAnnotation _deleteAnnotation failed:', reason);
         errorCallback();
       });
     } else {
@@ -165,12 +166,12 @@ export default class YaleEndpoint {
        }
     }
   }
-  
+
   _deleteAnnotation(annotationId) {
     this.logger.debug('YaleEndpoint#_deleteAnnotation annotationId:', annotationId);
     const _this = this;
     const explorer = this.getAnnotationExplorer();
-    
+
     const promise = explorer.deleteAnnotation(annotationId)
     .catch((reason) => {
       const msg = 'ERROR YaleEndpoint#_deleteAnnotation explorer.deleteAnnotation - ' + reason;
@@ -193,7 +194,7 @@ export default class YaleEndpoint {
   updateOrder(canvasId, layerId, annoIds, successCallback, errorCallback) {
     this.logger.debug('YaleEndpoint#updateOrder canvasId:', canvasId, 'layerId:', layerId, 'annoIds:', annoIds);
     const _this = this;
-     
+
     if (this.userAuthorize('update', null)) {
       this._updateOrder(canvasId, layerId, annoIds)
       .catch((reason) => {
@@ -230,7 +231,7 @@ export default class YaleEndpoint {
       return true;
     }
   }
-  
+
   set(prop, value, options) {
     this.logger.debug('YaleEndpoint#set prop:', prop, ', value:', value, ', options:', options);
     if (options) {
@@ -239,7 +240,7 @@ export default class YaleEndpoint {
       this[prop] = value;
     }
   }
-  
+
   getAnnotationExplorer() {
     if (!_explorer) {
       _explorer = new AnnotationExplorer({
@@ -248,7 +249,7 @@ export default class YaleEndpoint {
     }
     return _explorer;
   }
-  
+
   createAnnotationSource() {
     const source = getMiradorWindow().getConfig().annotationEndpoint.dataSource;
     this.logger.debug('YaleEndpoint#createAnnotationSource', source);
