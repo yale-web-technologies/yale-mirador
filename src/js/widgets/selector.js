@@ -1,5 +1,7 @@
 import getLogger from '../util/logger';
 
+const logger = getLogger();
+
 export default class {
   /**
    * A selector dropdown implemented with Semantic UI.
@@ -10,7 +12,6 @@ export default class {
       changeCallback: null
     }, options);
 
-    this.logger = getLogger();
     this.init();
   }
 
@@ -21,7 +22,7 @@ export default class {
     this.element.dropdown({
       direction: 'downward',
       onChange: function(value, text) {
-        _this.logger.debug('Selector#init onChange ', value, text, _this._skipNotify);
+        logger.debug('Selector#init onChange ', value, text, _this._skipNotify);
         if (typeof _this.changeCallback === 'function' && !_this._skipNotify) {
           _this.changeCallback(value, text);
         }
@@ -70,11 +71,12 @@ export default class {
     item.append(jQuery('<i class="dropdown icon"></i>'));
     item.append(menu);
     parent.append(item);
-    this.values.push(value);
     return menu;
   }
 
   addItem(options) {
+    logger.debug('Selector#addItem options:', options);
+
     const item = jQuery(itemTemplate({
       label: options.label,
       colorClass: options.colorClass
@@ -84,6 +86,7 @@ export default class {
 
     parent = options.parent || this.element.find('.menu');
     parent.append(item);
+    this.values.push(options.value);
   }
 
   empty() {
@@ -91,14 +94,14 @@ export default class {
   }
 
   val(value, skipNotify) {
-    this.logger.debug('Selector#val', value, skipNotify);
+    logger.debug('Selector#val', value, skipNotify);
     const dd = this.element;
     this._skipNotify = skipNotify || false;
     dd.dropdown('refresh');
-    
-    if (value === undefined) {
+
+    if (value === undefined) { // get value
       return dd.dropdown('get value');
-    } else {
+    } else { // set value
       if (dd.dropdown('get item', value)) {
         dd.dropdown('set selected', value);
         return value;

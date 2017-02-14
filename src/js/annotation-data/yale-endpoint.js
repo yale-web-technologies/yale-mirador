@@ -3,7 +3,7 @@ import AnnotationSource from './annotation-source';
 import getErrorDialog from '../widgets/error-dialog';
 import getLogger from '../util/logger';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
-import getMiradorWindow from '../mirador-window';
+import getPageController from '../page-controller';
 import getModalAlert from '../widgets/modal-alert';
 import session from '../session';
 import util from '../util/util';
@@ -251,14 +251,14 @@ export default class YaleEndpoint {
   }
 
   createAnnotationSource() {
-    const source = getMiradorWindow().getConfig().annotationEndpoint.dataSource;
+    const source = getPageController().getConfig().annotationEndpoint.dataSource;
     this.logger.debug('YaleEndpoint#createAnnotationSource', source);
     return new source({prefix: this.prefix});
   }
 
   parseAnnotations() {
     const explorer = this.getAnnotationExplorer();
-    const spec = getMiradorWindow().getConfig().extension.tagHierarchy;
+    const spec = getPageController().getConfig().extension.tagHierarchy;
     explorer.reloadAnnotationToc(spec, this.annotationsList);
   }
 }

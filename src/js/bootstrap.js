@@ -7,7 +7,7 @@ jQuery(document).ready(function() {
   if (jQuery('#ym_grid').length > 0) {
     const app = new App({
       rootElement: 'ym_grid',
-      dataElement: jQuery('#\\{\\{id\\}\\}')
+      dataElement: jQuery('#\\{\\{id\\}\\}') // {{id}} gets replaced with the Mirador instance ID by the Grid
     });
     app.init();
   }

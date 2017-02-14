@@ -72,8 +72,8 @@ function storageAvailable(type) {
 
 let _instance = null;
 
-export default function getStateStore() {
-  if (!_instance) {
+export default function getStateStore(destroyOld) {
+  if (!_instance || destroyOld) {
     _instance = new StateStore();
   }
   return _instance;

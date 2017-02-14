@@ -1,6 +1,6 @@
 import getAnnotationCache from './annotation-cache';
 import getLogger from '../util/logger';
-import getMiradorWindow from '../mirador-window';
+import getPageController from '../page-controller';
 import getStateStore from '../state-store';
 
 // Implements inteface between Joosugi annotation explorer and the annotation server
@@ -32,7 +32,7 @@ export default class AnnotationSource {
     var _this = this;
 
     return new Promise(function(resolve, reject) {
-      const settings = getMiradorWindow().getConfig().extension;
+      const settings = getPageController().getConfig().extension;
       let url = _this.options.prefix + '/layers';
       if (settings.projectId && !settings.disableAuthz) {
         url += '?group_id=' + settings.projectId;

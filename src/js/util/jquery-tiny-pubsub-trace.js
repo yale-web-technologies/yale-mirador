@@ -43,7 +43,7 @@
     var scaffold = scaffoldMap[handler];
     delete scaffoldMap[handler];
     return scaffold;
-  };
+  }
 
   var publish = $.publish;
   var subscribe = $.subscribe;
@@ -59,7 +59,6 @@
       handler = scaffoldHandler(eventId, handler);
       args[1] = handler;
     };
-    console.log('S', Object.keys(scaffoldMap).length);
     subscribe.apply(jQuery, args);
   };
 
@@ -74,7 +73,6 @@
         args[1] = unscaffold(handler);
       }
     }
-    console.log('U', Object.keys(scaffoldMap).length);
     unsubscribe.apply(jQuery, args);
   };
 

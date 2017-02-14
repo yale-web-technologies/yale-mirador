@@ -2,6 +2,8 @@ import getLogger from '../util/logger';
 import Selector from './selector';
 import util from '../util/util';
 
+const logger = getLogger();
+
 export default class {
   constructor(options) {
     jQuery.extend(this, {
@@ -10,17 +12,16 @@ export default class {
       annotationExplorer: null,
       changeCallback: null
     }, options);
-    
-    this.logger = getLogger();
+
     this.init();
   };
-  
+
   init() {
     var _this = this;
     this.selector = new Selector({
       appendTo: this.parent,
       changeCallback: function(value, text) {
-        _this.logger.debug('SELECT value: ' + value + ', text: ' + text);
+        logger.debug('MenuTagSelector select value:', value, 'text:', text);
         if (typeof _this.changeCallback === 'function') {
           _this.changeCallback(value, text);
         }
@@ -28,36 +29,38 @@ export default class {
     });
     return this.reload();
   }
-  
+
   reload() {
     var _this = this;
     var toc = this.annotationExplorer.getAnnotationToc();
     var annoHierarchy = toc ? toc.annoHierarchy : null;
-    
+
     return new Promise(function(resolve, reject) {
       if (!annoHierarchy) {
         reject();
       }
       _this.selector.empty();
-      
+
       var layers = [];
       var menu = _this.buildMenu(annoHierarchy);
-      _this.logger.debug('MenuTagSelector menu:', menu);
-      
+      logger.debug('MenuTagSelector menu:', menu);
+
       _this.selector.setItems(menu);
-      
+
       setTimeout(function() {
         const value = (_this.initialTags && _this.initialTags.length > 0) ? _this.initialTags.join('|') : 'all';
+        logger.debug('MenuTagSelector#reload initially setting value to', value);
         _this.selector.val(value, true);
         resolve();
       }, 0);
     });
   }
-  
+
   val(value, skipNotify) {
+    logger.debug('MenuTagSelector#val value:', value, 'skipNotify:', skipNotify);
     return this.selector.val(value, skipNotify);
   }
-  
+
   /**
    * node: an annoHierarchy node
    */
@@ -67,9 +70,9 @@ export default class {
       .sort(function(a, b) {
         return a.weight - b.weight;
       });
-      
+
     let item = { children: [] };
-    
+
     if (!node.isRoot) {
       var label = parentItem ? parentItem.label + ', ' + node.spec.label : node.spec.label;
       var value = parentItem ? parentItem.value + '|' + node.spec.tag : node.spec.tag;
@@ -87,7 +90,7 @@ export default class {
       return item;
     }
   }
-  
+
   destroy() {
     this.selector.destroy();
   }

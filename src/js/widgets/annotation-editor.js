@@ -2,7 +2,7 @@ import {annoUtil} from '../import';
 import getLogger from '../util/logger';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import getStateStore from '../state-store';
-import LayerSelector from '../widgets/layer-selector';
+import LayerSelector from './layer-selector';
 
 export default class AnnotationEditor {
   constructor(options) {
@@ -11,11 +11,9 @@ export default class AnnotationEditor {
     jQuery.extend(this, {
       windowId: null,
       miradorDriven: false, // true if created and managed by Mirador core.
-      windowId: null,
       annotation: null,
       id: null,
       parent: null,
-      canvasWindow: null, // reference window that contains the canvas
       endpoint: null,
       targetAnnotation: null, // target annotation (annotation annotated by this annotation)
       saveCallback: null,
@@ -23,31 +21,31 @@ export default class AnnotationEditor {
     }, options);
 
     this._mode = options.mode; // "create", "update", or "merge"
-    
+
     this.init();
     this.hide();
   }
-  
+
   init() {
     this.miradorProxyManager = getMiradorProxyManager();
     this.endpoint = this.endpoint || this.miradorProxyManager.getWindowProxyById(this.windowId).getEndPoint();
     this.id = this.id || Mirador.genUUID();
-    
+
     var tagsStr = this.annotation ? annoUtil.getTags(this.annotation).join(' ') : '';
     this.element = jQuery(template({
       miradorDriven: this.miradorDriven,
       tags: tagsStr
     })).attr('id', this.id);
-      
+
     if (!this.miradorDriven) {
       this.reload(this.parent);
     }
   }
-  
+
   async reload(parent) {
     this.logger.debug('AnnotationEditor#reload parent:', parent);
     const _this = this;
-    
+
     parent.prepend(this.element);
     const header = this.element.find('.header');
     const title = header.find('.title');
@@ -107,7 +105,7 @@ export default class AnnotationEditor {
       }
     });
   }
-  
+
   // Called by Mirador core
   show(selector) {
     this.logger.debug('AnnotationEditor#show', selector);
@@ -116,34 +114,34 @@ export default class AnnotationEditor {
     }
     this.element.show();
   }
-  
+
   hide() {
     this.element.hide();
   }
-  
+
   destroy() {
     this.element.remove();
   }
-  
+
   // Called by Mirador core
   isDirty() {
     return this.getEditor().isDirty();
   }
-  
+
   // Get tinymce editor
   getEditor() {
     return tinymce.get(this.textArea.attr('id'));
   }
-  
+
   // Called by Mirador core - XXX seong
   getMode() {
     return this._mode;
   }
-  
+
   getLoadedAnnotation() {
     return this._loadedAnnotation;
   }
-  
+
   // Called by Mirador core
   createAnnotation(targetAnnotation) {
     var tagText = this.element.find('.tags_editor').val().trim();
@@ -151,11 +149,11 @@ export default class AnnotationEditor {
     var tags = [];
     var motivation = [];
     var resource = [];
-    
+
     if (tagText) {
       tags = tagText.split(/\s+/);
     }
-    
+
     if (tags && tags.length > 0) {
       motivation.push("oa:tagging");
       jQuery.each(tags, function(index, value) {
@@ -189,21 +187,21 @@ export default class AnnotationEditor {
     this.logger.debug('AnnotationEditor#createAnnotation anno:', annotation);
     return annotation;
   }
-  
+
   loadAnnotation(annotation) {
     this._mode = 'merge';
     this._loadedAnnotation = annotation;
-    
+
     // Reload the editor with the contents of the annotation
     const content = annoUtil.getText(annotation);
     this.layerSelector.val(annotation.layerId);
     this.getEditor().setContent(content);
-    
+
     const tags = annoUtil.getTags(annotation);
     if (tags.length > 0) {
       this.element.find('.tags_editor').val(tags.join(' '));
     }
-    
+
     // Prevent user from editing the merged content
     this.getEditor().getBody().setAttribute('contenteditable', false);
   }
@@ -213,11 +211,11 @@ export default class AnnotationEditor {
     var tagText = this.element.find('.tags_editor').val().trim();
     var resourceText = this.getEditor().getContent();
     var tags = [];
-    
+
     if (tagText) {
       tags = tagText.split(/\s+/);
     }
-    
+
     var motivation = [],
       resource = [];
 
@@ -228,7 +226,7 @@ export default class AnnotationEditor {
     oaAnno.resource = jQuery.grep(oaAnno.resource, function(value) {
       return value['@type'] !== 'oa:Tag';
     });
-    
+
     //re-add tagging if we have them
     if (tags.length > 0) {
       oaAnno.motivation.push('oa:tagging');
@@ -244,17 +242,17 @@ export default class AnnotationEditor {
         value.chars = resourceText;
       }
     });
-    
+
     var layerId = this.layerSelector.val();
     oaAnno.layerId = layerId;
-    
+
     return oaAnno;
   }
-  
+
   save() {
     var _this = this;
     var annotation = null;
-    
+
     if (this._mode == 'create') {
       annotation = this.createAnnotation(this.targetAnnotation);
       this.endpoint.create(annotation, function(data) {
@@ -278,7 +276,7 @@ export default class AnnotationEditor {
       });
     }
   }
-  
+
   validate () {
     this.logger.debug('AnnotationEditor#validate target anno:', this.targetAnnotation);
     let msg = '';
@@ -301,30 +299,30 @@ export default class AnnotationEditor {
       return false;
     }
   }
-  
+
   bindEvents() {
     var _this = this;
-    
+
     this.element.find('.ym_save').click(function() {
       if (_this.validate()) {
         _this.save();
       }
     });
-    
+
     this.element.find('.ym_cancel').click(function() {
       _this.destroy();
       if (typeof _this.cancelCallback === 'function') {
         _this.cancelCallback();
       }
     });
-    
+
     this.element.find('.ym_vertical_inc').click(function() {
       var iframeId = _this.getEditor().id + '_ifr';
       var element = tinyMCE.DOM.get(iframeId);
       var height = parseInt(tinyMCE.DOM.getStyle(element, 'height'), 10);
       tinyMCE.DOM.setStyle(element, 'height', (height + 75) + 'px');
     });
-    
+
     this.element.find('.ym_vertical_dec').click(function() {
       var iframeId = _this.getEditor().id + '_ifr';
       var element = tinyMCE.DOM.get(iframeId);
@@ -333,7 +331,7 @@ export default class AnnotationEditor {
     });
   }
 }
-    
+
 const template = Handlebars.compile([
   '<div class="ym_anno_editor">',
   '  <div class="header">',

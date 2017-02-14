@@ -6,14 +6,11 @@ import './extension/ext-global';
 import './extension/ext-image-view';
 import './extension/ext-osd-region-draw-tool';
 import './extension/dialog-builder';
-import './annotation/yale-endpoint';
-import './annotation/annotation-editor';
-import './annotation/ym-annotation-selector';
 import getConfigFetcher from './config/config-fetcher';
 import getLogger from './util/logger';
 import Grid from './grid';
 import MainMenu from './widgets/main-menu';
-import getMiradorWindow from './mirador-window';
+import getPageController from './page-controller';
 import './extension/interface';
 //import './util/jquery-tiny-pubsub-trace'; // import this only for debugging!
 
@@ -51,8 +48,7 @@ export default class App {
       if (settings.fixAnnoCellHeight) {
         getStateStore().setString('ANNO_CELL_FIXED', 'true');
       }
-
-      getMiradorWindow().init({
+      getPageController().init({
         mainMenu: mainMenu,
         grid: grid,
         settings: settings

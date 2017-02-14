@@ -1,15 +1,19 @@
-import {annoUtil} from '../import';
-import AnnotationEditor from './annotation-editor';
-import getLogger from '../util/logger';
-import getStateStore from '../state-store';
+import {annoUtil} from '../../import';
+import AnnotationEditor from '../annotation-editor';
+import getLogger from '../../util/logger';
+import getStateStore from '../../state-store';
+
+const logger = getLogger();
 
 /**
  * Generate HTML elements for the annotations to be shown in the annotation window,
  * depending on the context.
  */
 export default class AnnotationListRenderer {
-  constructor() {
-    this.logger = getLogger();
+  constructor(options) {
+    this.options = jQuery.extend({
+      canvasWindowId: null
+    }, options);
     this.state = getStateStore();
   }
 
@@ -18,7 +22,7 @@ export default class AnnotationListRenderer {
    * @param {object} options
    */
   render(options) {
-    this.logger.debug('AnnotationListRenderer#render options:', options);
+    logger.debug('AnnotationListRenderer#render options:', options);
     this.layerIndexMap = this.state.getObject('layerIndexMap');
     options.parentElem.empty();
     if (options.toc) {
@@ -29,7 +33,7 @@ export default class AnnotationListRenderer {
   }
 
   renderDefault(options) {
-    this.logger.debug('AnnotationListRenderer#renderDefault options:', options);
+    logger.debug('AnnotationListRenderer#renderDefault options:', options);
     const _this = this;
     let count = 0;
 
@@ -43,7 +47,7 @@ export default class AnnotationListRenderer {
           }
         }
       } catch (e) {
-        _this.logger.error('ERROR AnnotationListRenderer#render', e);
+        logger.error('ERROR AnnotationListRenderer#render', e);
         throw e;
       }
     });
@@ -54,7 +58,7 @@ export default class AnnotationListRenderer {
    * Consult the table of contents structure to populate the annotations list.
    */
   renderWithToc(options) {
-    this.logger.debug('AnnotationListRenderer#renderWithToc options:', options);
+    logger.debug('AnnotationListRenderer#renderWithToc options:', options);
     const _this = this;
 
     options.toc.walk(function(node) {
@@ -144,7 +148,7 @@ export default class AnnotationListRenderer {
   }
 
   appendUnattachedAnnotations(options) {
-    this.logger.debug('AnnotationListRenderer#appendUnattachedAnnotations');
+    logger.debug('AnnotationListRenderer#appendUnattachedAnnotations');
     const _this = this;
     const layerId = options.layerId;
     const showAll = (options.selectedTags[0] === 'all');
@@ -172,7 +176,7 @@ export default class AnnotationListRenderer {
   }
 
   createAnnoElem(annotation, options) {
-    this.logger.debug('AnnotationWindow#createAnnoElem anno:', annotation);
+    logger.debug('AnnotationWindow#createAnnoElem anno:', annotation);
     const content = annoUtil.getText(annotation);
     const tags = annoUtil.getTags(annotation);
     const tagsHtml = this.getTagsHtml(tags);
@@ -217,7 +221,7 @@ export default class AnnotationListRenderer {
       options.annotationsList);
 
     annoElem.click(function(event) {
-      _this.logger.debug('Clicked annotation:', annotation);
+      logger.debug('Clicked annotation:', annotation);
       annoWin.clearHighlights();
       annoWin.highlightAnnotation(annotation['@id']);
       annoWin.miradorProxy.publish('ANNOTATION_FOCUSED', [annoWin.id, finalTargetAnno]);
@@ -228,7 +232,7 @@ export default class AnnotationListRenderer {
       const dialogElement = jQuery('#ym_annotation_dialog');
       const editor = new AnnotationEditor({
         parent: dialogElement,
-        canvasWindow: annoWin.canvasWindow,
+        windowId: _this.options.canvasWindowId,
         mode: 'create',
         targetAnnotation: annotation,
         endpoint: annoWin.endpoint,
@@ -255,7 +259,7 @@ export default class AnnotationListRenderer {
     annoElem.find('.edit').click(function(event) {
       const editor = new AnnotationEditor({
         parent: annoElem,
-        canvasWindow: annoWin.canvasWindow,
+        windowId: _this.options.canvasWindowId,
         mode: 'update',
         endpoint: annoWin.endpoint,
         annotation: annotation,

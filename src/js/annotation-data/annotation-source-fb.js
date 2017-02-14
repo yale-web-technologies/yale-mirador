@@ -1,13 +1,13 @@
 import {annoUtil} from '../import';
 import FirebaseProxy from './firebase-proxy';
 import getLogger from '../util/logger';
-import getMiradorWindow from '../mirador-window';
+import getPageController from '../page-controller';
 
 // Implements inteface between Joosugi annotation explorer and the annotation server
 export default class AnnotationSourceFb {
   constructor() {
     this.logger = getLogger();
-    const fbSettings = getMiradorWindow().getConfig().extension.firebase;
+    const fbSettings = getPageController().getConfig().extension.firebase;
     this.fbProxy = new FirebaseProxy(fbSettings);
     this.fbKeyMap = {}; // key: annotation['@id], value: firebase key.
   }
@@ -72,14 +72,14 @@ export default class AnnotationSourceFb {
 
   updateAnnotation(oaAnnotation) {
     this.logger.debug('AnnotationSourceFb#updateAnnotation annotation:', oaAnnotation);
-    
+
     var _this = this;
     var canvasId = this._getTargetCanvasId(oaAnnotation);
     var layerId = oaAnnotation.layerId;
     var annotation = this._getAnnotationInEndpoint(oaAnnotation);
     var fbKey = this.fbKeyMap[annotation['@id']];
     var ref = firebase.database().ref('/annotations/' + fbKey);
-    
+
     return new Promise((resolve, reject) => {
       ref.update({ annotation: annotation, layerId: layerId }, function (error) {
         if (error) {
@@ -101,7 +101,7 @@ export default class AnnotationSourceFb {
     const _this = this;
     const fbKey = this.fbKeyMap[annotationId];
     const ref = firebase.database().ref('annotations/' + fbKey);
-    
+
     return new Promise((resolve, reject) => {
       ref.remove(function (error) {
         if (error) {
@@ -121,7 +121,7 @@ export default class AnnotationSourceFb {
     const combinedId = canvasId + layerId;
     const ref = firebase.database().ref('lists');
     const query = ref.orderByChild('combinedId').equalTo(combinedId);
-    
+
     return new Promise((resolve, reject) => {
       query.once('value', function(snapshot) {
         if (snapshot.exists()) { // child with combiedId exists
@@ -141,18 +141,18 @@ export default class AnnotationSourceFb {
 
   _getTargetCanvasId(annotation) {
     var targetAnno = null;
-    
+
     if (annotation['@type'] === 'oa:Annotation') {
       targetAnno = annoUtil.findFinalTargetAnnotation(annotation, this.annotationsList);
     } else {
       targetAnno = annotation;
     }
-    
+
     var canvasId = targetAnno.on.full;
     this.logger.debug('_getTargetCanvasId canvas ID:', canvasId);
     return canvasId;
   }
-  
+
   // Convert Endpoint annotation to OA
   _getAnnotationInOA(annotation) {
     var motivation = annotation.motivation;
@@ -162,7 +162,7 @@ export default class AnnotationSourceFb {
       }
       motivation = ['oa:commenting'];
     }
-    
+
     var oaAnnotation = {
       '@context': 'http://iiif.io/api/presentation/2/context.json',
       '@type': 'oa:Annotation',

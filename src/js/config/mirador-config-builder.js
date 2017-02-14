@@ -1,5 +1,5 @@
-import AnnotationSource from '../annotation/annotation-source';
-import AnnotationSourceFb from '../annotation/annotation-source-fb';
+import AnnotationSource from '../annotation-data/annotation-source';
+import AnnotationSourceFb from '../annotation-data/annotation-source-fb';
 import getLogger from '../util/logger';
 
 export default class MiradorConfigBuilder {
@@ -47,9 +47,9 @@ export default class MiradorConfigBuilder {
         disableAuthz: this.options.disableAuthz || false
       }
     });
-    
+
     config.windowSettings.displayLayout = false;
-    
+
     if (!this.options.isEditor) {
       config.windowSettings.canvasControls.annotations.annotationCreation = false;
     }
@@ -57,7 +57,7 @@ export default class MiradorConfigBuilder {
     this.logger.debug('MiradorConfigBuilder#buildConfig config:', config);
     return config;
   }
-  
+
   windowObject() {
     const windowObject = {
       loadedManifest: this.options.manifestUri,
@@ -68,7 +68,7 @@ export default class MiradorConfigBuilder {
     }
     return windowObject;
   }
-  
+
   endPointConfig() {
     if (this.options.endpointUrl === 'firebase') {
       return {

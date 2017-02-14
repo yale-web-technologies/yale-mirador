@@ -17,6 +17,7 @@ module.exports = function(config) {
     files: [
       'node_modules/mirador-y/dist/mirador/mirador.min.js',
       'lib/dexie.js',
+      'lib/js.cookie.js',
       'lib/semantic/dist/semantic.min.js',
       'node_modules/babel-polyfill/dist/polyfill.js',
       'test/**/*.test.js'
@@ -28,7 +29,7 @@ module.exports = function(config) {
       'src/js/**/*.js': ['webpack', 'sourcemap'],
       'test/**/*.test.js': ['webpack', 'sourcemap']
     },
-    
+
     webpack: {
       debug: true,
       module: {
@@ -45,7 +46,7 @@ module.exports = function(config) {
         }]
       }
     },
-    
+
     plugins: [
       require('karma-webpack'),
       require('karma-sourcemap-loader'),

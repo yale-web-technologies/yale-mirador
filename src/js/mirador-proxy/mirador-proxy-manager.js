@@ -1,52 +1,64 @@
+import getLogger from '../util/logger';
 import MiradorProxy from './mirador-proxy';
 import WindowProxy from './window-proxy';
 
 class MiradorProxyManager {
   constructor() {
-    this.miradorProxies = {}; // Mirador instances
+    this.logger = getLogger();
+
+    // Mirador instance doesn't have an ID. The ID here is conferred by
+    // the MiradorProxyManager.
+    this._miradorProxiesMap = {}; // Mirador instances { id: miradorInstance }
   }
 
-  addMirador(id, mirador) {
-    this.miradorProxies[id] = new MiradorProxy(mirador);
+  addMirador(miradorId, mirador) {
+    this.logger.debug('MiradorProxyManager#addMirador', mirador);
+    const miradorProxy = this._miradorProxiesMap[miradorId];
+    if (miradorProxy) {
+      throw 'MiradorProxyManager#addMirador duplicate ID ' + miradorId;
+    } else {
+      this._miradorProxiesMap[miradorId] = new MiradorProxy(mirador);
+    }
   }
-  
+
   getMiradorProxies() {
-    return this.miradorProxies;
+    return Object.values(this._miradorProxiesMap);
   }
-  
+
   getMiradorProxy(miradorId) {
-    return this.miradorProxies[miradorId];
+    return this._miradorProxiesMap[miradorId] || null;
   }
-  
+
   /**
    * @returns {WindowProxy[]} a list of window proxies for all windows in all Mirador instances
    */
   getAllWindowProxies() {
     let windowProxies = [];
-    const miradorProxies = this.getMiradorProxies();
-    
-    for (let key of Object.keys(miradorProxies)) {
-      let miradorProxy = miradorProxies[key];
+
+    for (let miradorProxy of Object.values(this._miradorProxiesMap)) {
       windowProxies = windowProxies.concat(miradorProxy.getWindowProxies());
     }
     return windowProxies;
   }
-  
+
   getWindowProxyById(windowId) {
+    this.logger.debug('MiradorProxyManager#getWindowProxyById windowId:', windowId);
     return (new WindowProxy(this.getWindowById(windowId)));
   }
-  
+
   getWindowById(windowId) {
+    this.logger.debug('MiradorProxyManager#getWindowById windowId:', windowId);
     let window = null;
-    jQuery.each(this.miradorProxies, function(miradorId, miradorProxy) {
+
+    for (let miradorProxy of Object.values(this._miradorProxiesMap)) {
       window = miradorProxy.getWindowById(windowId);
       if (window) {
-        return false;
+        return window;
       }
-    });
-    return window;
+    }
+    return null;
   }
-  
+
   getCurrentCanvasIdByWindowId(windowId) {
     const windowProxy = this.getWindowProxyById(windowId);
     if (windowProxy) {
@@ -55,21 +67,29 @@ class MiradorProxyManager {
       return null;
     }
   }
-  
-  // XXX This works because only one Mirador window is assumed. 
+
+  // XXX This works because only one Mirador window is assumed.
   // It should be refactored later.
-  anyId() { 
-    return Object.keys(this.miradorProxies)[0];
+  anyId() {
+    return Object.keys(this._miradorProxies)[0];
+  }
+
+  // Subscribe to the same event from all Mirador instances
+  subscribe(eventName, callback) {
+    this.logger.debug('MiradorProxyManager#subscribe ', eventName, callback);
+    for (let miradorProxy of Object.values(this._miradorProxiesMap)) {
+      miradorProxy.subscribe(eventName, callback);
+    }
   }
 }
 
-let _instance = null;
+let instance = null;
 
-function getMiradorProxyManager() {
-  if (!_instance) {
-    _instance = new MiradorProxyManager();
+function getMiradorProxyManager(destroyOld) {
+  if (!instance || destroyOld) {
+    instance = new MiradorProxyManager();
   }
-  return _instance;
+  return instance;
 };
 
 export default getMiradorProxyManager;

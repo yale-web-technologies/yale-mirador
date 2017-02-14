@@ -1,18 +1,17 @@
+import AnnotationEditor from '../widgets/annotation-editor';
 import {AnnotationExplorerDialog} from '../import';
-
-import YaleEndpoint from '../annotation/yale-endpoint';
-import AnnotationEditor from '../annotation/annotation-editor';
-import AnnotationSource from '../annotation/annotation-source';
+import AnnotationSource from '../annotation-data/annotation-source';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
+import YaleEndpoint from '../annotation-data/yale-endpoint';
 
 // Exposes names to Mirador core.
 (function ($) {
   $.ym = {};
-  
+
   $.YaleEndpoint = YaleEndpoint;
   $.AnnotationEditor = AnnotationEditor;
   //$.annoUtil = annoUtil;
-  
+
   /**
     * @param {string} windowId ID of Mirador window from which this dialog is being created
     */
@@ -33,5 +32,5 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
       dialog.open();
     });
   };
-  
+
 })(Mirador);

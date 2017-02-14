@@ -1,7 +1,7 @@
 import getLogger from './util/logger';
 import getMiradorProxyManager from './mirador-proxy/mirador-proxy-manager';
-import AnnotationListRenderer from './annotation/annotation-list-renderer';
-import AnnotationWindow from './annotation/annotation-window';
+import AnnotationListRenderer from './widgets/annotation-window/annotation-list-renderer';
+import AnnotationWindow from './widgets/annotation-window/annotation-window';
 
 export default class {
   constructor(rootElementId) {
@@ -22,6 +22,7 @@ export default class {
 
   // GoldenLayout
   initLayout() {
+    this.logger.debug('Grid#initLayout');
     const _this = this;
     const config = {
       settings: {
@@ -60,9 +61,9 @@ export default class {
 
     this.layout.on('stateChanged', function (e) {
       _this.logger.debug('GoldenLayout stateChanged');
-      jQuery.each(_this.miradorProxyManager.getMiradorProxies(), function(key, miradorProxy) {
+      for (let miradorProxy of _this.miradorProxyManager.getMiradorProxies()) {
         miradorProxy.publish('resizeMirador');
-      });
+      }
       return true;
     });
 
@@ -77,7 +78,6 @@ export default class {
 
   addMiradorWindow(miradorId) {
     this.logger.debug('Grid#addMiradorWindow');
-    const windowId = Mirador.genUUID();
     const itemConfig = {
       type: 'component',
       componentName: 'Mirador',
@@ -90,14 +90,16 @@ export default class {
     this.logger.debug('Grid#addWindows config:', config);
     for (let windowConfig of config.windows) {
       windowConfig.miradorId = config.miradorId;
+      windowConfig.canvasWindowId = config.canvasWindowId;
       this.addWindow(windowConfig);
     }
   }
 
   addWindow(options) {
-    this.logger.debug('Grid#addWindow', options);
+    this.logger.debug('Grid#addWindow options:', options);
     const _this = this;
-    const windowId = Mirador.genUUID();
+    const windowId = Mirador.genUUID(); // annotation window ID
+    const canvasWindowId = options.canvasWindowId || null;
     const itemConfig = {
       type: 'component',
       componentName: 'Annotations',
@@ -105,21 +107,30 @@ export default class {
     };
     this.layout.root.contentItems[0].addChild(itemConfig);
 
-    return new AnnotationWindow({ appendTo: jQuery('#' + windowId),
-      annotationListRenderer: new AnnotationListRenderer(),
-      miradorId: options.miradorId,
+    const windowProxy = this.miradorProxyManager.getWindowProxyById(options.canvasWindowId);
+    const annoExplorer = windowProxy.getEndPoint().getAnnotationExplorer();
+    const annoListRenderer = new AnnotationListRenderer({
+      canvasWindowId: canvasWindowId
+    });
+
+    const annoWin = new AnnotationWindow({ appendTo: jQuery('#' + windowId),
+      annotationListRenderer: annoListRenderer,
+      explorer: annoExplorer,
+      miradorId: options.miradorId || null,
+      canvasWindowId: canvasWindowId,
       initialLayerId: options.layerId || null,
       initialTocTags: options.tocTags || null,
       annotationId: options.annotationId || null
-    })
-    .then(function(window) {
+    });
+    return annoWin.init().then(window => {
       _this._annotationWindows[windowId] = window;
       return window;
     })
-    .catch((reason) => { throw reason; });
+    .catch(reason => { throw reason; });
   }
 
   bindEvents() {
+    this.logger.debug('Grid#bindEvents');
     const _this = this;
 
     this.layout.on('itemDestroyed', function(item) {
@@ -139,6 +150,14 @@ export default class {
     jQuery.subscribe('YM_ADD_WINDOWS', function(event, config) {
       _this.logger.debug('Received YM_ADD_WINDOWS config:', config);
       _this.addWindows(config);
+    });
+
+    // XXX move to after window is created
+    this.miradorProxyManager.subscribe('YM_CLICKED_OPEN_ANNO_WINDOW', (event, options) => {
+      _this.logger.debug('Received YM_CLICKED_OPEN_ANNO_WINDOW');
+      _this.addWindow({
+        canvasWindowId: options.canvasWindowId
+      });
     });
   }
 
