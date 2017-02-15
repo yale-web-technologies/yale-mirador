@@ -57,6 +57,7 @@ export default class AnnotationWindow {
     }
 
     this.initLayerSelector();
+    this.addCreateWindowButton();
     this.tempMenuRow = this.element.find('.annowin_temp_row');
     this.placeholder = this.element.find('.placeholder');
     this.placeholder.text('Loading...').show();
@@ -108,6 +109,21 @@ export default class AnnotationWindow {
         _this._setCurrentLayerId(value);
         _this.updateList();
       }
+    });
+  }
+
+  addCreateWindowButton() {
+    const _this = this;
+    const parent = this.element.find('.annowin_layer_row');
+    const button = jQuery('<div/>')
+      .addClass('ym_create_window_button')
+      .append(jQuery('<i class="fa fa-plus fa-lg fa-fw"></i>'));
+    parent.append(button);
+    button.click(event => {
+      jQuery.publish('YM_ADD_WINDOW', {
+        miradorId: _this.miradorId,
+        canvasWindowId: _this.canvasWindowId
+      });
     });
   }
 

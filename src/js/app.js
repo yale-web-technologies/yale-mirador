@@ -9,7 +9,7 @@ import './extension/dialog-builder';
 import getConfigFetcher from './config/config-fetcher';
 import getLogger from './util/logger';
 import Grid from './grid';
-import MainMenu from './widgets/main-menu';
+//import MainMenu from './widgets/main-menu'; //deprecated
 import getPageController from './page-controller';
 import './extension/interface';
 //import './util/jquery-tiny-pubsub-trace'; // import this only for debugging!
@@ -43,13 +43,13 @@ export default class App {
       _this.logger.debug('Settings from API:', settingsFromApi);
       const settings = jQuery.extend(settingsFromHtml, settingsFromApi);
       const grid = new Grid(_this.options.rootElement);
-      const mainMenu = new MainMenu();
+      //const mainMenu = new MainMenu();
 
       if (settings.fixAnnoCellHeight) {
         getStateStore().setString('ANNO_CELL_FIXED', 'true');
       }
       getPageController().init({
-        mainMenu: mainMenu,
+        //mainMenu: mainMenu,
         grid: grid,
         settings: settings
       });

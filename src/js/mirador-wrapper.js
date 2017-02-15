@@ -3,7 +3,8 @@ import getMiradorProxyManager from './mirador-proxy/mirador-proxy-manager';
 import MiradorConfigBuilder from './config/mirador-config-builder';
 import WindowProxy from './mirador-proxy/window-proxy';
 
-let logger = getLogger();
+const logger = getLogger();
+const proxyMgr = getMiradorProxyManager();
 
 /**
  * Wrapper of a single Mirador instance
@@ -11,11 +12,15 @@ let logger = getLogger();
 export default class MiradorWrapper {
   constructor(options) {
     logger.debug('MiradorWrapper#constructor options:', options);
-    this._miradorId = options.miradorId;
-    this._miradorConfig = this._buildMiradorConfig(options);
+    this.options = Object.assign({
+      grid: null,
+      miradorOptions: null
+    }, options);
+    this._miradorId = options.miradorOptions.miradorId;
+    this._miradorConfig = this._buildMiradorConfig(options.miradorOptions);
     this._mirador = Mirador(this._miradorConfig);
     this._addToMiradorProxy(this._miradorId, this._mirador);
-    this._bindEvents(options);
+    this._bindEvents(options.miradorOptions);
   }
 
   getMirador() {
@@ -27,7 +32,6 @@ export default class MiradorWrapper {
   }
 
   _addToMiradorProxy(miradorId, mirador) {
-    const proxyMgr = getMiradorProxyManager();
     proxyMgr.addMirador(miradorId, mirador);
   }
 
@@ -66,7 +70,7 @@ export default class MiradorWrapper {
     }
 
     if (config.windows.length > 0) { // annotation window(s) will be created
-      const miradorProxies = getMiradorProxyManager().getMiradorProxies();
+      const miradorProxies = proxyMgr.getMiradorProxies();
       if (miradorProxies.length !== 1) {
         throw 'Cannot create default annotation windows: invalid number of mirador instances ' + miradorProxies.length;
       }
@@ -75,7 +79,7 @@ export default class MiradorWrapper {
         throw 'Cannot create default annotation windows: invalid number of mirador windows ' + windowProxies.length;
       }
       config.canvasWindowId = windowProxies[0].getId();
-      options.miradorProxy.publish('YM_DISPLAY_ON');
+      miradorProxies[0].publish('YM_DISPLAY_ON');
       jQuery.publish('YM_ADD_WINDOWS', config);
     }
   }
@@ -83,9 +87,9 @@ export default class MiradorWrapper {
   _bindEvents(options) {
     logger.debug('MiradorWrapper#_bindEvents options:', options);
     const _this = this;
-    const miradorProxy = getMiradorProxyManager().getMiradorProxy(this._miradorId);
+    const miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
 
-    miradorProxy.subscribe('ANNOTATIONS_LIST_UPDATED', function(event, params) {
+    miradorProxy.subscribe('ANNOTATIONS_LIST_UPDATED', (event, params) => {
       logger.debug('MiradorWrapper#bindEvents received ANNOTATIONS_LIST_UPDATED');
 
       if (options.tagHierarchy) {
@@ -97,12 +101,20 @@ export default class MiradorWrapper {
       jQuery.publish('YM_READY_TO_RELOAD_ANNO_WIN');
     });
 
-    miradorProxy.subscribe('YM_ANNOWIN_ANNO_SHOW', function(event, windowId, annoId) {
+    miradorProxy.subscribe('YM_ANNOWIN_ANNO_SHOW', (event, windowId, annoId) => {
       logger.debug('MiradorWrapper SUB YM_ANNOWIN_ANNO_SHOW windowId: ' + windowId  + ', annoId: ' + annoId);
       _this.options.grid.showAnnotation(_this._miradorId, windowId, annoId);
     });
 
-    jQuery.subscribe('YM_READY_TO_RELOAD_ANNO_WIN', function(event) { // after annotations have been loaded
+    miradorProxy.subscribe('YM_CLICKED_OPEN_ANNO_WINDOW', (event, canvasWindowId) => {
+      logger.debug('MiradorWrapper received YM_CLICKED_OPEN_ANNO_WINDOW from ', canvasWindowId);
+      _this.options.grid.addWindow({
+        miradorId: _this._miradorId,
+        canvasWindowId: canvasWindowId
+      });
+    });
+
+    jQuery.subscribe('YM_READY_TO_RELOAD_ANNO_WIN', event => { // after annotations have been loaded
       if (_this._urlOptionsProcessed) { // run this function only once
         return;
       } else {

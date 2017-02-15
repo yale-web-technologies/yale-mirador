@@ -18,7 +18,7 @@ let logger = getLogger();
 class PageController {
   init(options) {
     this.options = jQuery.extend({
-      mainMenu: null,
+      //mainMenu: null,
       grid: null,
       settings: null // settings retrieved from remote API
     }, options);
@@ -43,7 +43,10 @@ class PageController {
     try {
       // Should create a container in the grid first before instantiating Mirador
       this.options.grid.addMiradorWindow(miradorOptions.miradorId);
-      this.miradorWrapper = new MiradorWrapper(miradorOptions);
+      this.miradorWrapper = new MiradorWrapper({
+        grid: this.options.grid,
+        miradorOptions: miradorOptions
+      });
     } catch(e) {
       const msg = 'PageController#_createMirador ' + e;
       logger.error(msg);

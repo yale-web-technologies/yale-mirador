@@ -1,15 +1,17 @@
 .ym_annotation_window {
-  position: absolute;
+  background-color: @anno-window-bgcolor;
+  border: @dark-gray solid 1px;
+  box-sizing: border-box;
+  color: @off-white;
   //display: flex;
   //flex-direction: column;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0 0 5px;
-  width: 100%;
   height: 100%;
+  margin: 0;
   overflow-y: scroll; // to show the menu-tag selector when it gets too big
-  background-color: #efefef;
-  
+  padding: 0 0 5px;
+  position: absolute;
+  width: 100%;
+
   a { // for links in annotations
     &:link, &:visited {
       color: @blue;
@@ -18,13 +20,23 @@
       color: @light-blue;
     }
   }
-  
+
   .caret.icon {
     color: @black;
     opacity: 0.6;
     &:hover {
       opacity: 0.95;
       font-size: 1.5em;
+    }
+  }
+
+  .ym_create_window_button {
+    display: inline-block;
+    float: right;
+    color: @gray;
+
+    &:hover {
+      color: @white;
     }
   }
 }
@@ -43,7 +55,7 @@
   font-size: 0.8rem;
 }
 
-.annowin_menu_tag_row, 
+.annowin_menu_tag_row,
 .annowin_layer_row,
 .annowin_temp_row {
   padding: 2px @annowin-h-padding;

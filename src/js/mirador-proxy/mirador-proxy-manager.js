@@ -2,17 +2,17 @@ import getLogger from '../util/logger';
 import MiradorProxy from './mirador-proxy';
 import WindowProxy from './window-proxy';
 
+const logger = getLogger();
+
 class MiradorProxyManager {
   constructor() {
-    this.logger = getLogger();
-
     // Mirador instance doesn't have an ID. The ID here is conferred by
     // the MiradorProxyManager.
     this._miradorProxiesMap = {}; // Mirador instances { id: miradorInstance }
   }
 
   addMirador(miradorId, mirador) {
-    this.logger.debug('MiradorProxyManager#addMirador', mirador);
+    logger.debug('MiradorProxyManager#addMirador', mirador);
     const miradorProxy = this._miradorProxiesMap[miradorId];
     if (miradorProxy) {
       throw 'MiradorProxyManager#addMirador duplicate ID ' + miradorId;
@@ -26,6 +26,7 @@ class MiradorProxyManager {
   }
 
   getMiradorProxy(miradorId) {
+    logger.debug('MiradorProxyManager#getMiradorProxy miradorId:', miradorId, 'proxies:', this._miradorProxiesMap);
     return this._miradorProxiesMap[miradorId] || null;
   }
 
@@ -42,12 +43,12 @@ class MiradorProxyManager {
   }
 
   getWindowProxyById(windowId) {
-    this.logger.debug('MiradorProxyManager#getWindowProxyById windowId:', windowId);
+    logger.debug('MiradorProxyManager#getWindowProxyById windowId:', windowId);
     return (new WindowProxy(this.getWindowById(windowId)));
   }
 
   getWindowById(windowId) {
-    this.logger.debug('MiradorProxyManager#getWindowById windowId:', windowId);
+    logger.debug('MiradorProxyManager#getWindowById windowId:', windowId);
     let window = null;
 
     for (let miradorProxy of Object.values(this._miradorProxiesMap)) {
@@ -76,7 +77,7 @@ class MiradorProxyManager {
 
   // Subscribe to the same event from all Mirador instances
   subscribe(eventName, callback) {
-    this.logger.debug('MiradorProxyManager#subscribe ', eventName, callback);
+    logger.debug('MiradorProxyManager#subscribe ', eventName, callback);
     for (let miradorProxy of Object.values(this._miradorProxiesMap)) {
       miradorProxy.subscribe(eventName, callback);
     }

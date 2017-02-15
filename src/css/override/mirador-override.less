@@ -26,10 +26,13 @@
   }
 }
 
+/* deprecated
 #mirador_header {
   top: 0px;
   height: @mirador-header-height;
 }
+*/
+
 #viewer {
   display: block !important;
   position: absolute !important;
@@ -44,4 +47,11 @@
 
 .ym_modal {
   bottom: auto; // overriding the value of 0 set by bootstrap for ".modal"
+}
+
+.sidePanel {
+  .tabContentArea {
+    background-color: @black;
+    color: @white;
+  }
 }

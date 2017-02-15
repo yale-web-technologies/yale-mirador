@@ -2,6 +2,7 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import getStateStore from '../state-store';
 
 // Menu bar at the top of the Mirador-embedding window.
+// TODO - remove. The menu should be hidden or minimized somewhere.
 export default class {
   constructor(options) {
     jQuery.extend(this, {
@@ -9,14 +10,14 @@ export default class {
     }, options);
     this.init();
   }
-  
+
   init() {
     this.headerElement.html(template());
     this.headerElement.find('.ui.dropdown').dropdown();
     this.initAnnoHeightMenu();
     this.bindEvents();
   }
-  
+
   initAnnoHeightMenu() {
     const state = getStateStore();
 
@@ -27,15 +28,15 @@ export default class {
       this.annoHeightMenu.find('.checkmark').hide();
     }
   }
-  
+
   bindEvents() {
     const _this = this;
     const state = getStateStore();
-    
+
     jQuery('#ym_menu_add_window').click(function (event) {
       jQuery.publish('YM_ADD_WINDOW', { miradorId: getMiradorProxyManager().anyId() });
     });
-    
+
     jQuery('#ym_menu_anno_height').click(function (event) {
       if (state.getString('ANNO_CELL_FIXED') === 'true') {
         state.setString('ANNO_CELL_FIXED', false);

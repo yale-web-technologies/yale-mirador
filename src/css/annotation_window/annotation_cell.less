@@ -1,8 +1,9 @@
 @import '../mixins';
 
 .annowin_anno {
+  background-color: @off-white;
   border: solid 1px #808080;
-  background-color: #fafafa;
+  color: @black;
   padding: 3px;
 
   .menu_bar {
@@ -13,7 +14,7 @@
   .menu_bar.targeting_anno {
     background-color: @light-green;
   }
-  
+
   .normal_view {
     overflow-y: visible; // to make the dropdown visible
     p {
@@ -65,9 +66,9 @@
   .annowin_anno > .normal_view {
     height: 100px;
     overflow-y: scroll;
-    
+
     .ui.dropdown .menu {
-      max-height: 80px; 
+      max-height: 80px;
       overflow-y: scroll;
     }
   }

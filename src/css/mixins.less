@@ -3,7 +3,9 @@
   .bgcolors-per-layer(@i - 1);
   @num: @i - 1;
   &.layer_@{num} {
-    background-color: extract(@layer-colors, @i) !important;
+    &, &:active, &:hover, &:focus, &:visited {
+      background-color: extract(@layer-colors, @i) !important;
+    }
   }
 }
 
