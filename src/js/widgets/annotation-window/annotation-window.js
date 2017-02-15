@@ -74,6 +74,7 @@ export default class AnnotationWindow {
         _this.miradorProxy.publish('ANNOTATION_FOCUSED', [_this.id, finalTargetAnno]);
       }
       _this.bindEvents();
+      return _this;
     })
     .catch(reason => {
       throw 'AnnotationWindow#init promise failed - ' + reason;

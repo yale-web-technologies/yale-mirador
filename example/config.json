@@ -1,9 +1,9 @@
 {
   "isEditor": "true",
   "__manifestUrl": "http://media.nga.gov/public/manifests/nga_highlights.json",
-  "manifestUrl": "https://s3.amazonaws.com/tempmanifests/ten_thousand_rooms/KZJY.json",
+  "__manifestUrl": "https://s3.amazonaws.com/tempmanifests/ten_thousand_rooms/KZJY.json",
   "__manifestUrl": "https://s3.amazonaws.com/tempmanifests/life_of_the_buddha/LOTB.json",
-  "__manifestUrl": "https://s3.amazonaws.com/tempmanifests/life_of_the_buddha/LOTB-test.json",
+  "manifestUrl": "https://s3.amazonaws.com/tempmanifests/life_of_the_buddha/LOTB-test.json",
   "endpointUrl": "http://mirador-annotations-lotb-stg.herokuapp.com",
   "__endpointUrl": "firebase",
   "disableAuthz": true,

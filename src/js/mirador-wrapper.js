@@ -61,6 +61,7 @@ export default class MiradorWrapper {
     if (layerIds instanceof Array && layerIds.length > 0) {
       for (let layerId of layerIds) {
         config.windows.push({
+          layerId: layerId || null,
           annotationId: annotationId || null,
           tocTags: tocTags || []
         });

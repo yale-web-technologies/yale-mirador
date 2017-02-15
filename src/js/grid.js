@@ -134,7 +134,7 @@ export default class {
       annotationId: options.annotationId || null
     });
     return annoWin.init().then(window => {
-      _this._annotationWindows[windowId] = window;
+      _this._annotationWindows[windowId] = annoWin;
       _this._resizeWindows();
       return window;
     })
@@ -164,17 +164,18 @@ export default class {
     const annotation = annotations.filter(anno => anno['@id'] === annoId)[0];
     let found = false;
 
-    jQuery.each(this._annotationWindows, function(key, annoWindow) {
+    for (let annoWindow of Object.values(this._annotationWindows)) {
       let success = annoWindow.scrollToAnnotation(annoId);
       if (success) {
         annoWindow.highlightAnnotation(annoId);
       }
       found = found || success;
-    });
+    }
     if (!found) {
       if (annotation) {
         this.addWindow({
           miradorId: miradorId,
+          canvasWindowId: windowId,
           layerId: annotation.layerId
         }).then(function(annoWindow) {
           annoWindow.scrollToAnnotation(annoId);

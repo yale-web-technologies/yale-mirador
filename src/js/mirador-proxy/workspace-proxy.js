@@ -26,7 +26,6 @@ export default class WorkspaceProxy {
     if (numWindows > 1) {
       this.logger.error('MiradorProxy#getWindowById: more than one (' + numWindows + ') found for id: ' + windowId);
     }
-    console.log(1);
     return numWindows > 0 ? windows[0] : null;
   }
 }
