@@ -29,6 +29,8 @@ export default class AnnotationWindow {
     }, options);
 
     logger.debug('AnnotationWindow#constructor options:', options);
+    this._jQuerySubscribed = {};
+    this._miradorSubscribed = {};
   }
 
   /**
@@ -79,6 +81,11 @@ export default class AnnotationWindow {
     .catch(reason => {
       throw 'AnnotationWindow#init promise failed - ' + reason;
     });
+  }
+
+  destroy() {
+    logger.debug('AnnotationWindow#destroy');
+    this._unsubscribeAll();
   }
 
   initMenuTagSelector() {
@@ -363,13 +370,13 @@ export default class AnnotationWindow {
       _this.saveOrder();
     });
 
-    jQuery.subscribe('YM_READY_TO_RELOAD_ANNO_WIN', function(event) {
+    this._subscribe(jQuery, 'YM_READY_TO_RELOAD_ANNO_WIN', function(event) {
       if (! _this.hasOpenEditor()) {
         _this.reload();
       }
     });
 
-    jQuery.subscribe('ANNOTATION_FOCUSED', function(event, annoWinId, annotation) {
+    this._subscribe(jQuery, 'ANNOTATION_FOCUSED', function(event, annoWinId, annotation) {
       logger.debug('Annotation window ' + _this.id + ' received annotation_focused event from ' + annoWinId);
       if (annoWinId === _this.id) {
         return;
@@ -400,7 +407,7 @@ export default class AnnotationWindow {
       }
     });
 
-    jQuery.subscribe('YM_ANNO_HEIGHT_FIXED', function(event, fixedHeight) {
+    this._subscribe(jQuery, 'YM_ANNO_HEIGHT_FIXED', function(event, fixedHeight) {
       if (fixedHeight) {
         _this.element.addClass('fixed_height_cells');
       } else {
@@ -408,9 +415,40 @@ export default class AnnotationWindow {
       }
     });
 
-    this.miradorProxy.subscribe(('currentCanvasIDUpdated.' + this.canvasWindow.id), function(event) {
+    this._subscribe(this.miradorProxy, 'currentCanvasIDUpdated.' + this.canvasWindow.id, function(event) {
       _this.placeholder.text('Loading...').show();
     });
+  }
+
+  _subscribe(context, eventId, handler) {
+    let saved;
+
+    if (context === jQuery) {
+      saved = this._jQuerySubscribed;
+    } else if (context === this.miradorProxy) {
+      saved = this._miradorSubscribed;
+    } else {
+      const msg = 'AnnotationWindow#_subscribe invalid context ';
+      logger.error(msg, context);
+      throw msg + context;
+    }
+    if (!(saved[eventId] instanceof Array)) {
+      saved[eventId] = [];
+    }
+    saved[eventId].push(handler);
+    context.subscribe(eventId, handler);
+  }
+
+  _unsubscribeAll() {
+    for (let context of [jQuery, this.miradorProxy]) {
+      let saved = context === jQuery ? this._jQuerySubscribed : this._miradorSubscribed;
+
+      for (let [eventId, handlers] of Object.entries(saved)) {
+        for (let handler of handlers) {
+          context.unsubscribe(eventId, handler);
+        }
+      }
+    }
   }
 }
 

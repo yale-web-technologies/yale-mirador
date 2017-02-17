@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 
-import getAnnotationCache from '../../src/js/annotation/annotation-cache';
+import getAnnotationCache from '../../src/js/annotation-data/annotation-cache';
 import util from '../test-util';
 
 describe('AnnotationCache', function() {
@@ -14,7 +14,7 @@ describe('AnnotationCache', function() {
       });
     });
   });
-  
+
   it('setAnnotationsPerCanvas', function(done) {
     const data1 = { layer_id: '/layer1', annotations: { '@id': '/annotation1' }};
     cache.setAnnotationsPerCanvas('/canvas1', data1).then(function() {

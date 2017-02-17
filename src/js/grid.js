@@ -73,6 +73,7 @@ export default class {
       if (item.componentName == 'Annotations') {
         const windowId = item.config.componentState.windowId;
         logger.debug('Annotation window destroyed:', windowId);
+        _this._annotationWindows[windowId].destroy();
         delete _this._annotationWindows[windowId];
         _this._resizeWindows();
       }

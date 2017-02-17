@@ -16,19 +16,19 @@ export default class {
   }
 
   init() {
-    var _this = this;
+    const _this = this;
     this.element = jQuery(template());
     this.appendTo.append(this.element);
     this.element.dropdown({
       direction: 'downward',
-      onChange: function(value, text) {
+      onChange: (value, text) => {
         logger.debug('Selector#init onChange ', value, text, _this._skipNotify);
         if (typeof _this.changeCallback === 'function' && !_this._skipNotify) {
           _this.changeCallback(value, text);
         }
         _this._skipNotify = false;
       },
-      action: function(text, value) {
+      action: (text, value) => {
         _this.element.dropdown('set selected', value);
         _this.element.dropdown('hide');
       }
@@ -37,17 +37,22 @@ export default class {
   }
 
   setItems(itemsConfig) {
-    var root = this.element.find('.menu');
+    logger.debug('Selector#setItems itemsConfig:', itemsConfig);
+    const root = this.element.find('.menu');
     root.empty();
     this._setItems(itemsConfig, root);
   }
 
   _setItems(itemsConfig, parent) {
-    var _this = this;
-    jQuery.each(itemsConfig, function(index, value) {
+    const _this = this;
+    jQuery.each(itemsConfig, (index, value) => {
       if (value.children.length > 0) {
-        _this.addItem(value.label, value.value, parent);
-        var menu = _this.addMenuItem(value.label, value.value, parent);
+        _this.addItem({
+          label: value.label,
+          value: value.value,
+          parent: parent
+        });
+        const menu = _this.addMenuItem(value.label, value.value, parent);
         _this._setItems(value.children, menu);
       } else {
         _this.addItem({
@@ -60,12 +65,12 @@ export default class {
   }
 
   addMenuItem(label, value, parent) {
-    var item = jQuery('<div/>')
+    const item = jQuery('<div/>')
       .addClass('item')
       .attr('data-text', label)
       .attr('data-value', value)
       .text(label);
-    var menu = jQuery('<div/>')
+    const menu = jQuery('<div/>')
       .addClass('menu')
       .css('overflow', 'hidden');
     item.append(jQuery('<i class="dropdown icon"></i>'));

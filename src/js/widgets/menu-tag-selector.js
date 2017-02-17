@@ -4,8 +4,9 @@ import util from '../util/util';
 
 const logger = getLogger();
 
-export default class {
+export default class MenuTagSelector {
   constructor(options) {
+    logger.debug('MenuTagSelector#constructor options:', options);
     jQuery.extend(this, {
       selector: null,
       parent: null,
@@ -37,8 +38,10 @@ export default class {
 
     return new Promise(function(resolve, reject) {
       if (!annoHierarchy) {
-        reject();
+        reject('Undefined annoHierarchy');
+        return;
       }
+
       _this.selector.empty();
 
       var layers = [];
@@ -65,6 +68,7 @@ export default class {
    * node: an annoHierarchy node
    */
   buildMenu(node, parentItem) {
+    logger.debug('MenuTagSelector#buildMenu node:', node, 'parentItem:', parentItem);
     const _this = this;
     const children = util.getValues(node.childNodes)
       .sort(function(a, b) {
