@@ -51,10 +51,18 @@ export default class AnnotationWindow {
     this.appendTo.append(this.element);
     this.listElem = this.element.find('.annowin_list');
 
-    if (!this.initialLayerId && this.annotationId) {
+    if (!this.initialLayerId && this.annotationId) { // annotation ID was given in the URL
       annosToShow = this.canvasWindow.annotationsList.filter(anno => anno['@id'] === _this.annotationId);
       if (annosToShow.length > 0) {
         this.initialLayerId = annosToShow[0].layerId;
+      }
+    } else if (this.initialLayerId) { // layerIDs were given in the URL
+      annosToShow = this.canvasWindow.annotationsList.filter(anno => anno.layerId == _this.initialLayerId);
+      if (this.initialTocTags) {
+        const toc = this.explorer.getAnnotationToc();
+        if (toc) {
+          annosToShow = annosToShow.filter(anno => toc.matchHierarchy(anno, this.initialTocTags));
+        }
       }
     }
 
