@@ -8,7 +8,7 @@
     "test": "karma start --singleRun",
     "build": "npm run build:mirador && npm run build:yale-mirador && npm run postbuild",
     "prebuild:yale-mirador": "npm run clean:yale-mirador && mkdir -p dist/yale-mirador",
-    "build:yale-mirador": "webpack",
+    "build:yale-mirador": "GIT_DESC=$(git describe --long --always) webpack",
     "prebuild:mirador": "npm run clean:mirador && mkdir -p dist/mirador",
     "build:mirador": "cp -r node_modules/mirador-y/dist/mirador/* dist/mirador/",
     "postbuild": "cp -r lib dist/",
