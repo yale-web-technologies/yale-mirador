@@ -2,6 +2,16 @@
 
 This file should be updated before a new release is deployed.
 
+## 0.4.5 <small>2/17/2017</small>
+* Fix MenuTagSelector bug - chapter items were not being set up correctly, with blank text and no event handling
+
+## 0.4.4 <small>2/15/2017</small>
+* Remove main menu at the top and add "+" icon in the windows for adding a new annotation window.
+* Refactor for easier testing
+
+## 0.4.3 <small>2/10/2017</small>
+* New parameter from server: fixAnnoCellHeight, default (boolean) value that determines whether to show all annotation cells with equal height.
+
 ## 0.4.2 <small>2/7/2017</small>
 * Bug fix: clicking on an annotation cell wouldn't let other annotations windows scroll to the "sibling" item, because currentLayerId wasn't being set when the annotation windows get first created.
 
