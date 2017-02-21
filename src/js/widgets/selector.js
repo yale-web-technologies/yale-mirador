@@ -89,7 +89,7 @@ export default class {
     .attr('data-text', options.label)
     .attr('data-value', options.value);
 
-    parent = options.parent || this.element.find('.menu');
+    const parent = options.parent || this.element.find('.menu');
     parent.append(item);
     this.values.push(options.value);
   }
