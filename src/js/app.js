@@ -41,6 +41,8 @@ export default class App {
     })
     .then(settingsFromApi => {
       _this.logger.debug('Settings from API:', settingsFromApi);
+      _this.preConfigureTinyMce(settingsFromApi.buildPath + '/');
+
       const settings = jQuery.extend(settingsFromHtml, settingsFromApi);
       const grid = new Grid(_this.options.rootElement);
       //const mainMenu = new MainMenu();
@@ -69,5 +71,11 @@ export default class App {
       logger.setLogLevel(logger.INFO);
     }
     return logger;
+  }
+
+  preConfigureTinyMce(miradorBuildPath) {
+    this.logger.debug('App#preConfigureTinyMce buildPath:', miradorBuildPath);
+    tinymce.base = miradorBuildPath + '/';
+    tinymce.setup();
   }
 }
