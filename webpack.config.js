@@ -19,7 +19,7 @@ module.exports = {
   },
   output: {
     path: './dist/yale-mirador',
-    filename: 'yale-mirador.bundle.js'
+    filename: '[name].bundle.js'
   },
   module: {
     rules: [{
