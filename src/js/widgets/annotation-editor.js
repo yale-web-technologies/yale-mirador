@@ -1,13 +1,15 @@
 import {annoUtil} from '../import';
 import getLogger from '../util/logger';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
+import getPageController from '../page-controller';
 import getStateStore from '../state-store';
 import LayerSelector from './layer-selector';
 
+const logger = getLogger();
+
 export default class AnnotationEditor {
   constructor(options) {
-    this.logger = getLogger();
-    this.logger.debug('AnnotationEditor#constructor options:', options);
+    logger.debug('AnnotationEditor#constructor options:', options);
     jQuery.extend(this, {
       windowId: null,
       miradorDriven: false, // true if created and managed by Mirador core.
@@ -43,7 +45,7 @@ export default class AnnotationEditor {
   }
 
   async reload(parent) {
-    this.logger.debug('AnnotationEditor#reload parent:', parent);
+    logger.debug('AnnotationEditor#reload parent:', parent);
     const _this = this;
 
     parent.prepend(this.element);
@@ -71,15 +73,10 @@ export default class AnnotationEditor {
           }
         }
       }
-
-      // Sometimes the textarea is not set up with tinymce.
-      // Trying to see if helps to delay the call to tinymce.init.
-      setTimeout(function() {
-        _this.initTinyMce();
-        _this.bindEvents();
-      }, 0);
+      _this.initTinyMce();
+      _this.bindEvents();
     }).catch(function(reason) {
-      _this.logger.error('ERROR AnnotationEditor#reload layerSelector.init failed - ' + reason);
+      logger.error('ERROR AnnotationEditor#reload layerSelector.init failed - ' + reason);
     });
   }
 
@@ -98,9 +95,14 @@ export default class AnnotationEditor {
       height: '140',
       theme_advanced_resizing: true,
       theme_advanced_statusbar_location: 'bottom',
-      setup: function(ed) {
-        ed.on('init', function() {
+      setup: function(editor) {
+        editor.on('init', function(e) {
+          logger.debug('TinyMCE on init e:', e);
           this.getDoc().body.style.fontSize = '12px';
+          tinymce.execCommand('mceFocus', false, e.target.id);
+        });
+        editor.on('focus', function(e) {
+          logger.debug('TinyMCE on focus e:', e);
         });
       }
     });
@@ -108,7 +110,7 @@ export default class AnnotationEditor {
 
   // Called by Mirador core
   show(selector) {
-    this.logger.debug('AnnotationEditor#show', selector);
+    logger.debug('AnnotationEditor#show', selector);
     if (selector) {
       this.reload(jQuery(selector));
     }
@@ -184,7 +186,7 @@ export default class AnnotationEditor {
         full: targetAnnotation['@id']
       };
     }
-    this.logger.debug('AnnotationEditor#createAnnotation anno:', annotation);
+    logger.debug('AnnotationEditor#createAnnotation anno:', annotation);
     return annotation;
   }
 
@@ -278,7 +280,7 @@ export default class AnnotationEditor {
   }
 
   validate () {
-    this.logger.debug('AnnotationEditor#validate target anno:', this.targetAnnotation);
+    logger.debug('AnnotationEditor#validate target anno:', this.targetAnnotation);
     let msg = '';
 
     if (this._mode === 'create') {
