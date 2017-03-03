@@ -8,6 +8,7 @@ import getModalAlert from '../widgets/modal-alert';
 import session from '../session';
 import util from '../util/util';
 
+const logger = getLogger();
 let _explorer = null;
 
 export default class YaleEndpoint {
@@ -17,11 +18,10 @@ export default class YaleEndpoint {
       prefix: null,
       dfd: null
     }, options);
-    this.logger = getLogger();
   }
 
   search(options) {
-    this.logger.debug('YaleEndpoint#search', options);
+    logger.debug('YaleEndpoint#search', options);
     const _this = this;
     const canvasId = options.uri;
     const progressPane = getModalAlert();
@@ -35,16 +35,20 @@ export default class YaleEndpoint {
       throw(msg);
     })
     .then(annotations => {
-      _this.logger.debug('YaleEndpoint#search annotations: ', annotations);
+      logger.debug('YaleEndpoint#search annotations: ', annotations);
       progressPane.hide();
       for (let anno of annotations) {
         anno.endpoint = _this;
       }
       _this.annotationsList = annotations;
-      _this.dfd.resolve(true);
+      try {
+        _this.dfd.resolve(true);
+      } catch(e) {
+        logger.error('YaleEndpoint#search dfd.resolve failed - ', e);
+      }
     })
     .catch(function(reason) {
-      _this.logger.error('YaleEndpoint#search failed - ', reason);
+      logger.error('YaleEndpoint#search failed - ', reason);
       progressPane.hide();
       errorPane.show('annotations');
     });
@@ -60,14 +64,14 @@ export default class YaleEndpoint {
         throw msg;
       })
       .then((anno) => {
-        _this.logger.debug('YaleEndpoint#create successful with anno: ', anno);
+        logger.debug('YaleEndpoint#create successful with anno: ', anno);
         anno.endpoint = _this;
         if (typeof successCallback === 'function') {
           successCallback(anno);
         }
       })
       .catch((reason) => {
-        _this.logger.error('ERROR YaleEndpoint#create successCallback failed');
+        logger.error('ERROR YaleEndpoint#create successCallback failed');
         errorCallback();
       });
     } else {
@@ -79,7 +83,7 @@ export default class YaleEndpoint {
   }
 
   _create(oaAnnotation) {
-    this.logger.debug('YaleEndpoint#_create oaAnnotation:', oaAnnotation);
+    logger.debug('YaleEndpoint#_create oaAnnotation:', oaAnnotation);
     const _this = this;
     const explorer = this.getAnnotationExplorer();
 
@@ -102,7 +106,7 @@ export default class YaleEndpoint {
       this._update(oaAnnotation)
       .catch((reason) => {
         const msg = 'ERROR YaleEndpoint#update _update failed - ' + reason;
-        _this.logger.error(msg);
+        logger.error(msg);
         errorCallback();
       })
       .then((anno) => {
@@ -119,7 +123,7 @@ export default class YaleEndpoint {
   }
 
   _update(oaAnnotation) {
-    this.logger.debug('YaleEndpoint#_update oaAnnotation:', oaAnnotation);
+    logger.debug('YaleEndpoint#_update oaAnnotation:', oaAnnotation);
     const _this = this;
     const explorer = this.getAnnotationExplorer();
     const annotationId = oaAnnotation['@id'];
@@ -144,7 +148,7 @@ export default class YaleEndpoint {
   }
 
   deleteAnnotation(annotationId, successCallback, errorCallback) {
-    this.logger.debug('YaleEndpoint#deleteAnnotation annotationId: ' + annotationId);
+    logger.debug('YaleEndpoint#deleteAnnotation annotationId: ' + annotationId);
     const _this = this;
 
     if (this.userAuthorize('delete', null)) {
@@ -155,11 +159,11 @@ export default class YaleEndpoint {
         }
       })
       .catch(reason => {
-        _this.logger.error('YaleEndpoint#deleteAnnotation _deleteAnnotation failed:', reason);
+        logger.error('YaleEndpoint#deleteAnnotation _deleteAnnotation failed:', reason);
         errorCallback();
       });
     } else {
-       this.logger.info('YaleEndpoint#delete user not authorized');
+       logger.info('YaleEndpoint#delete user not authorized');
        getErrorDialog().show('authz_update');
        if (typeof errorCallback === 'function') {
          errorCallback();
@@ -168,7 +172,7 @@ export default class YaleEndpoint {
   }
 
   _deleteAnnotation(annotationId) {
-    this.logger.debug('YaleEndpoint#_deleteAnnotation annotationId:', annotationId);
+    logger.debug('YaleEndpoint#_deleteAnnotation annotationId:', annotationId);
     const _this = this;
     const explorer = this.getAnnotationExplorer();
 
@@ -186,13 +190,13 @@ export default class YaleEndpoint {
   }
 
   async getLayers() {
-    this.logger.debug('YaleEndpoint#getLayers');
+    logger.debug('YaleEndpoint#getLayers');
     const explorer = this.getAnnotationExplorer();
     return explorer.getLayers();
   }
 
   updateOrder(canvasId, layerId, annoIds, successCallback, errorCallback) {
-    this.logger.debug('YaleEndpoint#updateOrder canvasId:', canvasId, 'layerId:', layerId, 'annoIds:', annoIds);
+    logger.debug('YaleEndpoint#updateOrder canvasId:', canvasId, 'layerId:', layerId, 'annoIds:', annoIds);
     const _this = this;
 
     if (this.userAuthorize('update', null)) {
@@ -207,11 +211,11 @@ export default class YaleEndpoint {
         }
       })
       .catch((reason) => {
-        _this.logger.error('YaleEndpoint#updateOrder', reason);
+        logger.error('YaleEndpoint#updateOrder', reason);
         errorCallback();
       });
     } else {
-       this.logger.info('YaleEndpoint#updateOrder user not authorized');
+       logger.info('YaleEndpoint#updateOrder user not authorized');
        getErrorDialog().show('authz_update');
        if (typeof errorCallback === 'function') {
          errorCallback();
@@ -233,7 +237,7 @@ export default class YaleEndpoint {
   }
 
   set(prop, value, options) {
-    this.logger.debug('YaleEndpoint#set prop:', prop, ', value:', value, ', options:', options);
+    logger.debug('YaleEndpoint#set prop:', prop, ', value:', value, ', options:', options);
     if (options) {
       this[options.parent][prop] = value;
     } else {
@@ -252,7 +256,7 @@ export default class YaleEndpoint {
 
   createAnnotationSource() {
     const source = getPageController().getConfig().annotationEndpoint.dataSource;
-    this.logger.debug('YaleEndpoint#createAnnotationSource', source);
+    logger.debug('YaleEndpoint#createAnnotationSource', source);
     return new source({prefix: this.prefix});
   }
 
