@@ -3,17 +3,17 @@ html
   head
     meta(http-equiv="Content-Type", content="text/html;charset=UTF-8")
     title= "Yale Mirador Example"
-    link(rel="stylesheet", type="text/css", href="../lib/goldenlayout/goldenlayout-base.css")
-    link(rel="stylesheet", type="text/css", href="../lib/goldenlayout/goldenlayout-dark-theme.css")
+    link(rel="stylesheet", type="text/css", href="../dist/lib/goldenlayout/goldenlayout-base.css")
+    link(rel="stylesheet", type="text/css", href="../dist/lib/goldenlayout/goldenlayout-dark-theme.css")
     link(rel="stylesheet", type="text/css", href="../dist/mirador/css/mirador-combined.min.css")
-    link(rel="stylesheet", type="text/css", href="../lib/semantic/dist/semantic.min.css")
+    link(rel="stylesheet", type="text/css", href="../dist/lib/semantic/semantic.min.css")
     link(rel="stylesheet", type="text/css", href="../dist/yale-mirador/yale-mirador.bundle.css")
     script(type="text/javascript", src="https://www.gstatic.com/firebasejs/live/3.0/firebase.js")
     script(type="text/javascript", src="../dist/mirador/mirador.min.js")
-    script(type="text/javascript", src="../lib/js.cookie.js")
-    script(type="text/javascript", src="../lib/dexie.js")
-    script(type="text/javascript", src="../lib/semantic/dist/semantic.min.js")
-    script(type="text/javascript", src="../lib/goldenlayout/goldenlayout.min.js")
+    script(type="text/javascript", src="../dist/lib/js.cookie.js")
+    script(type="text/javascript", src="../dist/lib/dexie.min.js")
+    script(type="text/javascript", src="../dist/lib/semantic/semantic.min.js")
+    script(type="text/javascript", src="../dist/lib/goldenlayout/goldenlayout.min.js")
     script(type="text/javascript", src="../dist/yale-mirador/yale-mirador.bundle.js")
   body
     //- #mirador_header //deprecated
@@ -23,10 +23,11 @@ html
       div(id="{{id}}",
         data-settings-url="/api/settings",
         data-manifest-url=manifestUrl
-        ignore1-data-canvas-id="http://manifests.ydc2.yale.edu/LOTB/canvas/panel_02_test"
-        ignore1-data-toc-tags="chapter22,scene2"
+        ignore1-data-canvas-id="http://manifests.ydc2.yale.edu/LOTB/canvas/bv11"
+        ignore2-data-canvas-id="http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"
+        ignore1-data-toc-tags="chapter4"
         ignore2-data-toc-tags="chapter22"
-        ignore1-data-layer-ids="http://mirador-annotations-lotb-stg.herokuapp.com/layers/Scenes"
+        ignore1-data-layer-ids="http://mirador-annotations-lotb.herokuapp.com/layers/English"
         ignore2-data-layer-ids="http://mirador-annotations-lotb-stg.herokuapp.com/layers/Chapters,http://mirador-annotations-lotb-stg.herokuapp.com/layers/Scenes"
         ignore3-data-layer-ids="http://mirador-annotations-lotb-stg.herokuapp.com/layers/Tibetan,http://mirador-annotations-lotb-stg.herokuapp.com/layers/English"
         ignore4-data-layer-ids="http://mirador-annotations-lotb-stg.herokuapp.com/layers/Scenes"
