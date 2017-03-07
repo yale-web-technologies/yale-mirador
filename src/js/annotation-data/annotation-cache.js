@@ -5,6 +5,7 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 export default function getAnnotationCache() {
   if (!instance) {
     const cache = new AnnotationCache();
+    cache.clear(); // invalidate all data everytime app restarts
     return cache.init();
   } else {
     return new Promise(function(resolve, reject) {
@@ -22,7 +23,7 @@ class AnnotationCache {
     this._valid = false;
     this._expiresInMS = 2 * 60 * 60 * 1000; // milliseconds
   }
-  
+
   init() {
     const _this = this;
     return new Promise(function(resolve, reject) {
@@ -49,7 +50,7 @@ class AnnotationCache {
     this._db = new Dexie(this._dbName).on('versionchange', function(event) {
       _this.logger.debug('versionchange ' + event.newVersion);
     });
-    
+
     this._db.version(1).stores({
       layers: 'id,jsonData,timestamp',
       annosPerCanvas: 'canvasId,jsonData,timestamp'
@@ -59,7 +60,7 @@ class AnnotationCache {
       _this._valid = false;
     });
   }
-  
+
   /**
    * @returns {object} a Promise
    */
@@ -70,7 +71,7 @@ class AnnotationCache {
       _this.logger.error('AnnotationCache#clear exception: ' + e.stack);
     });
   }
-  
+
   /**
    * @returns {object} a Promise
    */
@@ -86,7 +87,7 @@ class AnnotationCache {
       });
     });
   }
-  
+
   /**
    * @returns {object} a Promise
    */
@@ -96,7 +97,7 @@ class AnnotationCache {
       return (data instanceof Array) ? data : [];
     });
   }
-  
+
   /**
    * @returns {object} a Promise
    */
@@ -111,7 +112,7 @@ class AnnotationCache {
           });
       });
   }
-  
+
   /**
    * @returns {object} a Promise
    */
@@ -135,14 +136,14 @@ class AnnotationCache {
     const table = this._db.annosPerCanvas;
     const coll = this._db.annosPerCanvas.where('canvasId').equals(canvasId);
     const nowMS = new Date().valueOf();
-    
+
     if (coll.count() === 0) {
       return table.add({ canvasId: canvasId, jsonData: data, timestamp: nowMS });
     } else {
       return table.put({ canvasId: canvasId, jsonData: data, timestamp: nowMS });
     }
   }
-  
+
   deleteAnnotationsPerCanvas(canvasId) {
     const _this = this;
     const table = this._db.annosPerCanvas;
@@ -151,20 +152,20 @@ class AnnotationCache {
       _this.logger.error('AnnotationCache#deleteAnnotationsPerCanvas failed to delete canvasId: ' + canvasId);
     });
   }
-  
+
   isValid() {
     return this._valid;
   }
-  
+
   invalidateCanvasId(canvasId) {
     this.logger.debug('CACHE INVALIDATED: ' + canvasId);
     return this.deleteAnnotationsPerCanvas(canvasId);
   }
-  
+
   invalidateAnnotation(annotation, annoIsNew) {
     this.invalidateAnnotationId(annotation['@id']);
   }
-  
+
   invalidateAnnotationId(annotationId) {
     this.logger.debug('invalidateAnnotationId: ' + annotationId);
     const proxyMgr = getMiradorProxyManager();
