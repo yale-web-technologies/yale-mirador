@@ -1,18 +1,19 @@
 import getLogger from '../util/logger';
 
 (function($) {
-  
+
   $.yaleExt = $.yaleExt || {};
-  
+
   const logger = getLogger();
-  
+
   /*
-   * Functions in this file must be called in the context of an ImageView 
+   * Functions in this file must be called in the context of an ImageView
    * so "this" will point to the instance of the image view.
    */
   jQuery.extend($.yaleExt, {
-    
+
     zoomToAnnotation: function(annotation) {
+      logger.debug('ImageView(ext)#zoomToAnnotation anno:', annotation);
       const viewport = this.osd.viewport;
       const currentZoom = viewport.getZoom();
       logger.debug('panToAnnotation zoom: ' + currentZoom);
@@ -26,32 +27,39 @@ import getLogger from '../util/logger';
       logger.debug('h ratio: ' + heightRatio);
       const zoomFactor = 1.0 / Math.max(widthRatio, heightRatio) * 0.75;
       logger.debug('zoomFactor: ' + zoomFactor);
-      
-      viewport.zoomBy(zoomFactor);
+
+      if (typeof zoomFactor === 'number' && !isNaN(zoomFactor)) {
+        viewport.zoomBy(zoomFactor);
+      } else {
+        const msg = 'ImageView(ext)#zoomToAnnotation invalid zoomFactor ' + zoomFactor;
+        logger.error(msg, annotation);
+        throw msg;
+      }
     },
 
     /*
      * Highlight the boundaries for the currently chosen annotation
      * and pan to show the annotated area.
-     */ 
+     */
     panToAnnotation: function(annotation) {
+      logger.debug('ImageView(ext)#panToAnnotation anno:', annotation);
       var viewport = this.osd.viewport;
       var shapes = $.yaleExt.getShapesForAnnotation.call(this.annotationsLayer.drawTool, annotation);
       var shapeBounds = $.yaleExt.getCombinedBounds(shapes); // in image coordinates
       var x = shapeBounds.x + shapeBounds.width / 2;
       var y = shapeBounds.y + shapeBounds.height / 2;
       var p = new OpenSeadragon.Point(x, y);
-      
+
       var shapeXY = viewport.imageToViewportCoordinates(shapeBounds.x, shapeBounds.y);
       var shapeWH = viewport.imageToViewportCoordinates(shapeBounds.width, shapeBounds.height);
       var shapeLeft = shapeXY.x;
       var shapeRight = shapeXY.x + shapeWH.x;
       var shapeTop = shapeXY.y;
       var shapeBottom = shapeXY.y + shapeWH.y;
-      
+
       var viewportBounds = viewport.getBounds();
       var viewportHeight = viewport.getHomeBounds().height;
-      
+
       var visibleLeft = viewportBounds.x;
       var visibleRight = viewportBounds.x + viewportBounds.width;
       var visibleTop = viewportBounds.y;
@@ -73,7 +81,7 @@ import getLogger from '../util/logger';
       } else if (shapeLeft - padding < visibleLeft) { // left hidden, right not hidden
         panX = shapeLeft - padding - visibleLeft;
       }
-      
+
       if (shapeBottom + padding > visibleBottom) { // bottom side hidden
         if (shapeTop - padding < visibleTop) { // bottom hidden, top hidden
           panY = shapeTop - padding - visibleTop;
@@ -87,11 +95,15 @@ import getLogger from '../util/logger';
         panY = shapeTop - padding - visibleTop;
       }
 
-      if (panX !== 0 || panY !== 0) {
+      if (typeof panX === 'number' && !isNaN(panX) && typeof panY === 'number' && !isNaN(panY)) {
         viewport.panBy(new OpenSeadragon.Point(panX, panY));
+      } else {
+        const msg = 'ImageView(ext)#panToAnnotation invalid value(s) panX: ' + panX + ', panY: ' + panY;
+        logger.error(msg, annotation);
+        throw msg;
       }
     }
-    
+
   });
-  
+
 })(Mirador);
