@@ -246,7 +246,7 @@ export default class AnnotationListRenderer {
           dialogElement.dialog('close');
         }
       });
-      dialogElement.dialog({
+      dialogElement.dialog({ // jQuery-UI dialog
         title: 'Create annotation',
         modal: true,
         draggable: true,

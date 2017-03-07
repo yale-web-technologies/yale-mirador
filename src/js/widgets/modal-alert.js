@@ -16,7 +16,7 @@ class ModalAlert {
   constructor(elem) {
     this.elem = elem;
     elem.html(template());
-    elem.modal({ 
+    elem.modal({
       closable: false,
       allowMultiple: true,
       duration: 0,
@@ -25,11 +25,11 @@ class ModalAlert {
       }
     });
   }
-  
+
   show() {
     this.elem.modal('show');
   }
-  
+
   hide() {
     this.elem.modal('hide');
   }

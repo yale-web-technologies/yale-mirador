@@ -146,6 +146,8 @@ export default class AnnotationSource {
       annotation: annotation
     };
 
+    this.logger.debug('AnnotationSource#createAnnotation payload:', request);
+
     return new Promise((resolve, reject) => {
       jQuery.ajax({
         url: url,

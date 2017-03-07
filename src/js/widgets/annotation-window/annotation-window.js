@@ -77,6 +77,7 @@ export default class AnnotationWindow {
       throw 'AnnotationWindow#init reload failed - ' + reason;
     })
     .then(() => {
+      logger.debug('AnnotationWindow annosToShow:', annosToShow);
       if (annosToShow.length > 0) {
         const finalTargetAnno = annoUtil.findFinalTargetAnnotation(annosToShow[0],
           _this.canvasWindow.annotationsList);
