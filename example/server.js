@@ -21,7 +21,7 @@ app.get('/', function(req, res) {
 
 app.get('/api/settings', function(req, res) {
   var obj = {
-    buildPath: '/dist/mirador',
+    buildPath: '/dist/mirador/',
     tagHierarchy: config.tagHierarchy,
     endpointUrl: config.endpointUrl,
     firebase: config.firebase,
