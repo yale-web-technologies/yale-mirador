@@ -2,6 +2,8 @@ import getLogger from './util/logger';
 
 const registeredKeys = new Set([
   'ANNO_CELL_FIXED',
+  'copyrighted',
+  'copyrightedImageServiceUrl',
   'lastSelectedLayer',
   'layerIndexMap'
 ]);

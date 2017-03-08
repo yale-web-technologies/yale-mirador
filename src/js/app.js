@@ -4,6 +4,7 @@ import 'babel-polyfill';
 
 import './extension/ext-global';
 import './extension/ext-image-view';
+import './extension/ext-manifest';
 import './extension/ext-osd-region-draw-tool';
 import './extension/dialog-builder';
 import getConfigFetcher from './config/config-fetcher';
@@ -47,9 +48,8 @@ export default class App {
       const grid = new Grid(_this.options.rootElement);
       //const mainMenu = new MainMenu();
 
-      if (settings.fixAnnoCellHeight) {
-        getStateStore().setString('ANNO_CELL_FIXED', 'true');
-      }
+      this.initState(settings);
+
       getPageController().init({
         //mainMenu: mainMenu,
         grid: grid,
@@ -61,6 +61,24 @@ export default class App {
       alert(msg);
       throw msg;
     });
+  }
+
+  initState(apiSettings) {
+    const state = getStateStore();
+
+    if (apiSettings.copyrighted) {
+      state.setString('copyrighted', 'true');
+    } else {
+      state.setString('copyrighted', 'false');
+    }
+
+    state.setString('copyrightedImageServiceUrl', apiSettings.copyrightedImageServiceUrl);
+
+    if (apiSettings.fixAnnoCellHeight) {
+      state.setString('ANNO_CELL_FIXED', 'true');
+    } else {
+      state.setString('ANNO_CELL_FIXED', 'false');
+    }
   }
 
   setupLogger() {

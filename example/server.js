@@ -7,7 +7,7 @@ var app = express();
 
 var config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
 console.log('manifest: ' + config.manifestUrl);
-console.log('endpoint: ' + config.endpointUrl);
+console.log('endpoint: ' + config.apiSettings.endpointUrl);
 
 app.use(cookieParser());
 app.use(serveStatic('../'));
@@ -16,21 +16,13 @@ app.set('view engine', 'pug');
 app.set('views', './views');
 
 app.get('/', function(req, res) {
+  res.cookie('isEditor', config.isEditor);
   res.render('index', { manifestUrl: config.manifestUrl }); // serve index.pug
 });
 
 app.get('/api/settings', function(req, res) {
-  var obj = {
-    buildPath: '/dist/mirador/',
-    tagHierarchy: config.tagHierarchy,
-    endpointUrl: config.endpointUrl,
-    firebase: config.firebase,
-    disableAuthz: config.disableAuthz,
-    fixAnnoCellHeight: config.fixAnnoCellHeight
-  };
+  var obj = config.apiSettings;
   res.setHeader('Content-Type', 'application/json');
-  res.cookie('isEditor', config.isEditor);
-  res.cookie('settingsUrl', '');
   res.send(JSON.stringify(obj));
 });
 
