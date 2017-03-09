@@ -16,9 +16,9 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       'node_modules/mirador-y/dist/mirador/mirador.min.js',
-      'lib/dexie.js',
-      'lib/js.cookie.js',
-      'lib/semantic/dist/semantic.min.js',
+      'node_modules/dexie/dist/dexie.min.js',
+      'node_modules/js-cookie/src/js.cookie.js',
+      'node_modules/semantic-ui/dist/semantic.min.js',
       'node_modules/babel-polyfill/dist/polyfill.js',
       'test/**/*.test.js'
     ],
@@ -31,18 +31,17 @@ module.exports = function(config) {
     },
 
     webpack: {
-      debug: true,
       module: {
-        loaders: [{
+        rules: [{
           test: /\.js$/,
           include: [
             path.resolve(__dirname, 'src/js'),
             path.resolve(__dirname, 'test')
           ],
-          loader: 'babel-loader',
-          query: {
-            presets: ['es2015', 'es2017']
-          }
+          use: [{
+            loader: 'babel-loader',
+            options: { presets: ['es2015', 'es2017'] }
+          }]
         }]
       }
     },
