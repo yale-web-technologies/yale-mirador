@@ -275,19 +275,23 @@ export default class AnnotationSource {
       motivation = ['oa:commenting'];
     }
 
+    let target = annotation.on;
+
+    if (target.selector && target.selector['@type'] === 'oa:Choice') {
+      target = [target];
+    }
+
     const oaAnnotation = {
       '@context': 'http://iiif.io/api/presentation/2/context.json',
       '@type': 'oa:Annotation',
       '@id': annotation['@id'],
       motivation: motivation,
       resource : annotation.resource,
-      on: annotation.on instanceof Array ? annotation.on : [annotation.on],
+      on: target,
       within: annotation.within,
     };
 
-    console.log('YYY', oaAnnotation.on);
-
-    oaAnnotation.layerId = annotation.layerId;
+      oaAnnotation.layerId = annotation.layerId;
     oaAnnotation.endpoint = this;
 
     return oaAnnotation;
