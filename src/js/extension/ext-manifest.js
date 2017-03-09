@@ -48,7 +48,6 @@ import getStateStore from '../state-store';
   }
 
   function processCanvas(canvas) {
-    logger.debug('CANVAS before:', canvas);
     const images = canvas.images;
 
     canvas.width = width;
@@ -57,19 +56,14 @@ import getStateStore from '../state-store';
     for (let image of images) {
       processImage(image);
     }
-    logger.debug('CANVAS after:', canvas);
   }
 
   function processImage(image) {
     const resource = image.resource;
-    logger.debug('image before:', image);
-    logger.debug('resource before:', resource);
     resource['@id'] = copyrightedImageServiceUrl + '/full/' + width + ',' + height + '/0/default.jpg';
     resource.service['@id'] = copyrightedImageServiceUrl;
     resource.width = String(width);
     resource.height = String(height);
-    logger.debug('resource after :', resource);
-    logger.debug('image after:', image);
   }
 
 })(Mirador);
