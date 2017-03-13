@@ -1,5 +1,5 @@
-import {AnnotationExplorer} from '../import';
 import AnnotationSource from './annotation-source';
+import getApp from '../app';
 import getErrorDialog from '../widgets/error-dialog';
 import getLogger from '../util/logger';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
@@ -18,6 +18,7 @@ export default class YaleEndpoint {
       prefix: null,
       dfd: null
     }, options);
+    this._explorer = getApp().getAnnotationExplorer();
   }
 
   search(options) {
@@ -26,10 +27,9 @@ export default class YaleEndpoint {
     const canvasId = options.uri;
     const progressPane = getModalAlert();
     const errorPane = getErrorDialog();
-    const explorer = this.getAnnotationExplorer();
 
     progressPane.show();
-    explorer.getAnnotations({ canvasId: canvasId })
+    this._explorer.getAnnotations({ canvasId: canvasId })
     .catch(reason => {
       const msg = 'ERROR YaleEndpoint#search getAnnotations - ' + reason;
       throw(msg);
@@ -85,9 +85,8 @@ export default class YaleEndpoint {
   _create(oaAnnotation) {
     logger.debug('YaleEndpoint#_create oaAnnotation:', oaAnnotation);
     const _this = this;
-    const explorer = this.getAnnotationExplorer();
 
-    return explorer.createAnnotation(oaAnnotation)
+    return this._explorer.createAnnotation(oaAnnotation)
     .catch((reason) => {
       const msg = 'YaleEndpoint#_create createAnnotation failed - ' + reason;
       throw(msg);
@@ -125,11 +124,10 @@ export default class YaleEndpoint {
   _update(oaAnnotation) {
     logger.debug('YaleEndpoint#_update oaAnnotation:', oaAnnotation);
     const _this = this;
-    const explorer = this.getAnnotationExplorer();
     const annotationId = oaAnnotation['@id'];
 
     const promise = Promise.resolve().then(() => {
-      return explorer.updateAnnotation(oaAnnotation);
+      return this._explorer.updateAnnotation(oaAnnotation);
     })
     .catch((reason) => {
       const msg = 'ERROR YaleEndpoint#_update updateAnnotation - ' + reason;
@@ -174,9 +172,8 @@ export default class YaleEndpoint {
   _deleteAnnotation(annotationId) {
     logger.debug('YaleEndpoint#_deleteAnnotation annotationId:', annotationId);
     const _this = this;
-    const explorer = this.getAnnotationExplorer();
 
-    const promise = explorer.deleteAnnotation(annotationId)
+    const promise = this._explorer.deleteAnnotation(annotationId)
     .catch((reason) => {
       const msg = 'ERROR YaleEndpoint#_deleteAnnotation explorer.deleteAnnotation - ' + reason;
       throw(msg);
@@ -191,8 +188,7 @@ export default class YaleEndpoint {
 
   async getLayers() {
     logger.debug('YaleEndpoint#getLayers');
-    const explorer = this.getAnnotationExplorer();
-    return explorer.getLayers();
+    return this._explorer.getLayers();
   }
 
   updateOrder(canvasId, layerId, annoIds, successCallback, errorCallback) {
@@ -224,8 +220,7 @@ export default class YaleEndpoint {
   }
 
   _updateOrder(canvasId, layerId, annoIds) {
-    const explorer = this.getAnnotationExplorer();
-    return explorer.updateAnnotationListOrder(canvasId, layerId, annoIds);
+    return this._explorer.updateAnnotationListOrder(canvasId, layerId, annoIds);
   }
 
   userAuthorize (action, annotation) {
@@ -245,24 +240,8 @@ export default class YaleEndpoint {
     }
   }
 
-  getAnnotationExplorer() {
-    if (!_explorer) {
-      _explorer = new AnnotationExplorer({
-        dataSource: this.createAnnotationSource()
-      });
-    }
-    return _explorer;
-  }
-
-  createAnnotationSource() {
-    const source = getPageController().getConfig().annotationEndpoint.dataSource;
-    logger.debug('YaleEndpoint#createAnnotationSource', source);
-    return new source({prefix: this.prefix});
-  }
-
   parseAnnotations() {
-    const explorer = this.getAnnotationExplorer();
     const spec = getPageController().getConfig().extension.tagHierarchy;
-    explorer.reloadAnnotationToc(spec, this.annotationsList);
+    this._explorer.reloadAnnotationToc(spec, this.annotationsList);
   }
 }

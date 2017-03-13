@@ -9,10 +9,6 @@ import session from '../../session';
 const logger = getLogger();
 
 export default class AnnotationWindow {
-
-  /**
-   * @returns {Promise}
-   */
   constructor(options) {
     const _this = this;
 
@@ -78,7 +74,7 @@ export default class AnnotationWindow {
     })
     .then(() => {
       logger.debug('AnnotationWindow annosToShow:', annosToShow);
-      if (annosToShow.length > 0) {
+      if (this.annotationId && annosToShow.length > 0) {
         const finalTargetAnno = annoUtil.findFinalTargetAnnotation(annosToShow[0],
           _this.canvasWindow.annotationsList);
         _this.highlightAnnotations(annosToShow, 'SELECTED');
@@ -142,6 +138,10 @@ export default class AnnotationWindow {
         canvasWindowId: _this.canvasWindowId
       });
     });
+  }
+
+  getCurrentLayerId() {
+    return this.currentLayerId;
   }
 
   _setCurrentLayerId(layerId) {

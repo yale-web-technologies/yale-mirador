@@ -13,16 +13,16 @@ class Logger {
     this.INFO = 1;
     this.ERROR = 2;
 
-    this.logLevel = logLevel || this.INFO;
-    this.trace = trace || false;
+    this._logLevel = logLevel || this.INFO;
+    this._trace = trace || false;
   }
 
   setLogLevel(logLevel) {
-    this.logLevel = logLevel;
+    this._logLevel = logLevel;
   }
 
   log() {
-    if (this.trace) {
+    if (this._trace) {
       console.trace.apply(console, arguments);
     } else {
       console.log.apply(console, arguments);
@@ -36,7 +36,7 @@ class Logger {
   }
 
   info() {
-    if (this.logLevel <= this.INFO) {
+    if (this._logLevel <= this.INFO) {
       let args = Array.prototype.slice.call(arguments);
       args.unshift('INFO');
       this.log.apply(this, args);
@@ -44,7 +44,7 @@ class Logger {
   }
 
   debug() {
-    if (this.logLevel <= this.DEBUG) {
+    if (this._logLevel <= this.DEBUG) {
       let args = Array.prototype.slice.call(arguments);
       args.unshift('DEBUG');
       this.log.apply(this, args);

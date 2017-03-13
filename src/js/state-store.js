@@ -2,18 +2,34 @@ import getLogger from './util/logger';
 
 const registeredKeys = new Set([
   'ANNO_CELL_FIXED',
+  'annotationBackendUrl',
+  'annotationLayers',
   'copyrighted',
   'copyrightedImageServiceUrl',
+  'disableAuthz',
   'lastSelectedLayer',
-  'layerIndexMap'
+  'layerIndexMap',
+  'projectId'
 ]);
 
-// Holds states for the app, which will persist if local storgae is available.
+// Holds states for the app, which will optionally persist if local storgae is available.
 class StateStore {
   constructor() {
     this.logger = getLogger();
     this._settings = {};
     this._localStorageAvailable = storageAvailable('localStorage');
+  }
+
+  // For values that are not persisted
+  getTransient(key) {
+    this._checkKey(key);
+    return this._settings[key];
+  }
+
+  // For values that are not persisted
+  setTransient(key, value) {
+    this._checkKey(key);
+    this._settings[key] = value;
   }
 
   getString(key) {
@@ -31,7 +47,7 @@ class StateStore {
     this.logger.debug('StateStore#setString', key, value, this._localStorageAvailable);
     this._checkKey(key);
     this._settings[key] = value;
-    if (this._localStorageAvailable) {
+    if (this._localStorasgeAvailable) {
       localStorage.setItem(key, value);
     }
   }

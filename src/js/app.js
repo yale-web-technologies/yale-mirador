@@ -7,6 +7,8 @@ import './extension/ext-image-view';
 import './extension/ext-manifest';
 import './extension/ext-osd-region-draw-tool';
 import './extension/dialog-builder';
+import {AnnotationExplorer} from './import';
+import AnnotationSource from './annotation-data/annotation-source';
 import getConfigFetcher from './config/config-fetcher';
 import getLogger from './util/logger';
 import Grid from './grid';
@@ -17,83 +19,105 @@ import './extension/interface';
 
 import getStateStore from './state-store';
 
-export default class App {
+const logger = getLogger();
+let instance = null;
+let annotationExplorer = null;
+
+export default function getApp() {
+  if (!instance) {
+    instance = new App({
+      rootElement: 'ym_grid',
+      dataElement: jQuery('#\\{\\{id\\}\\}') // {{id}} gets replaced with the Mirador instance ID by the Grid
+    });
+  }
+  return instance;
+}
+
+class App {
   constructor(options) {
-    this.logger = this.setupLogger();
-    this.logger.debug('App#constructor');
+    this._setupLogger();
+    logger.debug('App#constructor');
     this.options = jQuery.extend({
       rootElement: null,
       dataElement: null
     }, options);
   }
 
-  init() {
-    const _this = this;
+  async init() {
     const configFetcher = getConfigFetcher();
     const settingsFromHtml = configFetcher.fetchSettingsFromHtml(this.options.dataElement);
     const {apiUrl, projectId} = settingsFromHtml;
 
     getStateStore().setObject('layerIndexMap', null);
 
-    configFetcher.fetchSettingsFromApi(apiUrl, projectId)
+    const settingsFromApi = await configFetcher.fetchSettingsFromApi(apiUrl, projectId)
     .catch(reason => {
       const msg = 'ERROR failed to retrieve server setting - ' + reason;
       throw msg;
-    })
-    .then(settingsFromApi => {
-      _this.logger.debug('Settings from API:', settingsFromApi);
-      _this.preConfigureTinyMce(settingsFromApi.buildPath + '/');
-
-      const settings = jQuery.extend(settingsFromHtml, settingsFromApi);
-      const grid = new Grid(_this.options.rootElement);
-      //const mainMenu = new MainMenu();
-
-      this.initState(settings);
-
-      getPageController().init({
-        //mainMenu: mainMenu,
-        grid: grid,
-        settings: settings
-      });
-    })
-    .catch(reason => {
-      const msg = 'ERROR failed to init Mirador - ' + reason;
-      alert(msg);
-      throw msg;
     });
+
+    logger.debug('Settings from API:', settingsFromApi);
+    this._preConfigureTinyMce(settingsFromApi.buildPath + '/');
+
+    const settings = jQuery.extend(settingsFromHtml, settingsFromApi);
+    await this.initState(settings);
+
+    const grid = new Grid(this.options.rootElement);
+    //const mainMenu = new MainMenu();
+
+    getPageController().init({
+      //mainMenu: mainMenu,
+      grid: grid,
+      settings: settings
+    });
+
+    return this;
   }
 
-  initState(apiSettings) {
+  async initState(settings) {
+    logger.debug('App#initState settings:', settings);
     const state = getStateStore();
+    const explorer = this.getAnnotationExplorer(settings.endpointUrl);
 
-    if (apiSettings.copyrighted) {
-      state.setString('copyrighted', 'true');
-    } else {
-      state.setString('copyrighted', 'false');
-    }
+    state.setTransient('projectId', settings.projectId);
+    state.setTransient('disableAuthz', settings.disableAuthz);
 
-    state.setString('copyrightedImageServiceUrl', apiSettings.copyrightedImageServiceUrl);
+    const layers = await explorer.getLayers();
+    state.setTransient('annotationLayers', layers);
 
-    if (apiSettings.fixAnnoCellHeight) {
+    state.setTransient('annotationBackendUrl', settings.endpointUrl);
+    state.setTransient('copyrighted', settings.copyrighted);
+    state.setTransient('copyrightedImageServiceUrl', settings.copyrightedImageServiceUrl);
+
+    if (settings.fixAnnoCellHeight) {
       state.setString('ANNO_CELL_FIXED', 'true');
     } else {
       state.setString('ANNO_CELL_FIXED', 'false');
     }
   }
 
-  setupLogger() {
-    const logger = getLogger();
+  _setupLogger() {
     if (window.location.hash === '#debug') {
       logger.setLogLevel(logger.DEBUG);
     } else {
       logger.setLogLevel(logger.INFO);
     }
-    return logger;
   }
 
-  preConfigureTinyMce(miradorBuildPath) {
-    this.logger.debug('App#preConfigureTinyMce buildPath:', miradorBuildPath);
+  _preConfigureTinyMce(miradorBuildPath) {
+    logger.debug('App#preConfigureTinyMce buildPath:', miradorBuildPath);
     tinymce.base = miradorBuildPath + '/';
     tinymce.setup();
+  }
+
+  getAnnotationExplorer(annotationBackendUrl) {
+    if (!annotationExplorer) {
+      annotationExplorer = new AnnotationExplorer({
+        dataSource: new AnnotationSource({
+          prefix: annotationBackendUrl
+        })
+      });
+    }
+    return annotationExplorer;
   }
 }

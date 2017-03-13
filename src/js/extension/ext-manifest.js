@@ -8,9 +8,9 @@ import getStateStore from '../state-store';
 
   $.Manifest.prototype.processCopyright = function(jsonLd) {
     logger.debug('Manifest#processCopyright jsonLd in:', jsonLd);
-    copyrightedImageServiceUrl = getStateStore().getString('copyrightedImageServiceUrl');
+    copyrightedImageServiceUrl = getStateStore().getTransient('copyrightedImageServiceUrl');
 
-    if (getStateStore().getString('copyrighted') === 'true') {
+    if (getStateStore().getTransient('copyrighted')) {
       [width, height] = getReplacementDimensions(jsonLd);
       const sequences = jsonLd.sequences;
       for (let sequence of sequences) {

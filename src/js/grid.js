@@ -1,5 +1,7 @@
+import getApp from './app';
 import getLogger from './util/logger';
 import getMiradorProxyManager from './mirador-proxy/mirador-proxy-manager';
+import getStateStore from './state-store';
 import AnnotationListRenderer from './widgets/annotation-window/annotation-list-renderer';
 import AnnotationWindow from './widgets/annotation-window/annotation-window';
 
@@ -14,7 +16,7 @@ export default class {
     logger.debug('Grid#init');
     this.element = jQuery('#' + rootElementId);
     this.miradorProxyManager = getMiradorProxyManager();
-
+    this._annotationExplorer = getApp().getAnnotationExplorer();
     this._annotationWindows = {};
 
     this.initLayout();
@@ -24,7 +26,6 @@ export default class {
   // GoldenLayout
   initLayout() {
     logger.debug('Grid#initLayout');
-    const _this = this;
     const config = {
       settings: {
         hasHeaders: true,
@@ -62,7 +63,7 @@ export default class {
 
     this._layout.on('stateChanged', e => {
       logger.debug('GoldenLayout stateChanged event:', e);
-      for (let miradorProxy of _this.miradorProxyManager.getMiradorProxies()) {
+      for (let miradorProxy of this.miradorProxyManager.getMiradorProxies()) {
         miradorProxy.publish('resizeMirador');
       }
       return true;
@@ -73,9 +74,9 @@ export default class {
       if (item.componentName == 'Annotations') {
         const windowId = item.config.componentState.windowId;
         logger.debug('Annotation window destroyed:', windowId);
-        _this._annotationWindows[windowId].destroy();
-        delete _this._annotationWindows[windowId];
-        _this._resizeWindows();
+        this._annotationWindows[windowId].destroy();
+        delete this._annotationWindows[windowId];
+        this._resizeWindows();
       }
     });
 
@@ -98,18 +99,17 @@ export default class {
     this._layout.root.contentItems[0].addChild(itemConfig);
   }
 
-  addWindows(config) {
-    logger.debug('Grid#addWindows config:', config);
+  addAnnotationWindows(config) {
+    logger.debug('Grid#addAnnotationWindows config:', config);
     for (let windowConfig of config.windows) {
       windowConfig.miradorId = config.miradorId;
       windowConfig.canvasWindowId = config.canvasWindowId;
-      this.addWindow(windowConfig);
+      this.addAnnotationWindow(windowConfig);
     }
   }
 
-  addWindow(options) {
-    logger.debug('Grid#addWindow options:', options);
-    const _this = this;
+  addAnnotationWindow(options) {
+    logger.debug('Grid#addAnnotationWindow options:', options);
     const windowId = Mirador.genUUID(); // annotation window ID
     const canvasWindowId = options.canvasWindowId || null;
     const itemConfig = {
@@ -121,7 +121,7 @@ export default class {
     this._layout.root.contentItems[0].addChild(itemConfig);
 
     const windowProxy = this.miradorProxyManager.getWindowProxyById(options.canvasWindowId);
-    const annoExplorer = windowProxy.getEndPoint().getAnnotationExplorer();
+    const annoExplorer = getApp().getAnnotationExplorer();
     const annoListRenderer = new AnnotationListRenderer({
       canvasWindowId: canvasWindowId
     });
@@ -130,13 +130,13 @@ export default class {
       explorer: annoExplorer,
       miradorId: options.miradorId || null,
       canvasWindowId: canvasWindowId,
-      initialLayerId: options.layerId || null,
+      initialLayerId: options.layerId || this._pickLayer(),
       initialTocTags: options.tocTags || null,
       annotationId: options.annotationId || null
     });
     return annoWin.init().then(window => {
-      _this._annotationWindows[windowId] = annoWin;
-      _this._resizeWindows();
+      this._annotationWindows[windowId] = annoWin;
+      this._resizeWindows();
       return window;
     })
     .catch(reason => { throw reason; });
@@ -144,15 +144,14 @@ export default class {
 
   bindEvents() {
     logger.debug('Grid#bindEvents');
-    const _this = this;
 
-    jQuery.subscribe('YM_ADD_WINDOW', function(event, options) {
-      _this.addWindow(options || {});
+    jQuery.subscribe('YM_ADD_WINDOW', (event, options) => {
+      this.addAnnotationWindow(options || {});
     });
 
-    jQuery.subscribe('YM_ADD_WINDOWS', function(event, config) {
+    jQuery.subscribe('YM_ADD_WINDOWS', (event, config) => {
       logger.debug('Received YM_ADD_WINDOWS config:', config);
-      _this.addWindows(config);
+      this.addAnnotationWindows(config);
     });
   }
 
@@ -174,14 +173,14 @@ export default class {
     }
     if (!found) {
       if (annotation) {
-        this.addWindow({
+        this.addAnnotationWindow({
           miradorId: miradorId,
           canvasWindowId: windowId,
           layerId: annotation.layerId
         }).then(function(annoWindow) {
           annoWindow.scrollToAnnotation(annoId);
         }).catch(function(reason) {
-          logger.error('Grid#showAnnotation addWindow failed <- ' + reason);
+          logger.error('Grid#showAnnotation addAnnotationWindow failed <- ' + reason);
         });
       } else {
         logger.error('Grid#showAnnotation annotation not found from endpoint, id: ' + annoId);
@@ -209,5 +208,29 @@ export default class {
     logger.debug('Grid#_setWidth itemId:', itemId, 'width:', percentWidth);
     this._layout.root.getItemsById(itemId)[0].parent.config.width = percentWidth;
     this._layout.updateSize();
+  }
+
+  _pickLayer() {
+    const allLayers = getStateStore().getTransient('annotationLayers');
+    for (let candidateLayer of allLayers) {
+      let candidateLayerId = candidateLayer['@id'];
+      let useThisLayer = true;
+
+      for (let annoWin of Object.values(this._annotationWindows)) {
+        let usedLayerId = annoWin.getCurrentLayerId();
+        console.log('used', usedLayerId );
+        console.log('new0', candidateLayerId);
+        if (candidateLayerId === usedLayerId) {
+          useThisLayer = false;
+          break;
+        }
+      }
+      if (useThisLayer) {
+        console.log('USE', candidateLayerId);
+        return candidateLayerId;
+      }
+    }
+    console.log('NO_CANDIDATE');
+    return allLayers[0]['@id']; // return the first if every layer is already in use
   }
 }

@@ -1,14 +1,15 @@
-import App from './app';
+import getApp from './app';
 import getLogger from './util/logger';
+
+const logger = getLogger();
 
 // Separated this code out to its own file because it shouldn't run with the test.
 jQuery(document).ready(function() {
-  getLogger().info(window._YaleMiradorVersion);
+  logger.info(window._YaleMiradorVersion);
   if (jQuery('#ym_grid').length > 0) {
-    const app = new App({
-      rootElement: 'ym_grid',
-      dataElement: jQuery('#\\{\\{id\\}\\}') // {{id}} gets replaced with the Mirador instance ID by the Grid
+    getApp().init().catch(reason => {
+      const msg = 'ERROR failed to init Mirador - ' + reason;
+      alert(msg);
     });
-    app.init();
   }
 });

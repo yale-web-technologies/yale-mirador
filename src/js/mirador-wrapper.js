@@ -109,7 +109,7 @@ export default class MiradorWrapper {
 
     miradorProxy.subscribe('YM_CLICKED_OPEN_ANNO_WINDOW', (event, canvasWindowId) => {
       logger.debug('MiradorWrapper received YM_CLICKED_OPEN_ANNO_WINDOW from ', canvasWindowId);
-      _this.options.grid.addWindow({
+      _this.options.grid.addAnnotationWindow({
         miradorId: _this._miradorId,
         canvasWindowId: canvasWindowId
       });

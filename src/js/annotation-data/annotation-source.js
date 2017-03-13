@@ -9,7 +9,8 @@ const logger = getLogger();
 export default class AnnotationSource {
   constructor(options) {
     this.options = jQuery.extend({
-      prefix: null
+      prefix: null,
+      state: getStateStore()
     }, options);
     this.layers = null;
   }
@@ -31,12 +32,14 @@ export default class AnnotationSource {
 
   _getRemoteLayers() {
     return new Promise((resolve, reject) => {
-      const settings = getPageController().getConfig().extension;
+      const projectId = this.options.state.getTransient('projectId');
+      const disableAuthz = this.options.state.getTransient('disableAuthz');
       let url = this.options.prefix + '/layers';
-      if (settings.projectId && !settings.disableAuthz) {
-        url += '?group_id=' + settings.projectId;
+
+      if (projectId && !disableAuthz) {
+        url += '?group_id=' + projectId;
       }
-      logger.debug('AnnotationSource#getLayers url:', url);
+      logger.debug('AnnotationSource#_getRemoteLayers url:', url);
 
       jQuery.ajax({
         url: url,
@@ -61,16 +64,15 @@ export default class AnnotationSource {
 
   _updateLayerIndex(layers) {
     logger.debug('AnnotationSource#_updateLayerIndex');
-    const state = getStateStore();
 
-    if (!state.getObject('layerIndexMap')) {
+    if (!this.options.state.getObject('layerIndexMap')) {
       const map = {};
       let count = 0;
       layers.forEach((layer) => {
         map[layer['@id']] = count;
         ++count;
       });
-      state.setObject('layerIndexMap', count > 0 ? map : null);
+      this.options.state.setObject('layerIndexMap', count > 0 ? map : null);
     }
     return layers;
   }
