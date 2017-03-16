@@ -38,6 +38,7 @@ export default class {
       },
       content: [{
         type: 'row',
+        isClosable: false,
         content: [/*{
           type: 'component',
           componentName: 'Mirador',
@@ -94,7 +95,8 @@ export default class {
     const itemConfig = {
       type: 'component',
       componentName: 'Mirador',
-      componentState: { miradorId: miradorId }
+      componentState: { miradorId: miradorId },
+      isClosable: false
     };
     this._layout.root.contentItems[0].addChild(itemConfig);
   }
