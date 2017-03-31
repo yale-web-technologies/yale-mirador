@@ -44,6 +44,8 @@ class App {
   }
 
   async init() {
+    this.initHandlebars();
+
     const configFetcher = getConfigFetcher();
     const settingsFromHtml = configFetcher.fetchSettingsFromHtml(this.options.dataElement);
     const {apiUrl, projectId} = settingsFromHtml;
@@ -72,6 +74,12 @@ class App {
     });
 
     return this;
+  }
+
+  initHandlebars() {
+    Handlebars.registerHelper('t', function(i18nKey) {
+      return i18next.t(i18nKey);
+    });
   }
 
   async initState(settings) {
