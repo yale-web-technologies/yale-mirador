@@ -10,7 +10,7 @@ jQuery(document).ready(function() {
   if (jQuery('#ym_grid').length > 0) {
     getApp().init().catch(reason => {
       logger.error('Failed to init Mirador', reason);
-      fatalError('Initializing the app', reason);
+      fatalError(reason, 'Initializing the app');
     });
   }
 });

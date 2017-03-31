@@ -56,9 +56,8 @@ class App {
     .catch(reason => {
       logger.error('Failed to retrieve server setting', reason);
       error = true;
-      fatalError('Retrieving settings from server', reason);
+      fatalError(reason, 'Retrieving settings from server');
     });
-    if (error) return;
 
     logger.debug('Settings from API:', settingsFromApi);
     this._preConfigureTinyMce(settingsFromApi.buildPath + '/');

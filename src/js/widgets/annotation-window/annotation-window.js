@@ -1,4 +1,5 @@
 import {annoUtil} from '../../import';
+import fatalError from '../../util/fatal-error';
 import getLogger from '../../util/logger';
 import getMiradorProxyManager from '../../mirador-proxy/mirador-proxy-manager';
 import getStateStore from '../../state-store';
@@ -236,12 +237,18 @@ export default class AnnotationWindow {
   }
 
   getCurrentCanvas() {
-    var window = this.canvasWindow;
-    var id = window.canvasID;
-    var canvases = window.manifest.getCanvases();
-    return canvases.filter(function (canvas) {
+    const window = this.canvasWindow;
+    const id = window.canvasID;
+    const canvases = window.manifest.getCanvases();
+    const current = canvases.filter(canvas => {
+      console.log('canvas:', canvas);
       return canvas['@id'] === id;
-    })[0];
+    });
+    if (current.length < 1) {
+      fatalError('Could not find the requested canvas: ' + id);
+    } else {
+      return current[0];
+    }
   }
 
   highlightAnnotation(annoId) {

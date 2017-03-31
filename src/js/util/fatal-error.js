@@ -1,10 +1,17 @@
 // Show messages for an irrecoverable error after wiping out everything
-export default function fatalError(...args) {
+export default function fatalError(error, ...args) {
+  console.log('ERROR:', error);
   const rootElem = jQuery(template());
-  for (let arg of args) {
-    rootElem.append(jQuery('<p>' + arg + '</p>'));
+  if (error === 'FATAL') {
+    throw error;
+  } else {
+    args.push(error);
+    for (let arg of args) {
+      rootElem.append(jQuery('<p>' + arg + '</p>'));
+    }
+    jQuery(document.body).empty().append(rootElem);
+    throw 'FATAL';
   }
-  jQuery(document.body).empty().append(rootElem);
 }
 
 const template = Handlebars.compile([
