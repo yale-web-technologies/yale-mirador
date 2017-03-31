@@ -65,14 +65,14 @@ export default class AnnotationSource {
   _updateLayerIndex(layers) {
     logger.debug('AnnotationSource#_updateLayerIndex');
 
-    if (!this.options.state.getObject('layerIndexMap')) {
+    if (!this.options.state.getTransient('layerIndexMap')) {
       const map = {};
       let count = 0;
       layers.forEach((layer) => {
         map[layer['@id']] = count;
         ++count;
       });
-      this.options.state.setObject('layerIndexMap', count > 0 ? map : null);
+      this.options.state.setTransient('layerIndexMap', count > 0 ? map : null);
     }
     return layers;
   }

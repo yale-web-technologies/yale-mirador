@@ -51,8 +51,6 @@ class App {
     const {apiUrl, projectId} = settingsFromHtml;
     let error = false;
 
-    getStateStore().setObject('layerIndexMap', null);
-
     // Retrieve settings from the server
     const settingsFromApi = await configFetcher.fetchSettingsFromApi(apiUrl, projectId)
     .catch(reason => {

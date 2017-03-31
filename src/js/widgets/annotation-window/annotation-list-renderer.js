@@ -23,7 +23,7 @@ export default class AnnotationListRenderer {
    */
   render(options) {
     logger.debug('AnnotationListRenderer#render options:', options);
-    this.layerIndexMap = this.state.getObject('layerIndexMap');
+    this.layerIndexMap = this.state.getTransient('layerIndexMap');
     options.parentElem.empty();
     if (options.toc) {
       return this.renderWithToc(options);

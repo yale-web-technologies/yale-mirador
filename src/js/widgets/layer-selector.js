@@ -37,7 +37,7 @@ export default class {
   reload(layers) {
     this.logger.debug('LayerSelector#reload');
     const _this = this;
-    const layerIndexMap = this.appState.getObject('layerIndexMap');
+    const layerIndexMap = this.appState.getTransient('layerIndexMap');
     if (!layerIndexMap) {
       this.logger.error('LayerSelector#reload cannot retrieve layerIndexMap');
     }
@@ -84,7 +84,7 @@ export default class {
     var _this = this;
     this.selector.changeCallback = function(layerId, text) {
       _this.logger.debug('LayerSelector#bindEvents changeCallback');
-      const layerIndexMap = _this.appState.getObject('layerIndexMap');
+      const layerIndexMap = _this.appState.getTransient('layerIndexMap');
       const layerIndex = layerIndexMap ? layerIndexMap[layerId] : 0;
 
       _this.selector.setColorClass('layer_' + layerIndex % 10);
