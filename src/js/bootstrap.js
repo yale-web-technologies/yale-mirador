@@ -1,3 +1,4 @@
+import fatalError from './util/fatal-error';
 import getApp from './app';
 import getLogger from './util/logger';
 
@@ -8,8 +9,8 @@ jQuery(document).ready(function() {
   logger.info(window._YaleMiradorVersion);
   if (jQuery('#ym_grid').length > 0) {
     getApp().init().catch(reason => {
-      const msg = 'ERROR failed to init Mirador - ' + reason;
-      alert(msg);
+      logger.error('Failed to init Mirador', reason);
+      fatalError('Initializing the app', reason);
     });
   }
 });

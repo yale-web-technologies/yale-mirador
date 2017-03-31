@@ -9,15 +9,15 @@ import './extension/ext-osd-region-draw-tool';
 import './extension/dialog-builder';
 import {AnnotationExplorer} from './import';
 import AnnotationSource from './annotation-data/annotation-source';
+import fatalError from './util/fatal-error';
 import getConfigFetcher from './config/config-fetcher';
 import getLogger from './util/logger';
+import getPageController from './page-controller';
+import getStateStore from './state-store';
 import Grid from './grid';
 //import MainMenu from './widgets/main-menu'; //deprecated
-import getPageController from './page-controller';
 import './extension/interface';
 //import './util/jquery-tiny-pubsub-trace'; // import this only for debugging!
-
-import getStateStore from './state-store';
 
 const logger = getLogger();
 let instance = null;
@@ -49,14 +49,18 @@ class App {
     const configFetcher = getConfigFetcher();
     const settingsFromHtml = configFetcher.fetchSettingsFromHtml(this.options.dataElement);
     const {apiUrl, projectId} = settingsFromHtml;
+    let error = false;
 
     getStateStore().setObject('layerIndexMap', null);
 
+    // Retrieve settings from the server
     const settingsFromApi = await configFetcher.fetchSettingsFromApi(apiUrl, projectId)
     .catch(reason => {
-      const msg = 'ERROR failed to retrieve server setting - ' + reason;
-      throw msg;
+      logger.error('Failed to retrieve server setting', reason);
+      error = true;
+      fatalError('Retrieving settings from server', reason);
     });
+    if (error) return;
 
     logger.debug('Settings from API:', settingsFromApi);
     this._preConfigureTinyMce(settingsFromApi.buildPath + '/');
