@@ -9,7 +9,8 @@ const registeredKeys = new Set([
   'disableAuthz',
   'lastSelectedLayer',
   'layerIndexMap',
-  'projectId'
+  'projectId',
+  'tooltipStyles'
 ]);
 
 // Holds states for the app, which will optionally persist if local storgae is available.

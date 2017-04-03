@@ -20,6 +20,12 @@
     "copyrighted": false,
     "copyrightedImageServiceUrl": "http://images.tenthousandrooms.yale.edu/loris/tenkr:original/copyrighted.jpg",
     "fixAnnoCellHeight": false,
+    "tooltipStyles": null,
+    "__tooltipStyles": {
+      "color": "#fff",
+      "backgroundColor": "rgba(0, 0, 0, 0.2)",
+      "border": "solid 1px rgba(187, 187, 187, 0.5)"
+    },
     "tagHierarchy": null,
     "__tagHierarchy": {
       "shortLabelSeparator": ".",

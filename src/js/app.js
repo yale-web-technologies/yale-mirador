@@ -97,6 +97,7 @@ class App {
     state.setTransient('annotationBackendUrl', settings.endpointUrl);
     state.setTransient('copyrighted', settings.copyrighted);
     state.setTransient('copyrightedImageServiceUrl', settings.copyrightedImageServiceUrl);
+    state.setTransient('tooltipStyles', settings.tooltipStyles);
 
     if (settings.fixAnnoCellHeight) {
       state.setString('ANNO_CELL_FIXED', 'true');

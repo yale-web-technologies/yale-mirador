@@ -1,15 +1,16 @@
 import getLogger from '../util/logger';
+import getStateStore from '../state-store';
 
 (function($) {
-  
+
   $.yaleExt = $.yaleExt || {};
-  
+
   const logger = getLogger();
-  
+
   jQuery.extend($.yaleExt, {
 
     // Get bounds of multiple paper.js shapes.
-    getCombinedBounds: function (shapes) {
+    getCombinedBounds: function(shapes) {
       logger.debug('shapes: ' + shapes);
       var bounds = null;
       jQuery.each(shapes, function (index, shape) {
@@ -22,8 +23,8 @@ import getLogger from '../util/logger';
       });
       return bounds;
     },
-    
-    highlightShape: function (shape) {
+
+    highlightShape: function(shape) {
       if (!shape._ym_oldStrokeColor) {
         shape.data._ym_oldStrokeColor = shape.strokeColor;
       }
@@ -33,8 +34,8 @@ import getLogger from '../util/logger';
       shape.data.currentStrokeValue = 2;
       shape.set({ opacity: 1 });
     },
-    
-    deHighlightShape: function (shape) {
+
+    deHighlightShape: function(shape) {
       if (shape.data._ym_oldStrokeColor) {
         shape.set({ strokeColor: shape.data._ym_oldStrokeColor });
       }
@@ -42,8 +43,18 @@ import getLogger from '../util/logger';
         shape.data.currentStrokeValue = shape.data._ym_oldStrokeWidth;
       }
       shape.opacity = 0;
+    },
+
+    updateTooltipStyles: function() {
+      const elem = jQuery('.qtip-default, .qtip-content');
+      const styles = getStateStore().getTransient('tooltipStyles');
+      if (styles) {
+        elem.css('color', styles.color);
+        elem.css('background-color', styles.backgroundColor);
+        elem.css('border', styles.border);
+      }
     }
-    
+
   });
-  
+
 })(Mirador);
