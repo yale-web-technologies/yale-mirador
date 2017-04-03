@@ -196,7 +196,7 @@ export default class {
     let width = 0;
 
     switch (numAnnoWindows) {
-      case 1: width = 30; break;
+      case 1: width = 20; break;
       case 2: width = 25; break;
       default: width = 100 / (numAnnoWindows + 1);
     }
