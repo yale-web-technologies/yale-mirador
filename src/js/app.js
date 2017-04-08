@@ -14,7 +14,7 @@ import getConfigFetcher from './config/config-fetcher';
 import getLogger from './util/logger';
 import getPageController from './page-controller';
 import getStateStore from './state-store';
-import Grid from './grid';
+import Grid from './layout/grid';
 //import MainMenu from './widgets/main-menu'; //deprecated
 import './extension/interface';
 //import './util/jquery-tiny-pubsub-trace'; // import this only for debugging!
@@ -59,7 +59,7 @@ class App {
       fatalError(reason, 'Retrieving settings from server');
     });
 
-    logger.debug('Settings from API:', settingsFromApi);
+    logger.debug('Settings from API:', settingsFromApi);11
     this._preConfigureTinyMce(settingsFromApi.buildPath + '/');
 
     const settings = jQuery.extend(settingsFromHtml, settingsFromApi);
@@ -125,7 +125,8 @@ class App {
       annotationExplorer = new AnnotationExplorer({
         dataSource: new AnnotationSource({
           prefix: annotationBackendUrl
-        })
+        }),
+        logger: logger
       });
     }
     return annotationExplorer;

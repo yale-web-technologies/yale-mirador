@@ -1,9 +1,9 @@
-import getApp from './app';
-import getLogger from './util/logger';
-import getMiradorProxyManager from './mirador-proxy/mirador-proxy-manager';
-import getStateStore from './state-store';
-import AnnotationListRenderer from './widgets/annotation-window/annotation-list-renderer';
-import AnnotationWindow from './widgets/annotation-window/annotation-window';
+import getApp from '../app';
+import getLogger from '../util/logger';
+import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
+import getStateStore from '../state-store';
+import AnnotationListRenderer from '../widgets/annotation-window/annotation-list-renderer';
+import AnnotationWindow from '../widgets/annotation-window/annotation-window';
 
 const logger = getLogger();
 
@@ -104,8 +104,6 @@ export default class {
   addAnnotationWindows(config) {
     logger.debug('Grid#addAnnotationWindows config:', config);
     for (let windowConfig of config.windows) {
-      windowConfig.miradorId = config.miradorId;
-      windowConfig.canvasWindowId = config.canvasWindowId;
       this.addAnnotationWindow(windowConfig);
     }
   }
@@ -113,7 +111,7 @@ export default class {
   addAnnotationWindow(options) {
     logger.debug('Grid#addAnnotationWindow options:', options);
     const windowId = Mirador.genUUID(); // annotation window ID
-    const canvasWindowId = options.canvasWindowId || null;
+    const imageWindowId = options.imageWindowId || null;
     const itemConfig = {
       id: windowId,
       type: 'component',
@@ -125,13 +123,13 @@ export default class {
     const windowProxy = this.miradorProxyManager.getWindowProxyById(options.canvasWindowId);
     const annoExplorer = getApp().getAnnotationExplorer();
     const annoListRenderer = new AnnotationListRenderer({
-      canvasWindowId: canvasWindowId
+      canvasWindowId: imageWindowId
     });
     const annoWin = new AnnotationWindow({ appendTo: jQuery('#' + windowId),
       annotationListRenderer: annoListRenderer,
       explorer: annoExplorer,
       miradorId: options.miradorId || null,
-      canvasWindowId: canvasWindowId,
+      canvasWindowId: imageWindowId,
       initialLayerId: options.layerId || this._pickLayer(),
       initialTocTags: options.tocTags || null,
       annotationId: options.annotationId || null

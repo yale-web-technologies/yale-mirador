@@ -176,7 +176,7 @@ export default class AnnotationListRenderer {
   }
 
   createAnnoElem(annotation, options) {
-    logger.debug('AnnotationWindow#createAnnoElem anno:', annotation);
+    //logger.debug('AnnotationWindow#createAnnoElem anno:', annotation);
     const content = annoUtil.getText(annotation);
     const tags = annoUtil.getTags(annotation);
     const tagsHtml = this.getTagsHtml(tags);

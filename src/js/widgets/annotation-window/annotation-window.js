@@ -75,7 +75,7 @@ export default class AnnotationWindow {
     })
     .then(() => {
       logger.debug('AnnotationWindow annosToShow:', annosToShow);
-      if (this.annotationId && annosToShow.length > 0) {
+      if ((this.annotationId || this.initialTocTags) && annosToShow.length > 0) {
         const finalTargetAnno = annoUtil.findFinalTargetAnnotation(annosToShow[0],
           _this.canvasWindow.annotationsList);
         _this.highlightAnnotations(annosToShow, 'SELECTED');
@@ -108,7 +108,6 @@ export default class AnnotationWindow {
         _this.updateList();
       }
     });
-    this.initialTocTags = null;
   }
 
   initLayerSelector() {
