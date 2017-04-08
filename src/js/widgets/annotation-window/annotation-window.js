@@ -126,7 +126,6 @@ export default class AnnotationWindow {
   }
 
   addCreateWindowButton() {
-    const _this = this;
     const parent = this.element.find('.annowin_layer_row');
     const button = jQuery('<div/>')
       .addClass('ym_create_window_button')
@@ -134,8 +133,8 @@ export default class AnnotationWindow {
     parent.append(button);
     button.click(event => {
       jQuery.publish('YM_ADD_WINDOW', {
-        miradorId: _this.miradorId,
-        canvasWindowId: _this.canvasWindowId
+        miradorId: this.miradorId,
+        imageWindowId: this.canvasWindowId
       });
     });
   }

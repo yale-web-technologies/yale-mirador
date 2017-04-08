@@ -70,7 +70,6 @@ export default class MiradorWrapper {
 
   _bindEvents(options) {
     logger.debug('MiradorWrapper#_bindEvents options:', options);
-    const _this = this;
     const miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
 
     miradorProxy.subscribe('ANNOTATIONS_LIST_UPDATED', (event, params) => {
@@ -93,18 +92,18 @@ export default class MiradorWrapper {
     miradorProxy.subscribe('YM_CLICKED_OPEN_ANNO_WINDOW', (event, canvasWindowId) => {
       logger.debug('MiradorWrapper received YM_CLICKED_OPEN_ANNO_WINDOW from ', canvasWindowId);
       miradorProxy.publish('YM_DISPLAY_ON');
-      _this.options.grid.addAnnotationWindow({
-        miradorId: _this._miradorId,
-        canvasWindowId: canvasWindowId
+      this.options.grid.addAnnotationWindow({
+        miradorId: this._miradorId,
+        imageWindowId: canvasWindowId
       });
     });
 
     jQuery.subscribe('YM_READY_TO_RELOAD_ANNO_WIN', (event, imageWindowId) => { // after annotations have been loaded
-      if (_this._urlOptionsProcessed) { // run this function only once
+      if (this._urlOptionsProcessed) { // run this function only once
         return;
       } else {
-        _this._urlOptionsProcessed = true;
-        _this._createAnnotationWindows(imageWindowId, options);
+        this._urlOptionsProcessed = true;
+        this._createAnnotationWindows(imageWindowId, options);
       }
     });
   }
