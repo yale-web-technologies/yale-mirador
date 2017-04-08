@@ -175,7 +175,7 @@ export default class {
       if (annotation) {
         this.addAnnotationWindow({
           miradorId: miradorId,
-          canvasWindowId: windowId,
+          imageWindowId: windowId,
           layerId: annotation.layerId
         }).then(function(annoWindow) {
           annoWindow.scrollToAnnotation(annoId);
