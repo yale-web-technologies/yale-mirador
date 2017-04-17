@@ -1,5 +1,7 @@
+import {Anno} from '../import';
 import getLogger from '../util/logger';
 import getStateStore from '../state-store';
+import util from '../util/util';
 
 (function($) {
 
@@ -53,8 +55,17 @@ import getStateStore from '../state-store';
         elem.css('background-color', styles.backgroundColor);
         elem.css('border', styles.border);
       }
-    }
+    },
 
+    truncate: function(html, maxLen) {
+      let text = html.replace(/<(?:.|\n)*?>/gm, '');
+      text = text.replace(/&.*?;/gm, '');
+      if (text.length > maxLen) {
+        return text.slice(0, maxLen-3) + '...';
+      } else {
+        return text;
+      }
+    }
   });
 
 })(Mirador);
