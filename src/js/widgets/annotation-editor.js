@@ -86,8 +86,6 @@ export default class AnnotationEditor {
 
   initTinyMce() {
     const _this = this;
-    alert(_this._textDirectionClass);
-
     tinymce.init({
       selector: '#' + this.id + ' textarea',
       plugins: 'link paste',
