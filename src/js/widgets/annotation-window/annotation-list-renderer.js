@@ -1,7 +1,8 @@
-import {annoUtil} from '../../import';
+import {Anno, annoUtil} from '../../import';
 import AnnotationEditor from '../annotation-editor';
 import getLogger from '../../util/logger';
 import getStateStore from '../../state-store';
+import util from '../../util/util';
 
 const logger = getLogger();
 
@@ -177,9 +178,11 @@ export default class AnnotationListRenderer {
 
   createAnnoElem(annotation, options) {
     //logger.debug('AnnotationWindow#createAnnoElem anno:', annotation);
-    const content = annoUtil.getText(annotation);
-    const tags = annoUtil.getTags(annotation);
+    const anno = Anno(annotation);
+    const content = anno.bodyText;
+    const tags = anno.tags;
     const tagsHtml = this.getTagsHtml(tags);
+    const style = anno.bodyStyle;
     const state = getStateStore();
 
     const annoHtml = annotationTemplate({
@@ -188,8 +191,12 @@ export default class AnnotationListRenderer {
       isEditor: options.isEditor,
       orderable: options.isCompleteList
     });
+
     const layerIndex = this.layerIndexMap[annotation.layerId];
     const annoElem = jQuery(annoHtml);
+    const contentElem = annoElem.find('.content');
+    util.setTextDirectionClass(contentElem, style);
+
     const menuBar = annoElem.find('.menu_bar');
 
     annoElem.data('annotationId', annotation['@id']);
@@ -266,7 +273,9 @@ export default class AnnotationListRenderer {
         saveCallback: function(annotation, content) {
           if (annoWin.currentLayerId === annotation.layerId) {
             const normalView = annoElem.find('.normal_view');
-            normalView.find('.content').html(content);
+            const contentElem = normalView.find('.content');
+            contentElem.html(content);
+            util.setTextDirectionClass(contentElem, Anno(annotation).bodyStyle);
             normalView.show();
             annoElem.data('editing', false);
           } else {

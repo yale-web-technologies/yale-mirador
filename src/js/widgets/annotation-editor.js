@@ -1,9 +1,10 @@
-import {annoUtil} from '../import';
+import {Anno, annoUtil} from '../import';
 import getLogger from '../util/logger';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import getPageController from '../page-controller';
 import getStateStore from '../state-store';
 import LayerSelector from './layer-selector';
+import util from '../util/util';
 
 const logger = getLogger();
 
@@ -23,6 +24,10 @@ export default class AnnotationEditor {
     }, options);
 
     this._mode = options.mode; // "create", "update", or "merge"
+    this._$anno = this.annotation ? Anno(this.annotation) : null;
+
+    this._textDirectionClass = this._getTextDirectionClass(this._$anno);
+    logger.debug('AnnotationEditor#constructor _useVerticalRL:', this._useVerticalRL);
 
     this.init();
     this.hide();
@@ -46,7 +51,6 @@ export default class AnnotationEditor {
 
   async reload(parent) {
     logger.debug('AnnotationEditor#reload parent:', parent);
-    const _this = this;
 
     parent.prepend(this.element);
     const header = this.element.find('.header');
@@ -60,33 +64,36 @@ export default class AnnotationEditor {
     const layers = await this.endpoint.getLayers();
 
     this.layerSelector.init(layers).then(() => {
-      if (_this._mode === 'create') {
+      if (this._mode === 'create') {
         title.text('Create Annotation');
         const lastLayer = getStateStore().getString('lastSelectedLayer');
-        _this.layerSelector.val(lastLayer);
+        this.layerSelector.val(lastLayer);
       } else { // update
         title.text('');
-        if (_this.annotation) {
-          _this.textArea.val(annoUtil.getText(_this.annotation));
-          if (_this.annotation.layerId) {
-            _this.layerSelector.val(_this.annotation.layerId);
+        if (this.annotation) {
+          this.textArea.val(annoUtil.getText(this.annotation));
+          if (this.annotation.layerId) {
+            this.layerSelector.val(this.annotation.layerId);
           }
         }
       }
-      _this.initTinyMce();
-      _this.bindEvents();
+      this.initTinyMce();
+      this.bindEvents();
     }).catch(function(reason) {
       logger.error('ERROR AnnotationEditor#reload layerSelector.init failed - ' + reason);
     });
   }
 
-  initTinyMce(textAreaSelector) {
+  initTinyMce() {
+    const _this = this;
+    alert(_this._textDirectionClass);
+
     tinymce.init({
       selector: '#' + this.id + ' textarea',
       plugins: 'link paste',
       menubar: false,
-      toolbar: 'bold italic fontsizeselect | bullist numlist | link | undo redo | removeformat',
-      fontsize_formats: '10px 12px 14px 16px 18px',
+      toolbar: 'bold italic fontsizeselect | bullist numlist | link | undo redo | removeformat | TB_RL',
+      fontsize_formats: '10px 12px 14px 18px 24px',
       statusbar: false,
       toolbar_items_size: 'small',
       default_link_target: '_blank',
@@ -97,12 +104,26 @@ export default class AnnotationEditor {
       theme_advanced_statusbar_location: 'bottom',
       setup: function(editor) {
         editor.on('init', function(e) {
-          logger.debug('TinyMCE on init e:', e);
           this.getDoc().body.style.fontSize = '12px';
           tinymce.execCommand('mceFocus', false, e.target.id);
         });
         editor.on('focus', function(e) {
           logger.debug('TinyMCE on focus e:', e);
+        });
+        editor.addButton('TB_RL', {
+          type: 'listbox',
+          tooltip: 'Set text direction',
+          icon: false,
+          onselect: function(event) {
+            _this._textDirectionClass = this.value();
+          },
+          values: [
+            { text: 'Horizontal LR', value: 'horizontal-lr' },
+            { text: 'Horizontal RL', value: 'horizontal-rl' },
+            { text: 'Vertical LR', value: 'vertical-lr' },
+            { text: 'Vertical RL', value: 'vertical-rl' },
+          ],
+          value: _this._textDirectionClass // initial value
         });
       }
     });
@@ -169,7 +190,8 @@ export default class AnnotationEditor {
     resource.push({
       "@type": "dctypes:Text",
       "format": "text/html",
-      "chars": resourceText
+      "chars": resourceText,
+      "style": this._textDirectionClass
     });
 
     var layerId = this.layerSelector.val();
@@ -239,15 +261,14 @@ export default class AnnotationEditor {
         });
       });
     }
-    jQuery.each(oaAnno.resource, function(index, value) {
+    for (let value of oaAnno.resource) {
       if (value['@type'] === 'dctypes:Text') {
         value.chars = resourceText;
+        value.style = this._textDirectionClass;
       }
-    });
-
-    var layerId = this.layerSelector.val();
+    }
+    const layerId = this.layerSelector.val();
     oaAnno.layerId = layerId;
-
     return oaAnno;
   }
 
@@ -331,6 +352,28 @@ export default class AnnotationEditor {
       var height = parseInt(tinyMCE.DOM.getStyle(element, 'height'), 10);
       tinyMCE.DOM.setStyle(element, 'height', (height - 75) + 'px');
     });
+  }
+
+  /**
+   * Get class name ($anno.bodyStyle) for text directions to save
+   * with the annotation
+   * @param {AnnotationWrapper} $anno
+   */
+  _getTextDirectionClass($anno) {
+    let klass = '';
+    if ($anno) {
+      klass = $anno.bodyStyle;
+      logger.debug('AnnotationEditor#_getTextDirectionClass class from anno:', klass);
+      if (util.directionClasses.includes(klass)) {
+        return klass;
+      }
+    }
+    klass = getStateStore().getString('textDirection');
+    logger.debug('AnnotationEditor#_getTextDirectionClass default from state:', klass);
+    if (util.directionClasses.includes(klass)) {
+        return klass;
+    }
+    return 'horizontal-lr';
   }
 }
 

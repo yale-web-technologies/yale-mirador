@@ -59,7 +59,7 @@ class App {
       fatalError(reason, 'Retrieving settings from server');
     });
 
-    logger.debug('Settings from API:', settingsFromApi);11
+    logger.debug('Settings from API:', settingsFromApi);
     this._preConfigureTinyMce(settingsFromApi.buildPath + '/');
 
     const settings = jQuery.extend(settingsFromHtml, settingsFromApi);
@@ -97,12 +97,11 @@ class App {
     state.setTransient('annotationBackendUrl', settings.endpointUrl);
     state.setTransient('copyrighted', settings.copyrighted);
     state.setTransient('copyrightedImageServiceUrl', settings.copyrightedImageServiceUrl);
-    state.setTransient('tooltipStyles', settings.tooltipStyles);
 
-    if (settings.fixAnnoCellHeight) {
-      state.setString('ANNO_CELL_FIXED', 'true');
-    } else {
-      state.setString('ANNO_CELL_FIXED', 'false');
+    if (settings.ui) {
+      state.setBoolean('fixAnnoCellHeight', settings.ui.fixAnnoCellHeight);
+      state.setString('textDirection', settings.ui.textDirection);
+      state.setTransient('tooltipStyles', settings.ui.tooltipStyles);
     }
   }
 

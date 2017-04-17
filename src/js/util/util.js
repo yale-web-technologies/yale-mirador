@@ -11,7 +11,7 @@ export default {
       }
     })(navigator.userAgent||navigator.vendor||window.opera);
   },
-  
+
   getValues: function(object) {
     var values = [];
     jQuery.each(object, function(key, value) {
@@ -19,7 +19,7 @@ export default {
     });
     return values;
   },
-  
+
   waitUntil: function(testFunc, execFunc, ms, count) {
     const _this = this;
     if (ms === undefined) {
@@ -41,6 +41,27 @@ export default {
       setTimeout(function() {
         _this.waitUntil(testFunc, execFunc, ms * 2, count + 1);
       }, ms);
+    }
+  },
+
+  directionClasses: [
+    'horizontal-lr',
+    'horizontal-rl',
+    'vertical-lr',
+    'vertical-rl'
+  ],
+
+  setTextDirectionClass: function(jQueryElem, newClass) {
+    if (!this.directionClasses.includes(newClass)) {
+      getLogger().debug('util.setTextDriectionClass no class provided, using horizontal-lr');
+      newClass = 'horizontal-lr';
+    }
+    for (let klass of this.directionClasses) {
+      if (klass === newClass) {
+        jQueryElem.addClass(klass);
+      } else {
+        jQueryElem.removeClass(klass);
+      }
     }
   }
 };

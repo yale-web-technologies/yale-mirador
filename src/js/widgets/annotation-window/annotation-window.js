@@ -155,7 +155,7 @@ export default class AnnotationWindow {
 
     this.placeholder.hide();
 
-    if (state.getString('ANNO_CELL_FIXED') === 'true') {
+    if (state.getBoolean('fixAnnoCellHeight')) {
       this.element.addClass('fixed_height_cells');
     } else {
       this.element.removeClass('fixed_height_cells');

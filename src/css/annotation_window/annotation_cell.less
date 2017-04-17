@@ -27,6 +27,21 @@
       }
     }
   }
+
+  .content {
+    padding: @annowin-v-padding @annowin-h-padding;
+    font-size: @anno-content-font-size;
+    width: 100%;
+  }
+
+  .annowin_anno .tag {
+    font-size: @anno-tag-font-size;
+    color: @tag-color;
+    background-color: @tag-background-color;
+    margin: 0 2px;
+    padding: 0.1rem 0.2rem;
+    border-radius: 0.2rem;
+  }
 }
 
 .ym_anno_selected {
@@ -45,20 +60,6 @@
   border-color: @anno-targeted-border-color;
   border-width: @anno-highlight-border-width;
   padding: 0;
-}
-
-.annowin_anno .content {
-  padding: @annowin-v-padding @annowin-h-padding;
-  font-size: @anno-content-font-size;
-}
-
-.annowin_anno .tag {
-  font-size: @anno-tag-font-size;
-  color: @tag-color;
-  background-color: @tag-background-color;
-  margin: 0 2px;
-  padding: 0.1rem 0.2rem;
-  border-radius: 0.2rem;
 }
 
 // Fixed height mode

@@ -4,7 +4,7 @@ html, body, div, p {
 
 .ym_float_right {
   float: right;
-  
+
   &::after {
     content: "";
     display: block;
@@ -15,4 +15,28 @@ html, body, div, p {
 .ym_button.small {
   padding-top: 0.6em;
   padding-bottom: 0.6em;
+}
+
+.horizontal-lr {
+  direction: ltr;
+  white-space: normal;
+  writing-mode: horizontal-tb;
+}
+
+.horizontal-rl {
+  direction: rtl;
+  white-space: normal;
+  writing-mode: horizontal-tb;
+}
+
+.vertical-lr {
+  direction: ltr;
+  white-space: nowrap;
+  writing-mode: vertical-lr;
+}
+
+.vertical-rl {
+  direction: ltr;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
 }

@@ -1,19 +1,26 @@
 import getLogger from './util/logger';
 
 const registeredKeys = new Set([
-  'ANNO_CELL_FIXED',
   'annotationBackendUrl',
   'annotationLayers',
   'copyrighted',
   'copyrightedImageServiceUrl',
   'disableAuthz',
+  'fixAnnoCellHeight',
   'lastSelectedLayer',
   'layerIndexMap',
   'projectId',
+  'textDirection',
   'tooltipStyles'
 ]);
 
-// Holds states for the app, which will optionally persist if local storgae is available.
+/**
+ * Holds states for the app, which will optionally persist if local storgae is
+ * available.
+ * The distinction of setString, setObject, setBoolean was necessary
+ * because we have to assume only the "string" type is supported
+ * currently for local storage on all browsers.
+ */
 class StateStore {
   constructor() {
     this.logger = getLogger();
@@ -51,6 +58,14 @@ class StateStore {
     if (this._localStorasgeAvailable) {
       localStorage.setItem(key, value);
     }
+  }
+
+  getBoolean(key) {
+    return this.getString(key) === 'true';
+  }
+
+  setBoolean(key, value) {
+    this.setString(key, value ? 'true' : 'false');
   }
 
   getObject(key) {
