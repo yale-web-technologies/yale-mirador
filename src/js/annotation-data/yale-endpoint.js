@@ -109,6 +109,7 @@ export default class YaleEndpoint {
         errorCallback();
       })
       .then((anno) => {
+        anno.endpoint = this;
         if (typeof successCallback === 'function') {
           successCallback(anno);
         }

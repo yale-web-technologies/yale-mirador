@@ -293,9 +293,7 @@ export default class AnnotationSource {
       within: annotation.within,
     };
 
-      oaAnnotation.layerId = annotation.layerId;
-    oaAnnotation.endpoint = this;
-
+    oaAnnotation.layerId = annotation.layerId;
     return oaAnnotation;
   }
 
