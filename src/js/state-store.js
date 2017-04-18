@@ -55,7 +55,7 @@ class StateStore {
     this.logger.debug('StateStore#setString', key, value, this._localStorageAvailable);
     this._checkKey(key);
     this._settings[key] = value;
-    if (this._localStorasgeAvailable) {
+    if (this._localStorageAvailable) {
       localStorage.setItem(key, value);
     }
   }
