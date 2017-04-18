@@ -125,6 +125,7 @@ export default class {
     const annoListRenderer = new AnnotationListRenderer({
       canvasWindowId: imageWindowId
     });
+    // Just taking the first (highest-level) tag, for now
     const annoWin = new AnnotationWindow({ appendTo: jQuery('#' + windowId),
       annotationListRenderer: annoListRenderer,
       explorer: annoExplorer,

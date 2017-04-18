@@ -37,6 +37,8 @@ export default class AnnotationWindow {
     const _this = this;
     const proxyMgr = getMiradorProxyManager();
     let annosToShow = [];
+    let fullTagsTargets = null;
+    let targetAnno = null;
 
     if (!this.id) {
       this.id = Mirador.genUUID();
@@ -58,10 +60,19 @@ export default class AnnotationWindow {
       if (this.initialTocTags) {
         const toc = this.explorer.getAnnotationToc();
         if (toc) {
-          annosToShow = annosToShow.filter(anno => toc.matchHierarchy(anno, this.initialTocTags));
+          annosToShow = annosToShow.filter(anno => toc.matchHierarchy(anno, this.initialTocTags.slice(0,1)));
+          fullTagsTargets = annosToShow.filter(anno => toc.matchHierarchy(anno, this.initialTocTags));
+          if (fullTagsTargets.length > 0) {
+            targetAnno = fullTagsTargets[0];
+          }
         }
       }
     }
+
+    if (!targetAnno) {
+      targetAnno = annosToShow[0];
+    }
+    logger.debug('AnnotationWindow#init targetAnno:', targetAnno);
 
     this.initLayerSelector();
     this.addCreateWindowButton();
@@ -74,11 +85,12 @@ export default class AnnotationWindow {
       throw 'AnnotationWindow#init reload failed - ' + reason;
     })
     .then(() => {
-      logger.debug('AnnotationWindow annosToShow:', annosToShow);
+      logger.debug('AnnotationWindow#init annosToShow:', annosToShow);
       if ((this.annotationId || this.initialTocTags) && annosToShow.length > 0) {
-        const finalTargetAnno = annoUtil.findFinalTargetAnnotation(annosToShow[0],
+        const finalTargetAnno = annoUtil.findFinalTargetAnnotation(targetAnno,
           _this.canvasWindow.annotationsList);
-        _this.highlightAnnotations(annosToShow, 'SELECTED');
+        logger.debug('AnnotationsWindow#init finalTargetAnno:', finalTargetAnno);
+        _this.highlightAnnotations(fullTagsTargets || annosToShow, 'SELECTED');
         _this.miradorProxy.publish('ANNOTATION_FOCUSED', [_this.id, finalTargetAnno]);
       }
       _this.bindEvents();
@@ -293,10 +305,10 @@ export default class AnnotationWindow {
     logger.debug('annoElem.position().top:', annoElem.position().top);
     logger.debug('element.scrollTop():' + this.element.scrollTop());
 
-    //this.listElem.animate({
-    this.element.animate({
-      //scrollTop: annoElem.position().top + this.listElem.scrollTop()
-      scrollTop: annoElem.position().top + this.listElem.position().top + this.element.scrollTop()
+    this.listElem.animate({
+    //this.element.animate({
+      scrollTop: annoElem.position().top + this.listElem.scrollTop()
+      //scrollTop: annoElem.position().top + this.listElem.position().top + this.element.scrollTop()
     }, 250);
   }
 

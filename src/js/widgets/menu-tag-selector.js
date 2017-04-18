@@ -12,6 +12,7 @@ export default class MenuTagSelector {
       parent: null,
       annotationExplorer: null,
       changeCallback: null,
+      initialTags: null,
       depth: 1
     }, options);
 
@@ -20,6 +21,10 @@ export default class MenuTagSelector {
 
   init() {
     var _this = this;
+    if (this.initialTags) {
+      this.initialTags = this.initialTags.slice(0, this.depth);
+    }
+
     this.selector = new Selector({
       appendTo: this.parent,
       changeCallback: function(value, text) {
