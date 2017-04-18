@@ -11,7 +11,8 @@ export default class MenuTagSelector {
       selector: null,
       parent: null,
       annotationExplorer: null,
-      changeCallback: null
+      changeCallback: null,
+      depth: 1
     }, options);
 
     this.init();
@@ -45,7 +46,7 @@ export default class MenuTagSelector {
       _this.selector.empty();
 
       var layers = [];
-      var menu = _this.buildMenu(annoHierarchy);
+      var menu = _this.buildMenu(annoHierarchy, null, 0);
       logger.debug('MenuTagSelector menu:', menu);
 
       _this.selector.setItems(menu);
@@ -67,8 +68,11 @@ export default class MenuTagSelector {
   /**
    * node: an annoHierarchy node
    */
-  buildMenu(node, parentItem) {
-    logger.debug('MenuTagSelector#buildMenu node:', node, 'parentItem:', parentItem);
+  buildMenu(node, parentItem, currentDepth) {
+    logger.debug('MenuTagSelector#buildMenu node:', node, 'parentItem:', parentItem, 'currentDepth:', currentDepth);
+    if (currentDepth > this.depth) {
+      return null;
+    }
     const _this = this;
     const children = util.getValues(node.childNodes)
       .sort(function(a, b) {
@@ -85,7 +89,10 @@ export default class MenuTagSelector {
     }
     if (children.length > 0) {
       jQuery.each(children, function(key, childNode) {
-        item.children.push(_this.buildMenu(childNode, node.isRoot ? null : item));
+        const subMenu = _this.buildMenu(childNode, node.isRoot ? null : item, currentDepth + 1);
+        if (subMenu) {
+          item.children.push(subMenu);
+        }
       });
     }
     if (node.isRoot) {
