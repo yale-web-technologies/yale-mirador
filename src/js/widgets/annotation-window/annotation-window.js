@@ -36,6 +36,7 @@ export default class AnnotationWindow {
   init() {
     const _this = this;
     const proxyMgr = getMiradorProxyManager();
+    const toc = this.explorer.getAnnotationToc();
     let annosToShow = [];
     let fullTagsTargets = null;
     let targetAnno = null;
@@ -50,19 +51,23 @@ export default class AnnotationWindow {
     this.appendTo.append(this.element);
     this.listElem = this.element.find('.annowin_list');
 
-    if (!this.initialLayerId && this.annotationId) { // annotation ID was given in the URL
-      annosToShow = this.canvasWindow.annotationsList.filter(anno => anno['@id'] === _this.annotationId);
-      if (annosToShow.length > 0) {
-        this.initialLayerId = annosToShow[0].layerId;
+    if (this.annotationId) { // annotation ID was given in the URL
+      const matched = this.canvasWindow.annotationsList.filter(anno => anno['@id'] === _this.annotationId);
+      targetAnno = matched[0];
+      if (matched.length > 0) {
+        this.initialLayerId = targetAnno.layerId;
+        if (toc) {
+          this.initialTocTags = toc.getTagsFromAnnotationId(this.annotationId);
+        }
       }
-    } else if (this.initialLayerId) { // layerIDs were given in the URL
+    }
+    if (this.initialLayerId) { // layerIDs were given in the URL
       annosToShow = this.canvasWindow.annotationsList.filter(anno => anno.layerId == _this.initialLayerId);
       if (this.initialTocTags) {
-        const toc = this.explorer.getAnnotationToc();
         if (toc) {
           annosToShow = annosToShow.filter(anno => toc.matchHierarchy(anno, this.initialTocTags.slice(0,1)));
           fullTagsTargets = annosToShow.filter(anno => toc.matchHierarchy(anno, this.initialTocTags));
-          if (fullTagsTargets.length > 0) {
+          if (fullTagsTargets.length > 0 && !targetAnno) {
             targetAnno = fullTagsTargets[0];
           }
         }
@@ -90,7 +95,7 @@ export default class AnnotationWindow {
         const finalTargetAnno = annoUtil.findFinalTargetAnnotation(targetAnno,
           _this.canvasWindow.annotationsList);
         logger.debug('AnnotationsWindow#init finalTargetAnno:', finalTargetAnno);
-        _this.highlightAnnotations(fullTagsTargets || annosToShow, 'SELECTED');
+        _this.highlightAnnotations([targetAnno], 'SELECTED');
         _this.miradorProxy.publish('ANNOTATION_FOCUSED', [_this.id, finalTargetAnno]);
       }
       _this.bindEvents();
@@ -302,14 +307,12 @@ export default class AnnotationWindow {
   }
 
   scrollToElem(annoElem) {
-    logger.debug('annoElem.position().top:', annoElem.position().top);
-    logger.debug('element.scrollTop():' + this.element.scrollTop());
-
+    /*
     this.listElem.animate({
-    //this.element.animate({
-      scrollTop: annoElem.position().top + this.listElem.scrollTop()
-      //scrollTop: annoElem.position().top + this.listElem.position().top + this.element.scrollTop()
+      scrollTop: annoElem.position().top
     }, 250);
+    */
+    annoElem[0].scrollIntoView(true);
   }
 
   scrollToAnnotation(annoId) {
