@@ -11,8 +11,6 @@ const logger = getLogger();
 
 export default class AnnotationWindow {
   constructor(options) {
-    const _this = this;
-
     jQuery.extend(this, {
       id: null, // annotation window ID
       miradorId: null,
@@ -149,6 +147,7 @@ export default class AnnotationWindow {
       .append(jQuery('<i class="fa fa-plus fa-lg fa-fw"></i>'));
     parent.append(button);
     button.click(event => {
+      this.miradorProxy.publish('YM_DISPLAY_ON');
       jQuery.publish('YM_ADD_WINDOW', {
         miradorId: this.miradorId,
         imageWindowId: this.canvasWindowId

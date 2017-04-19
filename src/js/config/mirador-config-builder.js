@@ -53,6 +53,7 @@ export default class MiradorConfigBuilder {
     if (!this.options.isEditor) {
       config.windowSettings.canvasControls.annotations.annotationCreation = false;
     }
+    config.windowSettings.canvasControls.annotations.annotationState = 'on';
 
     this.logger.debug('MiradorConfigBuilder#buildConfig config:', config);
     return config;
