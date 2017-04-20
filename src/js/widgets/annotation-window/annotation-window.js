@@ -255,7 +255,6 @@ export default class AnnotationWindow {
     const id = window.canvasID;
     const canvases = window.manifest.getCanvases();
     const current = canvases.filter(canvas => {
-      console.log('canvas:', canvas);
       return canvas['@id'] === id;
     });
     if (current.length < 1) {

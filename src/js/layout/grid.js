@@ -219,19 +219,15 @@ export default class {
 
       for (let annoWin of Object.values(this._annotationWindows)) {
         let usedLayerId = annoWin.getCurrentLayerId();
-        console.log('used', usedLayerId );
-        console.log('new0', candidateLayerId);
         if (candidateLayerId === usedLayerId) {
           useThisLayer = false;
           break;
         }
       }
       if (useThisLayer) {
-        console.log('USE', candidateLayerId);
         return candidateLayerId;
       }
     }
-    console.log('NO_CANDIDATE');
     return allLayers[0]['@id']; // return the first if every layer is already in use
   }
 }
