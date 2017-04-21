@@ -1,28 +1,13 @@
 language: node_js
 
 node_js:
-  - "6.3.0"
-
-# Handle git submodules yourself
-git:
-  submodules: false
-# Use sed to replace the SSH URL with the public URL, then initialize submodules
-
-# Change .git to a directory so grunt githooks task won't fail 
-# - .git is not important for the Travis task anyway.
-before_install:
-  - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
-  - git submodule update --init --recursive
-  - cd submodules/mirador && rm -f .git && mkdir .git && cd -
+  - "6"
 
 install:
-  - npm install -g grunt-cli
-  - npm install
-  - cd submodules/mirador && npm install && cd -
+  npm install
 
 script:
-  - npm run build
-  - npm run test
+  npm test
 
 cache:
   directories:
