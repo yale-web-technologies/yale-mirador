@@ -8,7 +8,7 @@ DEXIE_SRC=node_modules/dexie/dist
 GOLDEN_LAYOUT_SRC=node_modules/golden-layout
 GOLDEN_LAYOUT_TGT=$LIB_DIR/goldenlayout
 JS_COOKIE_SRC=node_modules/js-cookie/src
-SEMANTIC_UI_SRC=node_modules/semantic-ui/dist
+SEMANTIC_UI_SRC=lib/semantic/dist
 SEMANTIC_UI_TGT=$LIB_DIR/semantic
 
 set -o xtrace

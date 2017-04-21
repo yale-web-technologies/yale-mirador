@@ -4,10 +4,10 @@ node_js:
   - "6"
 
 install:
-  npm install
+  - npm install
 
 script:
-  npm test
+  - npm test
 
 cache:
   directories:
