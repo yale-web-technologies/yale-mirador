@@ -1,6 +1,7 @@
 // Karma configuration
 // Generated on Mon Aug 01 2016 09:41:41 GMT-0400 (EDT)
 
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var path = require('path');
 
 module.exports = function(config) {
@@ -19,7 +20,7 @@ module.exports = function(config) {
       'node_modules/dexie/dist/dexie.min.js',
       'node_modules/js-cookie/src/js.cookie.js',
       'node_modules/semantic-ui/dist/semantic.min.js',
-      'node_modules/babel-polyfill/dist/polyfill.js',
+      //'node_modules/babel-polyfill/dist/polyfill.js',
       'test/**/*.test.js'
     ],
 
@@ -42,8 +43,21 @@ module.exports = function(config) {
             loader: 'babel-loader',
             options: { presets: ['es2015', 'es2017'] }
           }]
+        }, {
+          test: /\.less$/,
+          use: ExtractTextPlugin.extract({
+            fallbackLoader: 'style-loader',
+            loader: [{
+              loader: 'css-loader'
+            }, {
+              loader: 'less-loader'
+            }]
+          })
         }]
-      }
+      },
+      plugins: [
+        new ExtractTextPlugin('yale-mirador.bundle.css')
+      ]
     },
 
     plugins: [
