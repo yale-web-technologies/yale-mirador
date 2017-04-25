@@ -88,9 +88,11 @@ export default class AnnotationEditor {
     const _this = this;
     tinymce.init({
       selector: '#' + this.id + ' textarea',
-      plugins: 'link paste',
-      menubar: false,
-      toolbar: 'bold italic fontsizeselect | bullist numlist | link | undo redo | removeformat | TB_RL',
+      //plugins: 'link paste',
+      plugins: 'link paste image',
+      //menubar: false,
+      menubar: 'insert',
+      toolbar: 'bold italic fontsizeselect | bullist numlist | link image | undo redo | removeformat | TB_RL',
       fontsize_formats: '10px 12px 14px 18px 24px',
       statusbar: false,
       toolbar_items_size: 'small',
