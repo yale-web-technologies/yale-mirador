@@ -18,7 +18,7 @@ module.exports = {
     ]
   },
   output: {
-    path: './dist/yale-mirador',
+    path: path.resolve(__dirname, 'dist/yale-mirador'),
     filename: '[name].bundle.js'
   },
   module: {
@@ -34,8 +34,8 @@ module.exports = {
     }, {
       test: /\.less$/,
       use: ExtractTextPlugin.extract({
-        fallbackLoader: 'style-loader',
-        loader: [{
+        fallback: 'style-loader',
+        use: [{
           loader: 'css-loader'
         }, {
           loader: 'less-loader'
