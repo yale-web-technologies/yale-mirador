@@ -1,9 +1,10 @@
 import getLogger from '../util/logger';
 
+const logger = getLogger();
+
 export default class WindowProxy {
   constructor(window) {
-    this.logger = getLogger();
-    this.logger.debug('WindowProxy() window:', window);
+    logger.debug('WindowProxy#constructor window:', window);
     this.window = window;
   }
 
@@ -22,6 +23,13 @@ export default class WindowProxy {
     return this.window.canvasID;
   }
 
+  getCurrentCanvas() {
+    const canvases = this.getCanvases();
+    const canvasId = this.getCurrentCanvasId();
+    const matches = canvases.filter(canvas => canvas['@id'] === canvasId);
+    return matches[0];
+  }
+
   /**
    * Annotation endpoint
    */
@@ -35,5 +43,9 @@ export default class WindowProxy {
 
   getAnnotationsList() {
     return this.window.annotationsList;
+  }
+
+  getSvgOverlay() {
+    return this.window.focusModules.ImageView.annotationsLayer.drawTool.svgOverlay;
   }
 }

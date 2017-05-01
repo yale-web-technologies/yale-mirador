@@ -89,19 +89,14 @@ export default class AnnotationSource {
     }
 
     if (!annotations) {
-      annotations = await this._getRemoteAnnotations(canvasId)
-      .then((annotations) => {
-        if (cache) {
-          cache.setAnnotationsPerCanvas(canvasId, annotations);
-        }
-        return annotations;
-      });
+      annotations = await this._getRemoteAnnotations(canvasId);
+      if (cache) {
+        cache.setAnnotationsPerCanvas(canvasId, annotations);
+      }
     }
 
-    if (layerId) {
-      annotations.filter((anno) => anno.layerId === layerId)
-    }
-    return annotations;
+    return layerId ? annotations.filter((anno) => anno.layerId === layerId) :
+      annotations;
   }
 
   _getRemoteAnnotations(canvasId) {
@@ -303,10 +298,14 @@ export default class AnnotationSource {
 
     // XXX temporary fix until the annotation server supports multiple targets
     if (target instanceof Array) {
+      /*
       if (target.length !== 1) {
         logger.error('AnnotationSource#_getAnnotationInEndpoint unexpected target length', target.length);
       }
       target = target[0];
+      */
+    } else {
+      target = [target];
     }
 
     const annotation = {

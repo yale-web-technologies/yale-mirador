@@ -90,8 +90,7 @@ export default class AnnotationEditor {
       selector: '#' + this.id + ' textarea',
       //plugins: 'link paste',
       plugins: 'link paste image',
-      //menubar: false,
-      menubar: 'insert',
+      menubar: false,
       toolbar: 'bold italic fontsizeselect | bullist numlist | link image | undo redo | removeformat | TB_RL',
       fontsize_formats: '10px 12px 14px 18px 24px',
       statusbar: false,
@@ -215,13 +214,14 @@ export default class AnnotationEditor {
   loadAnnotation(annotation) {
     this._mode = 'merge';
     this._loadedAnnotation = annotation;
+    const $anno = Anno(annotation);
 
     // Reload the editor with the contents of the annotation
-    const content = annoUtil.getText(annotation);
-    this.layerSelector.val(annotation.layerId);
+    const content = $anno.bodyText;
+    this.layerSelector.val($anno.layerId);
     this.getEditor().setContent(content);
 
-    const tags = annoUtil.getTags(annotation);
+    const tags = $anno.tags;
     if (tags.length > 0) {
       this.element.find('.tags_editor').val(tags.join(' '));
     }

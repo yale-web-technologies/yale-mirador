@@ -13,12 +13,14 @@ class MiradorProxyManager {
 
   addMirador(miradorId, mirador) {
     logger.debug('MiradorProxyManager#addMirador', mirador);
-    const miradorProxy = this._miradorProxiesMap[miradorId];
+    let miradorProxy = this._miradorProxiesMap[miradorId];
     if (miradorProxy) {
       throw 'MiradorProxyManager#addMirador duplicate ID ' + miradorId;
     } else {
-      this._miradorProxiesMap[miradorId] = new MiradorProxy(mirador);
+      miradorProxy = new MiradorProxy(mirador);
+      this._miradorProxiesMap[miradorId] = miradorProxy;
     }
+    return miradorProxy;
   }
 
   getMiradorProxies() {
@@ -44,7 +46,8 @@ class MiradorProxyManager {
 
   getWindowProxyById(windowId) {
     logger.debug('MiradorProxyManager#getWindowProxyById windowId:', windowId);
-    return (new WindowProxy(this.getWindowById(windowId)));
+    const window = this.getWindowById(windowId);
+    return window ? new WindowProxy(window) : null;
   }
 
   getWindowById(windowId) {

@@ -34,7 +34,16 @@ export default class MiradorWrapper {
   }
 
   _addToMiradorProxy(miradorId, mirador) {
-    proxyMgr.addMirador(miradorId, mirador);
+    const miradorProxy = proxyMgr.addMirador(miradorId, mirador);
+    miradorProxy.subscribe('YM_CANVAS_ID_SET', function(event, windowId, canvasId) {
+      const windowProxy = miradorProxy.getWindowProxyById(windowId);
+      if (windowProxy) {
+        const canvas = windowProxy.getCurrentCanvas();
+        logger.info('Window', windowId, 'Canvas:', canvas);
+      } else {
+        logger.error('MiradorWrapper#_addToMiradorProxy windowProxy unavailable for id', windowId);
+      }
+    });
   }
 
   /**

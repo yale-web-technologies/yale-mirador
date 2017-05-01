@@ -17,11 +17,12 @@ import getStateStore from './state-store';
 import Grid from './layout/grid';
 //import MainMenu from './widgets/main-menu'; //deprecated
 import './extension/interface';
-//import './util/jquery-tiny-pubsub-trace'; // import this only for debugging!
+import './util/jquery-tiny-pubsub-trace'; // import this only for debugging!
 
 const logger = getLogger();
 let instance = null;
 let annotationExplorer = null;
+let annotationSource = null;
 
 export default function getApp() {
   if (!instance) {
@@ -86,7 +87,9 @@ class App {
   async initState(settings) {
     logger.debug('App#initState settings:', settings);
     const state = getStateStore();
-    const explorer = this.getAnnotationExplorer(settings.endpointUrl);
+
+    state.setTransient('annotationBackendUrl', settings.endpointUrl);
+    const explorer = this.getAnnotationExplorer();
 
     state.setTransient('projectId', settings.projectId);
     state.setTransient('disableAuthz', settings.disableAuthz);
@@ -94,7 +97,6 @@ class App {
     const layers = await explorer.getLayers();
     state.setTransient('annotationLayers', layers);
 
-    state.setTransient('annotationBackendUrl', settings.endpointUrl);
     state.setTransient('copyrighted', settings.copyrighted);
     state.setTransient('copyrightedImageServiceUrl', settings.copyrightedImageServiceUrl);
 
@@ -119,15 +121,22 @@ class App {
     tinymce.setup();
   }
 
-  getAnnotationExplorer(annotationBackendUrl) {
+  getAnnotationExplorer() {
     if (!annotationExplorer) {
       annotationExplorer = new AnnotationExplorer({
-        dataSource: new AnnotationSource({
-          prefix: annotationBackendUrl
-        }),
-        logger: logger
+        dataSource: this.getAnnotationSource()
       });
     }
     return annotationExplorer;
+  }
+
+  getAnnotationSource() {
+    if (!annotationSource) {
+      const annotationBackendUrl = getStateStore().getTransient('annotationBackendUrl');
+      annotationSource = new AnnotationSource({
+        prefix: annotationBackendUrl
+      });
+    }
+    return annotationSource;
   }
 }
