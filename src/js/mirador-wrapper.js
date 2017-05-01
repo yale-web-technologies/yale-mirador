@@ -3,6 +3,7 @@ import getLogger from './util/logger';
 import getMiradorProxyManager from './mirador-proxy/mirador-proxy-manager';
 import LayoutConfigParser from './layout/layout-config-parser';
 import MiradorConfigBuilder from './config/mirador-config-builder';
+import {openAnnotationSelector} from './util/annotation-explorer';
 import WindowProxy from './mirador-proxy/window-proxy';
 
 const logger = getLogger();
@@ -43,6 +44,13 @@ export default class MiradorWrapper {
       } else {
         logger.error('MiradorWrapper#_addToMiradorProxy windowProxy unavailable for id', windowId);
       }
+    });
+    miradorProxy.subscribe('OPEN_ANNOTATION_SELECTOR',
+      (event, windowId, annotationEditor) =>
+    {
+      openAnnotationSelector(windowId).then((annotation) => {
+        annotationEditor.loadAnnotation(annotation);
+      });
     });
   }
 

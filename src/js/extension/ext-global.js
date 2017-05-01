@@ -1,11 +1,17 @@
 import {Anno} from '../import';
+import AnnotationEditor from '../widgets/annotation-editor';
 import getLogger from '../util/logger';
 import getStateStore from '../state-store';
 import util from '../util/util';
+import YaleEndpoint from '../annotation-data/yale-endpoint';
 
 (function($) {
 
   $.yaleExt = $.yaleExt || {};
+
+  // Exposing modules defined in Mirador config
+  $.YaleEndpoint = YaleEndpoint;
+  $.AnnotationEditor = AnnotationEditor;
 
   const logger = getLogger();
 
