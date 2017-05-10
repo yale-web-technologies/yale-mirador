@@ -3,6 +3,7 @@ import getLogger from './util/logger';
 const registeredKeys = new Set([
   'annotationBackendUrl',
   'annotationLayers',
+  'annotationsOverlay',
   'copyrighted',
   'copyrightedImageServiceUrl',
   'disableAuthz',
@@ -106,8 +107,8 @@ function storageAvailable(type) {
 
 let _instance = null;
 
-export default function getStateStore(destroyOld) {
-  if (!_instance || destroyOld) {
+export default function getStateStore() {
+  if (!_instance) {
     _instance = new StateStore();
   }
   return _instance;

@@ -21,6 +21,11 @@
     "ui": {
       "fixAnnoCellHeight": false,
       "textDirection": "horizontal-lr",
+      "annotationsOverlay": {
+        "hideUnfocused": true,
+        "hoverColor": "#3084a7",
+        "hoverWidthFactor": "2"
+      },
       "tooltipStyles": null,
       "__tooltipStyles": {
         "color": "#fff",

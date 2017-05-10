@@ -1,10 +1,13 @@
 import AnnotationSource from '../annotation-data/annotation-source';
 import AnnotationSourceFb from '../annotation-data/annotation-source-fb';
 import getLogger from '../util/logger';
+import getStateStore from '../state-store';
+
+const logger = getLogger();
 
 export default class MiradorConfigBuilder {
   constructor(options) {
-    this.options = jQuery.extend({
+    this.options = Object.assign({
       buildPath: null,
       canvasId: null,
       defaultSettings: null, // Mirador default settings
@@ -16,11 +19,12 @@ export default class MiradorConfigBuilder {
       miradorId: null, // ID of Mirador instance
       tagHierarchy: null
     }, options);
-    this.logger = getLogger();
+    logger.debug('MiradorConfigBuilder#constructor options:', options);
   }
 
   buildConfig() {
     const config = jQuery.extend(true, {}, this.options.defaultSettings);
+    const annotationsOverlay = getStateStore().getTransient('annotationsOverlay');
 
     jQuery.extend(config, {
       id: this.options.miradorId,
@@ -55,7 +59,16 @@ export default class MiradorConfigBuilder {
     }
     config.windowSettings.canvasControls.annotations.annotationState = 'on';
 
-    this.logger.debug('MiradorConfigBuilder#buildConfig config:', config);
+    if (annotationsOverlay) {
+      if (annotationsOverlay.hoverColor) {
+        config.drawingToolsSettings.hoverColor = annotationsOverlay.hoverColor;
+      }
+      if (annotationsOverlay.hoverWidthFactor) {
+        config.drawingToolsSettings.hoverWidthFactor = annotationsOverlay.hoverWidthFactor;
+      }
+    }
+
+    logger.debug('MiradorConfigBuilder#buildConfig config:', config);
     return config;
   }
 

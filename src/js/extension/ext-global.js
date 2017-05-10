@@ -32,27 +32,6 @@ import YaleEndpoint from '../annotation-data/yale-endpoint';
       return bounds;
     },
 
-    highlightShape: function(shape) {
-      if (!shape._ym_oldStrokeColor) {
-        shape.data._ym_oldStrokeColor = shape.strokeColor;
-      }
-      if (!shape._ym_oldStrokeWdth) {
-        shape.data._ym_oldStrokeWidth = shape.data.currentStrokeValue;
-      }
-      shape.data.currentStrokeValue = 2;
-      shape.set({ opacity: 1 });
-    },
-
-    deHighlightShape: function(shape) {
-      if (shape.data._ym_oldStrokeColor) {
-        shape.set({ strokeColor: shape.data._ym_oldStrokeColor });
-      }
-      if (shape.data._ym_oldStrokeWidth) {
-        shape.data.currentStrokeValue = shape.data._ym_oldStrokeWidth;
-      }
-      shape.opacity = 0;
-    },
-
     updateTooltipStyles: function() {
       const elem = jQuery('.qtip-default, .qtip-content');
       const styles = getStateStore().getTransient('tooltipStyles');
