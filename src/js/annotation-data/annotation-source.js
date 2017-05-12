@@ -274,7 +274,7 @@ export default class AnnotationSource {
 
     let target = annotation.on;
 
-    if (!(target instanceof Array)) {
+    if (target.selector && target.selector['@type'] === 'oa:Choice') { // if the new (dual) mirador strategy format
       target = [target];
     }
 
