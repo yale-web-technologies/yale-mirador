@@ -274,7 +274,7 @@ export default class AnnotationSource {
 
     let target = annotation.on;
 
-    if (target.selector && target.selector['@type'] === 'oa:Choice') {
+    if (!(target instanceof Array)) {
       target = [target];
     }
 
@@ -298,14 +298,10 @@ export default class AnnotationSource {
 
     // XXX temporary fix until the annotation server supports multiple targets
     if (target instanceof Array) {
-      /*
       if (target.length !== 1) {
         logger.error('AnnotationSource#_getAnnotationInEndpoint unexpected target length', target.length);
       }
       target = target[0];
-      */
-    } else {
-      target = [target];
     }
 
     const annotation = {
