@@ -24,7 +24,7 @@
       "annotationsOverlay": {
         "hideUnfocused": true,
         "hoverColor": "#3084a7",
-        "hoverWidthFactor": "2"
+        "hoverWidthFactor": 2
       },
       "tooltipStyles": null,
       "__tooltipStyles": {
