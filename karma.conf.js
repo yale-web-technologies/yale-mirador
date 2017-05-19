@@ -20,7 +20,7 @@ module.exports = function(config) {
       'node_modules/dexie/dist/dexie.min.js',
       'node_modules/js-cookie/src/js.cookie.js',
       'node_modules/semantic-ui/dist/semantic.min.js',
-      //'node_modules/babel-polyfill/dist/polyfill.js',
+      'node_modules/babel-polyfill/dist/polyfill.js',
       'test/**/*.test.js'
     ],
 

@@ -4,6 +4,8 @@
 # Meant to be called by 'npm run copy:libs' in package.json
 
 LIB_DIR=dist/lib
+BABEL_POLYFILL_SRC=node_modules/babel-polyfill/dist
+BABEL_POLYFILL_TGT=$LIB_DIR/babel-polyfill
 DEXIE_SRC=node_modules/dexie/dist
 GOLDEN_LAYOUT_SRC=node_modules/golden-layout
 GOLDEN_LAYOUT_TGT=$LIB_DIR/goldenlayout
@@ -15,6 +17,10 @@ set -o xtrace
 
 mkdir -p $LIB_DIR
 rm -rf ${LIB_DIR:?}/*
+
+mkdir -p $BABEL_POLYFILL_TGT
+cp $BABEL_POLYFILL_SRC/polyfill.js $BABEL_POLYFILL_TGT/
+
 cp $DEXIE_SRC/dexie.min.js $DEXIE_SRC/dexie.min.js.map $LIB_DIR/
 
 mkdir -p $GOLDEN_LAYOUT_TGT

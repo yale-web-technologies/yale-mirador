@@ -1,7 +1,5 @@
 require('../css/main.less');
 
-import 'babel-polyfill';
-
 import './extension/ext-global';
 import './extension/ext-image-view';
 import './extension/ext-manifest';

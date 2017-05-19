@@ -13,6 +13,7 @@ process.traceDeprecation = true;
 module.exports = {
   entry: {
     'yale-mirador': [
+      './node_modules/babel-polyfill/dist/polyfill.js',
       './src/js/app.js',
       './src/js/bootstrap.js'
     ]
