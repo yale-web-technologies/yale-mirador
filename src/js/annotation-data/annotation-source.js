@@ -297,12 +297,14 @@ export default class AnnotationSource {
     let target = oaAnnotation.on;
 
     // XXX temporary fix until the annotation server supports multiple targets
+    /*
     if (target instanceof Array) {
       if (target.length !== 1) {
         logger.error('AnnotationSource#_getAnnotationInEndpoint unexpected target length', target.length);
       }
       target = target[0];
     }
+    */
 
     const annotation = {
       '@id': oaAnnotation['@id'],
