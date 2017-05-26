@@ -1,4 +1,4 @@
-import {annoUtil} from '../../import';
+import {Anno, annoUtil} from '../../import';
 import fatalError from '../../util/fatal-error';
 import getLogger from '../../util/logger';
 import getMiradorProxyManager from '../../mirador-proxy/mirador-proxy-manager';
@@ -219,6 +219,7 @@ export default class AnnotationWindow {
 
     return Promise.all([layersPromise, tocPromise]).then(function() {
       _this.updateList();
+      _this._buildAnnotationTargetGraph();
       return _this;
     });
   }
@@ -405,6 +406,8 @@ export default class AnnotationWindow {
 
     this._subscribe(jQuery, 'ANNOTATION_FOCUSED', function(event, annoWinId, annotation) {
       logger.debug('Annotation window ' + _this.id + ' received annotation_focused event from ' + annoWinId);
+      const $anno = Anno(annotation);
+
       if (annoWinId === _this.id) {
         return;
       }
@@ -422,12 +425,12 @@ export default class AnnotationWindow {
           return;
         }
       }
-      const targeting = annoUtil.findTargetingAnnotations(annotation, annotationsList, layerId);
+      const targeting = _this._findTargetingAnnotations($anno).map(anno => anno.oaAnnotation);
       if (targeting.length > 0) {
         _this.highlightAnnotations(targeting, 'TARGETING');
         return;
       }
-      const targeted = annoUtil.findTargetAnnotations(annotation, annotationsList, layerId);
+      const targeted = _this._findTargetAnnotations($anno).map(anno => anno.oaAnnotation);
       if (targeted.length > 0) {
         _this.highlightAnnotations(targeted, 'TARGET');
         return;
@@ -476,6 +479,69 @@ export default class AnnotationWindow {
         }
       }
     }
+  }
+
+  /**
+   * Construct a graph of "target" relations between annotations
+   * to speed up search operations.
+   */
+  _buildAnnotationTargetGraph() {
+    const addNode = (graph, annotation) => {
+      let $anno = Anno(annotation);
+      graph[$anno.id] = { anno: $anno, targetsTo: [], targetsFrom: [] };
+    };
+    const graph = this._annoTargetGraph = {};
+
+    for (let annotation of this.canvasWindow.annotationsList) {
+      addNode(graph, annotation);
+    }
+
+    for (let [annoId, node] of Object.entries(graph)) {
+      for (let target of node.anno.targets) {
+        let targetId = target.full;
+        if (targetId) {
+          let targetNode = graph[targetId];
+          if (targetNode) {
+            node.targetsTo.push(targetId);
+            graph[targetId].targetsFrom.push(annoId);
+          } else {
+            logger.debug('AnnotationWindow#_buildAnnotationTargetGraph Target annotation not found in current context. Ignoring', targetId);
+          }
+        }
+      }
+    }
+  }
+
+  _findTargetAnnotations($anno, visited=new Set()) {
+    const node = this._annoTargetGraph[$anno.id];
+    const result = [];
+
+    if (!node || node.targetsTo.length < 1 || visited.has($anno.id)) {
+      return result;
+    }
+    for (let annoId of node.targetsTo) {
+      let nextNode = this._annoTargetGraph[annoId];
+      result.push(nextNode.anno,
+        ...this._findTargetAnnotations(nextNode.anno, visited));
+    }
+    visited.add($anno.id);
+    return result;
+  }
+
+  _findTargetingAnnotations($anno, visited=new Set()) {
+    const node = this._annoTargetGraph[$anno.id];
+    const result = [];
+
+    if (!node || node.targetsFrom.length < 1 || visited.has($anno.id)) {
+      return result;
+    }
+    for (let annoId of node.targetsFrom) {
+      let nextNode = this._annoTargetGraph[annoId];
+      result.push(nextNode.anno,
+        ...this._findTargetingAnnotations(nextNode.anno, visited));
+    }
+    visited.add($anno.id);
+    return result;
   }
 }
 
