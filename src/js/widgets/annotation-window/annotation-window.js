@@ -425,12 +425,20 @@ export default class AnnotationWindow {
           return;
         }
       }
-      const targeting = _this._findTargetingAnnotations($anno).map(anno => anno.oaAnnotation);
+
+      const targeting = _this._findTargetingAnnotations($anno)
+        .filter(anno => anno.layerId === _this.getCurrentLayerId())
+        .map(anno => anno.oaAnnotation);
+
       if (targeting.length > 0) {
         _this.highlightAnnotations(targeting, 'TARGETING');
         return;
       }
-      const targeted = _this._findTargetAnnotations($anno).map(anno => anno.oaAnnotation);
+
+      const targeted = _this._findTargetAnnotations($anno)
+        .filter(anno => anno.layerId === _this.getCurrentLayerId())
+        .map(anno => anno.oaAnnotation);
+
       if (targeted.length > 0) {
         _this.highlightAnnotations(targeted, 'TARGET');
         return;
