@@ -2,6 +2,7 @@ import AnnotationSource from '../annotation-data/annotation-source';
 import AnnotationSourceFb from '../annotation-data/annotation-source-fb';
 import getLogger from '../util/logger';
 import getStateStore from '../state-store';
+import Locales from '../config/locales';
 
 const logger = getLogger();
 
@@ -44,6 +45,7 @@ export default class MiradorConfigBuilder {
           mode: 'create'
         }
       },
+      i18nAdditions: new Locales().getLocalesConfig(this.options),
       extension: {
         tagHierarchy: this.options.tagHierarchy || null,
         projectId: this.options.projectId || null,
