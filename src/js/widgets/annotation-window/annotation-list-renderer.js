@@ -209,6 +209,10 @@ export default class AnnotationListRenderer {
       menuBar.removeClass('targeting_anno');
     }
 
+    if (state.getTransient('hideTagsInAnnotation')) {
+      annoElem.find('.tags').hide();
+    }
+
     this.bindAnnotationItemEvents(annoElem, annotation, options);
     return annoElem;
   }

@@ -102,6 +102,7 @@ class App {
       state.setString('textDirection', settings.ui.textDirection);
       state.setTransient('annotationsOverlay', settings.ui.annotationsOverlay);
       state.setTransient('tooltipStyles', settings.ui.tooltipStyles);
+      state.setTransient('hideTagsInAnnotation', settings.ui.hideTagsInAnnotation);
     }
   }
 

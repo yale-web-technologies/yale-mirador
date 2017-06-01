@@ -1,5 +1,7 @@
 import getLogger from './util/logger';
 
+const logger = getLogger();
+
 const registeredKeys = new Set([
   'annotationBackendUrl',
   'annotationLayers',
@@ -8,6 +10,7 @@ const registeredKeys = new Set([
   'copyrightedImageServiceUrl',
   'disableAuthz',
   'fixAnnoCellHeight',
+  'hideTagsInAnnotation',
   'lastSelectedLayer',
   'layerIndexMap',
   'projectId',
@@ -24,7 +27,6 @@ const registeredKeys = new Set([
  */
 class StateStore {
   constructor() {
-    this.logger = getLogger();
     this._settings = {};
     this._localStorageAvailable = storageAvailable('localStorage');
   }
@@ -37,12 +39,13 @@ class StateStore {
 
   // For values that are not persisted
   setTransient(key, value) {
+    logger.debug('StateStore#setTransient', key, value);
     this._checkKey(key);
     this._settings[key] = value;
   }
 
   getString(key) {
-    this.logger.debug('StateStore#getString', key);
+    logger.debug('StateStore#getString', key);
     this._checkKey(key);
     let value = this._settings[key];
     if (!value) {
@@ -53,7 +56,7 @@ class StateStore {
   }
 
   setString(key, value) {
-    this.logger.debug('StateStore#setString', key, value, this._localStorageAvailable);
+    logger.debug('StateStore#setString', key, value, this._localStorageAvailable);
     this._checkKey(key);
     this._settings[key] = value;
     if (this._localStorageAvailable) {
@@ -70,14 +73,14 @@ class StateStore {
   }
 
   getObject(key) {
-    this.logger.debug('StateStore#getObject', key);
+    logger.debug('StateStore#getObject', key);
     this._checkKey(key);
     const value = this.getString(key);
     return value ? JSON.parse(value) : null;
   }
 
   setObject(key, value) {
-    this.logger.debug('StateStore#setObject', key, value);
+    logger.debug('StateStore#setObject', key, value);
     this._checkKey(key);
     const stringValue = JSON.stringify(value);
     this.setString(key, stringValue);
