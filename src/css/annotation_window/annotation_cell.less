@@ -2,9 +2,14 @@
 
 .annowin_anno {
   background-color: @off-white;
-  border: solid 1px @light-gray;
+  //border: solid 1px @light-gray;
+  border: solid 2px @off-white;
   color: @black;
-  padding: 3px;
+  //padding: 3px;
+
+  &:hover {
+    border: solid 1px @gray;
+  }
 
   .menu_bar {
     background-color: @light-blue;
@@ -29,8 +34,10 @@
   }
 
   .content {
-    padding: @annowin-v-padding @annowin-h-padding;
-    font-size: @anno-content-font-size;
+    //padding: @annowin-v-padding @annowin-h-padding;
+    padding: 5px 10px 5px 15px;
+    //font-size: @anno-content-font-size;
+    font-size: 14px;
     width: 100%;
   }
 
