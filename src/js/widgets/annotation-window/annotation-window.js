@@ -50,7 +50,13 @@ export default class AnnotationWindow {
     this.listElem = this.element.find('.annowin_list');
 
     if (this.annotationId) { // annotation ID was given in the URL
-      const matched = this.canvasWindow.annotationsList.filter(anno => anno['@id'] === _this.annotationId);
+      const matched = this.canvasWindow.annotationsList.filter(anno => {
+        if (!anno || typeof anno !== 'object') {
+          logger.error('AnnotationWindow#init Invalid annotation', anno);
+          return false;
+        }
+        return anno['@id'] === _this.annotationId;
+      });
       targetAnno = matched[0];
       if (matched.length > 0) {
         this.initialLayerId = targetAnno.layerId;
@@ -59,6 +65,7 @@ export default class AnnotationWindow {
         }
       }
     }
+
     if (this.initialLayerId) { // layerIDs were given in the URL
       annosToShow = this.canvasWindow.annotationsList.filter(anno => anno.layerId == _this.initialLayerId);
       if (this.initialTocTags) {
@@ -71,6 +78,7 @@ export default class AnnotationWindow {
         }
       }
     }
+    console.log('YYY 5');
 
     if (!targetAnno) {
       targetAnno = annosToShow[0];
