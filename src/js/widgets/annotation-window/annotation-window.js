@@ -78,7 +78,6 @@ export default class AnnotationWindow {
         }
       }
     }
-    console.log('YYY 5');
 
     if (!targetAnno) {
       targetAnno = annosToShow[0];
