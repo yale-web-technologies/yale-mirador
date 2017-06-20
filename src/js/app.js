@@ -1,6 +1,7 @@
 require('../css/main.less');
 
 import './extension/ext-global';
+import './extension/ext-hud';
 import './extension/ext-image-view';
 import './extension/ext-manifest';
 import './extension/ext-osd-region-draw-tool';
