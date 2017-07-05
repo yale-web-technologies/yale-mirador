@@ -1,4 +1,5 @@
 import {Anno, annoUtil} from '../../import';
+import AnnotationListWidget from './annotation-list-widget';
 import fatalError from '../../util/fatal-error';
 import getLogger from '../../util/logger';
 import getMiradorProxyManager from '../../mirador-proxy/mirador-proxy-manager';
@@ -6,17 +7,18 @@ import getStateStore from '../../state-store';
 import MenuTagSelector from '../menu-tag-selector';
 import LayerSelector from '../layer-selector';
 import session from '../../session';
+import WindowProxy from '../../mirador-proxy/window-proxy';
 
 const logger = getLogger();
 
 export default class AnnotationWindow {
   constructor(options) {
-    jQuery.extend(this, {
+    this.options = Object.assign({
       id: null, // annotation window ID
       miradorId: null,
       canvasWindowId: null,
       appendTo: null,
-      annotationListRenderer: null,
+      annotationListWidget: null,
       explorer: null,
       initialLayerId: null,
       initialTocTags: null,
@@ -28,50 +30,54 @@ export default class AnnotationWindow {
     this._miradorSubscribed = {};
   }
 
+  getId() {
+    return this.options.id;
+  }
+
   /**
    * @returns {Promise}
    */
   init() {
     const _this = this;
     const proxyMgr = getMiradorProxyManager();
-    const toc = this.explorer.getAnnotationToc();
+    const toc = this.options.explorer.getAnnotationToc();
     let annosToShow = [];
     let fullTagsTargets = null;
     let targetAnno = null;
 
-    if (!this.id) {
-      this.id = Mirador.genUUID();
+    if (!this.options.id) {
+      this.options.id = Mirador.genUUID();
     }
-    this.miradorProxy = proxyMgr.getMiradorProxy(this.miradorId);
-    this.canvasWindow = this.miradorProxy.getWindowById(this.canvasWindowId);
+    this.miradorProxy = proxyMgr.getMiradorProxy(this.options.miradorId);
+    this.canvasWindow = this.miradorProxy.getWindowProxyById(this.options.canvasWindowId);
 
     this.element = jQuery(template({}));
-    this.appendTo.append(this.element);
+    this.options.appendTo.append(this.element);
     this.listElem = this.element.find('.annowin_list');
 
-    if (this.annotationId) { // annotation ID was given in the URL
-      const matched = this.canvasWindow.annotationsList.filter(anno => {
+    if (this.options.annotationId) { // annotation ID was given in the URL
+      const matched = this.canvasWindow.getAnnotationsList().filter(anno => {
         if (!anno || typeof anno !== 'object') {
           logger.error('AnnotationWindow#init Invalid annotation', anno);
           return false;
         }
-        return anno['@id'] === _this.annotationId;
+        return anno['@id'] === _this.options.annotationId;
       });
       targetAnno = matched[0];
       if (matched.length > 0) {
-        this.initialLayerId = targetAnno.layerId;
+        this.options.initialLayerId = targetAnno.layerId;
         if (toc) {
-          this.initialTocTags = toc.getTagsFromAnnotationId(this.annotationId);
+          this.options.initialTocTags = toc.getTagsFromAnnotationId(this.options.annotationId);
         }
       }
     }
 
-    if (this.initialLayerId) { // layerIDs were given in the URL
-      annosToShow = this.canvasWindow.annotationsList.filter(anno => anno.layerId == _this.initialLayerId);
-      if (this.initialTocTags) {
+    if (this.options.initialLayerId) { // layerIDs were given in the URL
+      annosToShow = this.canvasWindow.getAnnotationsList().filter(anno => anno.layerId == _this.options.initialLayerId);
+      if (this.options.initialTocTags) {
         if (toc) {
-          annosToShow = annosToShow.filter(anno => toc.matchHierarchy(anno, this.initialTocTags.slice(0,1)));
-          fullTagsTargets = annosToShow.filter(anno => toc.matchHierarchy(anno, this.initialTocTags));
+          annosToShow = annosToShow.filter(anno => toc.matchHierarchy(anno, this.options.initialTocTags.slice(0,1)));
+          fullTagsTargets = annosToShow.filter(anno => toc.matchHierarchy(anno, this.options.initialTocTags));
           if (fullTagsTargets.length > 0 && !targetAnno) {
             targetAnno = fullTagsTargets[0];
           }
@@ -90,18 +96,20 @@ export default class AnnotationWindow {
     this.placeholder = this.element.find('.placeholder');
     this.placeholder.text('Loading...').show();
 
+    this._setupAnnotationListWidget();
+
     return this.reload()
     .catch(reason => {
       throw 'AnnotationWindow#init reload failed - ' + reason;
     })
     .then(() => {
       logger.debug('AnnotationWindow#init annosToShow:', annosToShow);
-      if ((this.annotationId || this.initialTocTags) && annosToShow.length > 0) {
+      if ((this.options.annotationId || this.options.initialTocTags) && annosToShow.length > 0) {
         const finalTargetAnno = annoUtil.findFinalTargetAnnotation(targetAnno,
-          _this.canvasWindow.annotationsList);
+          _this.canvasWindow.getAnnotationsList());
         logger.debug('AnnotationsWindow#init finalTargetAnno:', finalTargetAnno);
         _this.highlightAnnotations([targetAnno], 'SELECTED');
-        _this.miradorProxy.publish('ANNOTATION_FOCUSED', [_this.id, finalTargetAnno]);
+        _this.miradorProxy.publish('ANNOTATION_FOCUSED', [_this.options.id, finalTargetAnno]);
       }
       _this.bindEvents();
       return _this;
@@ -109,6 +117,25 @@ export default class AnnotationWindow {
     .catch(reason => {
       throw 'AnnotationWindow#init promise failed - ' + reason;
     });
+  }
+
+  _setupAnnotationListWidget() {
+    if (!this.options.annotationListWidget) {
+      const windowProxy = getMiradorProxyManager().getWindowProxyById(this.options.canvasWindowId);
+      const canvases = windowProxy.getManifest().getCanvases();
+
+      this.options.annotationListWidget =  new AnnotationListWidget({
+        annotationWindow: this,
+        rootElem: this.listElem,
+        imageWindowId: this.options.canvasWindowId,
+        canvases: canvases,
+        layerId: this.options.initialLayerId,
+        annotationExplorer: this.options.explorer,
+        state: getStateStore(),
+        isEditor: session.isEditor()
+      });
+      this.options.annotationListWidget.init();
+    }
   }
 
   destroy() {
@@ -123,8 +150,8 @@ export default class AnnotationWindow {
     }
     this.menuTagSelector = new MenuTagSelector({
       parent: this.element.find('.menu_tag_selector_container'),
-      annotationExplorer: this.explorer,
-      initialTags: this.initialTocTags,
+      annotationExplorer: this.options.explorer,
+      initialTags: this.options.initialTocTags,
       changeCallback: (value, text) => {
         logger.debug('Change from TOC selector: ', value);
         _this.updateList();
@@ -134,11 +161,11 @@ export default class AnnotationWindow {
 
   initLayerSelector() {
     const _this = this;
-    this._setCurrentLayerId(this.initialLayerId);
+    this._setCurrentLayerId(this.options.initialLayerId);
     this.layerSelector = new LayerSelector({
       parent: this.element.find('.layer_selector_container'),
-      annotationExplorer: this.explorer,
-      initialLayerId: this.initialLayerId,
+      annotationExplorer: this.options.explorer,
+      initialLayerId: this.options.initialLayerId,
       changeCallback: (value, text) => {
         logger.debug('Change from Layer selector: ', value);
         _this._setCurrentLayerId(value);
@@ -156,8 +183,8 @@ export default class AnnotationWindow {
     button.click(event => {
       this.miradorProxy.publish('YM_DISPLAY_ON');
       jQuery.publish('YM_ADD_WINDOW', {
-        miradorId: this.miradorId,
-        imageWindowId: this.canvasWindowId
+        miradorId: this.options.miradorId,
+        imageWindowId: this.options.canvasWindowId
       });
     });
   }
@@ -187,14 +214,14 @@ export default class AnnotationWindow {
     var canvas = this.getCurrentCanvas();
     this.element.find('.title').text(canvas.label);
 
-    if (this.explorer.getAnnotationToc()) {
+    if (this.options.explorer.getAnnotationToc()) {
       this.initMenuTagSelector();
       this.element.find('.annowin_menu_tag_row').show();
     } else {
       this.element.find('.annowin_menu_tag_row').hide();
     }
     const layersPromise = new Promise(function(resolve, reject) {
-      _this.explorer.getLayers().then(function(layers) {
+      _this.options.explorer.getLayers().then(function(layers) {
         if (layers.length > 0) {
           if (_this.layerSelector.isLoaded()) {
             resolve();
@@ -213,7 +240,7 @@ export default class AnnotationWindow {
     });
 
     const tocPromise = new Promise(function(resolve, reject) {
-      if (_this.explorer.getAnnotationToc()) {
+      if (_this.options.explorer.getAnnotationToc()) {
         _this.menuTagSelector.reload().then(function() {
           resolve();
         }).catch(function(reason) {
@@ -231,25 +258,19 @@ export default class AnnotationWindow {
     });
   }
 
-  updateList() {
+  async updateList() {
     logger.debug('AnnotationWindow#updateList');
     const _this = this;
     const state = getStateStore();
-    const options = {};
-
-    options.parentElem = this.listElem;
-    options.annotationWindow = this;
-    options.isEditor = session.isEditor();
-    options.annotationsList = this.canvasWindow.annotationsList;
-    options.toc = this.explorer.getAnnotationToc();
-    options.selectedTags = ['all'];
-    if (this.explorer.getAnnotationToc()) {
+    const canvasId = this.canvasWindow.getCurrentCanvasId();
+    /*
+    if (this.options.explorer.getAnnotationToc()) {
       options.selectedTags = this.menuTagSelector.val().split('|');
     }
-    options.isCompleteList = (options.selectedTags[0] === 'all'); // true if current window will show all annotations of a sortable list.
-    options.layerId  = this.layerSelector.val();
+    */
 
-    const count = this.annotationListRenderer.render(options);
+    this.options.annotationListWidget.init(this.layerSelector.val());
+    const count = await this.options.annotationListWidget.moveToCanvas(canvasId);
 
     if (count === 0) {
       this.placeholder.text('No annotations found.').show();
@@ -260,8 +281,8 @@ export default class AnnotationWindow {
 
   getCurrentCanvas() {
     const window = this.canvasWindow;
-    const id = window.canvasID;
-    const canvases = window.manifest.getCanvases();
+    const id = window.getCurrentCanvasId();
+    const canvases = window.getManifest().getCanvases();
     const current = canvases.filter(canvas => {
       return canvas['@id'] === id;
     });
@@ -321,7 +342,7 @@ export default class AnnotationWindow {
     annoElem[0].scrollIntoView(true);
   }
 
-  scrollToAnnotation(annoId) {
+  scrollToAnnotation_old(annoId) {
     logger.debug('AnnotationWindow#scrollToAnnotation annoId: ' + annoId);
     const _this = this;
     let found = false;
@@ -335,6 +356,12 @@ export default class AnnotationWindow {
       }
     });
     return found;
+  }
+
+  async moveToAnnotation(annoId, canvasId) {
+    logger.debug('AnnotationWindow#scrollToAnnotation annoId:', annoId, 'canvasId:', canvasId);
+
+    return await this.options.annotationListWidget.moveToAnnotation(annoId, canvasId);
   }
 
   clearHighlights() {
@@ -370,7 +397,7 @@ export default class AnnotationWindow {
       annoIds.push(annoId);
     });
     var canvas = this.getCurrentCanvas();
-    this.explorer.updateAnnotationListOrder(canvas['@id'], this.currentLayerId, annoIds)
+    this.options.explorer.updateAnnotationListOrder(canvas['@id'], this.currentLayerId, annoIds)
     .then(() => {
       _this.tempMenuRow.hide();
     })
@@ -399,30 +426,30 @@ export default class AnnotationWindow {
 
   bindEvents() {
     logger.debug('AnnotationWindow#bindEvents');
-    var _this = this;
+    const _this = this;
 
-    this.element.find('.annowin_temp_row .ym_button').click(function(event) {
-      _this.saveOrder();
+    this.element.find('.annowin_temp_row .ym_button').click(event => {
+      this.saveOrder();
     });
 
-    this._subscribe(jQuery, 'YM_READY_TO_RELOAD_ANNO_WIN', function(event) {
-      if (! _this.hasOpenEditor()) {
-        _this.reload();
+    this._subscribe(jQuery, 'YM_READY_TO_RELOAD_ANNO_WIN', (event, imageWindowId) => {
+      if (imageWindowId === this.options.canvasWindowId && !this.hasOpenEditor()) {
+        this.reload();
       }
     });
 
     this._subscribe(jQuery, 'ANNOTATION_FOCUSED', function(event, annoWinId, annotation) {
-      logger.debug('Annotation window ' + _this.id + ' received annotation_focused event from ' + annoWinId);
+      logger.debug('Annotation window ' + _this.options.id + ' received annotation_focused event from ' + annoWinId);
       const $anno = Anno(annotation);
 
-      if (annoWinId === _this.id) {
+      if (annoWinId === _this.options.id) {
         return;
       }
       _this.clearHighlights();
 
-      const annotationsList = _this.canvasWindow.annotationsList;
+      const annotationsList = _this.canvasWindow.getAnnotationsList();
       const layerId = _this.currentLayerId;
-      const toc = _this.explorer.getAnnotationToc();
+      const toc = _this.options.explorer.getAnnotationToc();
 
       if (toc) {
         const siblings = annoUtil.findTocSiblings(annotation, annotationsList, layerId, toc);
@@ -449,6 +476,22 @@ export default class AnnotationWindow {
       if (targeted.length > 0) {
         _this.highlightAnnotations(targeted, 'TARGET');
         return;
+      }
+    });
+
+    this._subscribe(jQuery, 'ANNOWIN_ANNOTATION_CLICKED.' + this.getId(), (event, options) => {
+      logger.debug('Annotation window ' + this.getId() + ' has received event ANNOWIN_ANNOTATION_CLICKED with options', options);
+      if (options.canvasId !== this.canvasWindow.getCurrentCanvasId()) {
+        this.canvasWindow.setCurrentCanvasId(options.canvasId, {
+          eventOriginatorType: 'AnnotationWindow'
+        });
+        /* doesn't work because the above is async
+        const imageView = this.canvasWindow.getImageView();
+        if (imageView) {
+          imageView.zoomToAnnotation(options.annotation);
+          imageView.panToAnnotation(options.annotation);
+        }
+        */
       }
     });
 
@@ -507,7 +550,7 @@ export default class AnnotationWindow {
     };
     const graph = this._annoTargetGraph = {};
 
-    for (let annotation of this.canvasWindow.annotationsList) {
+    for (let annotation of this.canvasWindow.getAnnotationsList()) {
       addNode(graph, annotation);
     }
 

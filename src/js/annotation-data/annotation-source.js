@@ -77,6 +77,14 @@ export default class AnnotationSource {
     return layers;
   }
 
+  /**
+   * Options: {
+   *   canvasId: <string>, // required,
+   *   layerId: <string> // optional
+   * }
+   *
+   * @param {object} options
+   */
   async getAnnotations(options) {
     const canvasId = options.canvasId;
     const layerId = options.layerId;
@@ -113,12 +121,18 @@ export default class AnnotationSource {
         contentType: 'application/json; charset=utf-8',
         success: (data, textStatus, jqXHR) => {
           logger.debug('AnnotationSource#_getAnnotations data: ', data);
-          for (let value of data) {
-            let annotation = this._getAnnotationInOA(value.annotation);
-            annotation.layerId = value.layer_id;
-            annotations.push(annotation);
+          try {
+            for (let value of data) {
+              let annotation = this._getAnnotationInOA(value.annotation);
+              annotation.layerId = value.layer_id;
+              annotations.push(annotation);
+            }
+            resolve(annotations);
+          } catch(e) {
+            logger.error('AnnotationSource#_getRemoteAnnotations error parsing data for canvas', canvasId,
+              'data:', data, 'error:', e);
+            resolve([]);
           }
-          resolve(annotations);
         },
         error: (jqXHR, textStatus, errorThrown) => {
           const msg = 'AnnotationSource#getAnnotations failed to get annotations from ' + url;

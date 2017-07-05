@@ -2,7 +2,6 @@ import getApp from '../app';
 import getLogger from '../util/logger';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import getStateStore from '../state-store';
-import AnnotationListRenderer from '../widgets/annotation-window/annotation-list-renderer';
 import AnnotationWindow from '../widgets/annotation-window/annotation-window';
 
 const logger = getLogger();
@@ -120,14 +119,12 @@ export default class {
     };
     this._layout.root.contentItems[0].addChild(itemConfig);
 
-    const windowProxy = this.miradorProxyManager.getWindowProxyById(options.canvasWindowId);
     const annoExplorer = getApp().getAnnotationExplorer();
-    const annoListRenderer = new AnnotationListRenderer({
-      canvasWindowId: imageWindowId
-    });
+
     // Just taking the first (highest-level) tag, for now
-    const annoWin = new AnnotationWindow({ appendTo: jQuery('#' + windowId),
-      annotationListRenderer: annoListRenderer,
+    const annoWin = new AnnotationWindow({
+      id: windowId,
+      appendTo: jQuery('#' + windowId),
       explorer: annoExplorer,
       miradorId: options.miradorId || null,
       canvasWindowId: imageWindowId,
@@ -156,23 +153,26 @@ export default class {
     });
   }
 
-  showAnnotation(miradorId, windowId, annoId) {
+  async showAnnotation(miradorId, windowId, annoId) {
     logger.debug('Grid#showAnnotation miradorId: ' + miradorId +
       ', windowId: ' + windowId + ', annoId: ' + annoId);
     const miradorProxy = this.miradorProxyManager.getMiradorProxy(miradorId);
     const windowProxy = miradorProxy.getWindowProxyById(windowId);
     const annotations = windowProxy.getAnnotationsList();
     const annotation = annotations.filter(anno => anno['@id'] === annoId)[0];
-    let found = false;
+    const canvasId = windowProxy.getCurrentCanvasId();
+    const layerId = annotation.layerId;
+    let targetWindow = null;
 
     for (let annoWindow of Object.values(this._annotationWindows)) {
-      let success = annoWindow.scrollToAnnotation(annoId);
-      if (success) {
-        annoWindow.highlightAnnotation(annoId);
+      if (annoWindow.getCurrentLayerId() === layerId) {
+        targetWindow = annoWindow;
       }
-      found = found || success;
     }
-    if (!found) {
+
+    if (targetWindow) {
+      await targetWindow.moveToAnnotation(annoId, canvasId);
+    } else {
       if (annotation) {
         this.addAnnotationWindow({
           miradorId: miradorId,

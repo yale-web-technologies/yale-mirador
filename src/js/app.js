@@ -95,6 +95,8 @@ class App {
     const layers = await explorer.getLayers();
     state.setTransient('annotationLayers', layers);
 
+    state.setTransient('tagHierarchy', settings.tagHierarchy);
+
     state.setTransient('copyrighted', settings.copyrighted);
     state.setTransient('copyrightedImageServiceUrl', settings.copyrightedImageServiceUrl);
 

@@ -14,6 +14,7 @@ const registeredKeys = new Set([
   'lastSelectedLayer',
   'layerIndexMap',
   'projectId',
+  'tagHierarchy',
   'textDirection',
   'tooltipStyles'
 ]);

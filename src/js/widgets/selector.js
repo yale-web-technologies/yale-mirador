@@ -80,8 +80,7 @@ export default class {
   }
 
   addItem(options) {
-    logger.debug('Selector#addItem options:', options);
-
+    //logger.debug('Selector#addItem options:', options);
     const item = jQuery(itemTemplate({
       label: options.label,
       colorClass: options.colorClass

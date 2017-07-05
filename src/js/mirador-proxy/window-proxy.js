@@ -4,7 +4,7 @@ const logger = getLogger();
 
 export default class WindowProxy {
   constructor(window) {
-    logger.debug('WindowProxy#constructor window:', window);
+    //logger.debug('WindowProxy#constructor window:', window);
     this.window = window;
   }
 
@@ -30,6 +30,15 @@ export default class WindowProxy {
     return matches[0];
   }
 
+  setCurrentCanvasId(canvasId, options) {
+    logger.debug('WindowProxy#setCurrentCanvasId canvasId:', canvasId, 'options', options);
+    this.window.setCurrentCanvasID(canvasId, options);
+  }
+
+  getImageView() {
+    return this.window.focusModules.ImageView;
+  }
+
   /**
    * Annotation endpoint
    */
@@ -46,6 +55,7 @@ export default class WindowProxy {
   }
 
   getSvgOverlay() {
-    return this.window.focusModules.ImageView.annotationsLayer.drawTool.svgOverlay;
+    const imageView = this.getImageView();
+    return imageView ? imageView.annotationsLayer.drawTool.svgOverlay : null;
   }
 }

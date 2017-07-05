@@ -47,7 +47,8 @@ describe('AnnotationWindow', function() {
   it('something', function() {
     const canvasWindowId = 'window1';
     const annotationListRenderer = new AnnotationListRenderer({
-      canvasWindowId: canvasWindowId
+      canvasWindowId: canvasWindowId,
+      state: getStateStore()
     });
     const annoWin = new AnnotationWindow({
       miradorId: 'mirador1',

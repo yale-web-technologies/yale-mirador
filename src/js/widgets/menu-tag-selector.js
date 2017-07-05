@@ -51,7 +51,7 @@ export default class MenuTagSelector {
       _this.selector.empty();
 
       var layers = [];
-      var menu = _this.buildMenu(annoHierarchy, null, 0);
+      var menu = _this.buildMenu(annoHierarchy, null, 0); //XXX
       logger.debug('MenuTagSelector menu:', menu);
 
       _this.selector.setItems(menu);
@@ -70,10 +70,22 @@ export default class MenuTagSelector {
     return this.selector.val(value, skipNotify);
   }
 
+  buildMenu(node, parentItem, currentDepth) {
+    const menu = [];
+    for (let i = 1; i <= 28; ++i) {
+      menu.push({
+        label: 'Chapter ' + i,
+        value: 'chapter' + i,
+        children: []
+      });
+    }
+    return menu;
+  }
+
   /**
    * node: an annoHierarchy node
    */
-  buildMenu(node, parentItem, currentDepth) {
+  buildMenu_old(node, parentItem, currentDepth) {
     logger.debug('MenuTagSelector#buildMenu node:', node, 'parentItem:', parentItem, 'currentDepth:', currentDepth);
     if (currentDepth > this.depth) {
       return null;

@@ -21,7 +21,8 @@ module.exports = function(config) {
       'node_modules/js-cookie/src/js.cookie.js',
       'node_modules/semantic-ui/dist/semantic.min.js',
       'node_modules/babel-polyfill/dist/polyfill.js',
-      'test/**/*.test.js'
+      'test/**/*.test.js' // XXX
+      //'test/widgets/annotation-window/annotation-list-renderer.test.js'
     ],
 
     // preprocess matching files before serving them to the browser
@@ -69,6 +70,13 @@ module.exports = function(config) {
       require('karma-phantomjs-launcher')
     ],
 
+    client: {
+      captureConsole: true,
+      mocha: {
+        bail: true
+      }
+    },
+
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
@@ -82,7 +90,7 @@ module.exports = function(config) {
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_INFO,
+    logLevel: config.LOG_DEBUG,
 
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: false,

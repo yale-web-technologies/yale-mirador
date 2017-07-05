@@ -1,0 +1,212 @@
+import {Anno, annoUtil} from '../../../import';
+import getLogger from '../../../util/logger';
+import util from '../../../util/util';
+
+const logger = getLogger();
+
+export default class AnnotationRenderer {
+  constructor(options) {
+    this.options = Object.assign({
+      annotationWindow: null,
+      state: null // global state store
+    }, options);
+
+    this.layerIndexMap = this.options.state.getTransient('layerIndexMap');
+    this.hideTags = this.options.state.getTransient('hideTagsInAnnotation');
+  }
+
+  /**
+   * options: {
+   *   annotations: <object[]>,
+   *   canvas: <object>,
+   *   isEditor: <bool>
+   * }
+   *
+   * @param {object} annotation
+   * @param {object} options
+   */
+  createAnnoElem(annotation, options) {
+    //logger.debug('AnnotationWindow#createAnnoElem anno:', annotation);
+    const anno = Anno(annotation);
+    const content = anno.bodyText;
+    const tags = anno.tags;
+    const tagsHtml = this.getTagsHtml(tags);
+    const style = anno.bodyStyle;
+
+    const annoHtml = annotationTemplate({
+      content: content,
+      tags: tagsHtml,
+      isEditor: options.isEditor
+    });
+
+    const layerIndex = this.layerIndexMap[annotation.layerId];
+    const annoElem = jQuery(annoHtml);
+    const contentElem = annoElem.find('.content');
+    util.setTextDirectionClass(contentElem, style);
+
+    const menuBar = annoElem.find('.menu_bar');
+
+    annoElem.data('annotationId', annotation['@id']);
+    annoElem.data('canvasId', options.canvas['@id']);
+
+    annoElem.find('.ui.dropdown').dropdown({ direction: 'downward' });
+
+    menuBar.addClass('layer_' + layerIndex % 10);
+    if (annotation.on['@type'] == 'oa:Annotation') { // annotation of annotation
+      menuBar.addClass('targeting_anno');
+    } else {
+      menuBar.removeClass('targeting_anno');
+    }
+
+    if (this.hideTags) {
+      annoElem.find('.tags').hide();
+    }
+
+    this.bindAnnotationItemEvents(annoElem, annotation, options);
+    return annoElem;
+  }
+
+  getTagsHtml(tags) {
+    let html = '';
+    jQuery.each(tags, function(index, value) {
+      html += '<span class="tag">' + value + '</span>';
+    });
+    return html;
+  }
+
+  bindAnnotationItemEvents(annoElem, annotation, options) {
+    const _this = this;
+    const annoWin =this.options.annotationWindow;
+    const finalTargetAnno = annoUtil.findFinalTargetAnnotation(annotation,
+      options.annotations);
+
+    annoElem.click(function(event) {
+      logger.debug('Clicked annotation:', annotation);
+      annoWin.clearHighlights();
+      annoWin.highlightAnnotation(annotation['@id']);
+      annoWin.miradorProxy.publish('ANNOTATION_FOCUSED', [annoWin.getId(), finalTargetAnno]);
+      jQuery.publish('ANNOTATION_FOCUSED', [annoWin.getId(), annotation]);
+      jQuery.publish('ANNOWIN_ANNOTATION_CLICKED.' + annoWin.getId(), [{
+        canvasId: jQuery(this).data('canvasId'),
+        annotation: annotation
+      }]);
+    });
+
+    annoElem.find('.annotate').click(function (event) {
+      const dialogElement = jQuery('#ym_annotation_dialog');
+      const editor = new AnnotationEditor({
+        parent: dialogElement,
+        windowId: _this.options.canvasWindowId,
+        mode: 'create',
+        targetAnnotation: annotation,
+        endpoint: annoWin.endpoint,
+        saveCallback: function(annotation) {
+          dialogElement.dialog('close');
+          annoWin.canvasWindow.annotationsList.push(annotation);
+          annoWin.miradorProxy.publish('ANNOTATIONS_LIST_UPDATED',
+            { windowId: annoWin.canvasWindow.id, annotationsList: annoWin.canvasWindow.annotationsList });
+        },
+        cancelCallback: function() {
+          dialogElement.dialog('close');
+        }
+      });
+      dialogElement.dialog({ // jQuery-UI dialog
+        title: 'Create annotation',
+        modal: true,
+        draggable: true,
+        dialogClass: 'no_close',
+        width: 400
+      });
+      editor.show();
+    });
+
+    annoElem.find('.edit').click(function(event) {
+      const editor = new AnnotationEditor({
+        parent: annoElem,
+        windowId: _this.options.canvasWindowId,
+        mode: 'update',
+        endpoint: annoWin.endpoint,
+        annotation: annotation,
+        saveCallback: function(annotation, content) {
+          if (annoWin.currentLayerId === annotation.layerId) {
+            const normalView = annoElem.find('.normal_view');
+            const contentElem = normalView.find('.content');
+            contentElem.html(content);
+            util.setTextDirectionClass(contentElem, Anno(annotation).bodyStyle);
+            normalView.show();
+            annoElem.data('editing', false);
+          } else {
+            annoElem.remove();
+          }
+        },
+        cancelCallback: function() {
+          annoElem.find('.normal_view').show();
+          annoElem.data('editing', false);
+        }
+      });
+
+      annoElem.data('editing', true);
+      annoElem.find('.normal_view').hide();
+      editor.show();
+    });
+
+    annoElem.find('.delete').click(function(event) {
+      if (window.confirm('Do you really want to delete the annotation?')) {
+        annoWin.miradorProxy.publish('annotationDeleted.' + annoWin.canvasWindow.id, [annotation['@id']]);
+      }
+    });
+
+    annoElem.find('.up.icon').click(function(event) {
+      const sibling = annoElem.prev();
+      if (sibling.length > 0 && sibling.hasClass('annowin_anno')) {
+        annoWin.fadeDown(annoElem, function() {
+          annoElem.after(sibling);
+          annoWin.fadeUp(annoElem, function() {
+            annoWin.tempMenuRow.show();
+          });
+        });
+      }
+    });
+
+    annoElem.find('.down.icon').click(function(event) {
+      const sibling = annoElem.next();
+      if (sibling.length > 0 && sibling.hasClass('annowin_anno')) {
+        annoWin.fadeUp(annoElem, function() {
+          annoElem.before(sibling);
+          annoWin.fadeDown(annoElem, function() {
+            annoWin.tempMenuRow.show();
+          });
+        });
+      }
+    });
+  }
+}
+
+const annotationTemplate = Handlebars.compile([
+  '<div class="annowin_anno">',
+  '  <div class="normal_view">',
+  '    {{#if isEditor}}',
+  '      <div class="menu_bar">',
+  '        <div class="ui text menu">',
+  '          <div class="ui dropdown item">',
+  '            Action<i class="dropdown icon"></i>',
+  '            <div class="menu">',
+  '              <div class="annotate item"><i class="fa fa-hand-o-left fa-fw"></i> Annotate</div>',
+  '              <div class="edit item"><i class="fa fa-edit fa-fw"></i> {{t "edit"}}</div>',
+  '              <div class="delete item"><i class="fa fa-times fa-fw"></i> {{t "delete"}}</div>',
+  '            </div>',
+  '          </div>',
+  '          {{#if orderable}}',
+  '            <div class="right menu">',
+  '              <i class="caret down icon"></i>',
+  '              <i class="caret up icon"></i>',
+  '            </div>',
+  '          {{/if}}',
+  '        </div>',
+  '      </div>',
+  '    {{/if}}',
+  '    <div class="content">{{{content}}}</div>',
+  '    <div class="tags">{{{tags}}}</div>',
+  '  </div>',
+  '</div>'
+].join(''));

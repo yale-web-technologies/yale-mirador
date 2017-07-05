@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 import getAnnotationCache from '../../src/js/annotation-data/annotation-cache';
-import util from '../test-util';
+import util from '../test-helpers/test-util';
 
 describe('AnnotationCache', function() {
   let cache = null;
