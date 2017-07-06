@@ -8,6 +8,7 @@ import getStateStore from '../state-store';
     * Get paper.js shapes which are associated with the annotation.
     */
   $.OsdRegionDrawTool.prototype.getShapesForAnnotation = function(annotation) {
+    logger.debug('OsdRegionDrawTool(ext)#getShapesForAnnotation this.annotationsToShapesMap:', this.annotationsToShapesMap);
     var out_shapes = [];
     jQuery.each(this.annotationsToShapesMap, function(key, shapes) {
       jQuery.each(shapes, function (index, shape) {
@@ -43,6 +44,7 @@ import getStateStore from '../state-store';
     * Highlight annotated area for annotation focused in annotation window.
     */
   $.OsdRegionDrawTool.prototype.updateHighlights = function(annotation) {
+
     const _this = this;
     jQuery.each(this.annotationsToShapesMap, function(key, shapes) {
       jQuery.each(shapes, function (index, shape) {

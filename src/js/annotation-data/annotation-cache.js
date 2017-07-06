@@ -4,9 +4,9 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 
 export default function getAnnotationCache() {
   if (!instance) {
-    const cache = new AnnotationCache();
-    cache.clear(); // invalidate all data everytime app restarts
-    return cache.init();
+    instance = new AnnotationCache();
+    instance.clear(); // invalidate all data everytime app restarts
+    return instance.init();
   } else {
     return new Promise(function(resolve, reject) {
       instance.isValid() ? resolve(instance) : resolve(null);

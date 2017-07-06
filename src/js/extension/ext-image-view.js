@@ -1,4 +1,6 @@
+import {annoUtil} from '../import';
 import getLogger from '../util/logger';
+import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 
 (function($) {
 
@@ -7,7 +9,7 @@ import getLogger from '../util/logger';
   const logger = getLogger();
 
   $.ImageView.prototype.zoomToAnnotation = function(annotation) {
-    logger.debug('ImageView(ext)#zoomToAnnotation anno:', annotation);
+    logger.debug('ImageView(ext)#zoomToAnnotation annotation:', annotation);
     const viewport = this.osd.viewport;
     const currentZoom = viewport.getZoom();
     logger.debug('panToAnnotation zoom: ' + currentZoom);
@@ -97,4 +99,25 @@ import getLogger from '../util/logger';
       throw msg;
     }
   };
+
+  const _listenForActions = $.ImageView.prototype.listenForActions;
+
+  $.ImageView.prototype.listenForActions = function() {
+    _listenForActions.call(this);
+
+    this.eventEmitter.subscribe('annotationsRendered.' + this.windowId, (event) => {
+      logger.debug('ImageView in window ' + this.windowId + ' received annotationRendered; annotationToBeFocused:', this._annotationToBeFocused);
+      if (this._annotationToBeFocused) {
+        const imageWindowProxy = getMiradorProxyManager().getWindowProxyById(this.windowId);
+        const anno = annoUtil.findFinalTargetAnnotation(this._annotationToBeFocused,
+           imageWindowProxy.getAnnotationsList());
+
+        this._annotationToBeFocused = null;
+        this.zoomToAnnotation(anno);
+        this.panToAnnotation(anno);
+        this.annotationsLayer.drawTool.updateHighlights(anno);
+      }
+    });
+  };
+
 })(Mirador);

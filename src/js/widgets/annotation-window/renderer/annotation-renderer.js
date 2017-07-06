@@ -85,10 +85,11 @@ export default class AnnotationRenderer {
       annoWin.clearHighlights();
       annoWin.highlightAnnotation(annotation['@id']);
       annoWin.miradorProxy.publish('ANNOTATION_FOCUSED', [annoWin.getId(), finalTargetAnno]);
-      jQuery.publish('ANNOTATION_FOCUSED', [annoWin.getId(), annotation]);
-      jQuery.publish('ANNOWIN_ANNOTATION_CLICKED.' + annoWin.getId(), [{
+      jQuery.publish('ANNOWIN_ANNOTATION_CLICKED', [{
+        annotationWindowId: annoWin.getId(),
+        annotation: annotation,
         canvasId: jQuery(this).data('canvasId'),
-        annotation: annotation
+        imageWindowId: annoWin.options.canvasWindowId
       }]);
     });
 

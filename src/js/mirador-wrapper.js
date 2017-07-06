@@ -90,17 +90,25 @@ export default class MiradorWrapper {
     const miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
 
     miradorProxy.subscribe('ANNOTATIONS_LIST_UPDATED', (event, params) => {
-      logger.debug('MiradorWrapper#bindEvents received ANNOTATIONS_LIST_UPDATED params: ', params);
+      logger.debug('MiradorWrapper#bindEvents received ANNOTATIONS_LIST_UPDATED params:', params);
+      const windowProxy = miradorProxy.getWindowProxyById(params.windowId);
 
       if (options.tagHierarchy) {
-        const windowProxy = miradorProxy.getWindowProxyById(params.windowId);
         const endpoint = windowProxy.getEndPoint();
         endpoint.parseAnnotations();
       }
 
-      if (params.options && params.options.eventOriginatorType !== 'AnnotationWindow') {
+      /* XXXX
+      if (params.options && params.options.eventOriginatorType === 'AnnotationWindow') {
+        const imageView = windowProxy.getImageView();
+        if (imageView) {
+          imageView.zoomToAnnotation(options.annotationToBeFocused);
+          imageView.panToAnnotation(options.annotationToBeFocused);
+        }
+      } else {
         jQuery.publish('YM_READY_TO_RELOAD_ANNO_WIN', params.windowId);
       }
+      */
     });
 
     miradorProxy.subscribe('YM_ANNOWIN_ANNO_SHOW', (event, windowId, annoId) => {

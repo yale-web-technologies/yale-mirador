@@ -55,7 +55,13 @@ export default class WindowProxy {
   }
 
   getSvgOverlay() {
-    const imageView = this.getImageView();
-    return imageView ? imageView.annotationsLayer.drawTool.svgOverlay : null;
+    const drawTool = this.getDrawTool();
+    return drawTool ? drawTool.svgOverlay : null;
   }
+
+  getDrawTool() {
+    const imageView = this.getImageView();
+    return imageView ? imageView.annotationsLayer.drawTool : null;
+  }
+
 }

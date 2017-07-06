@@ -438,11 +438,11 @@ export default class AnnotationWindow {
       }
     });
 
-    this._subscribe(jQuery, 'ANNOTATION_FOCUSED', function(event, annoWinId, annotation) {
-      logger.debug('Annotation window ' + _this.options.id + ' received annotation_focused event from ' + annoWinId);
-      const $anno = Anno(annotation);
+    this._subscribe(jQuery, 'ANNOWIN_ANNOTATION_CLICKED', function(event, params) {
+      logger.debug('Annotation window ' + _this.options.id + ' received ANNOWIN_ANNOTATION_CLICKED params:', params);
+      const $anno = Anno(params.annotation);
 
-      if (annoWinId === _this.options.id) {
+      if (params.annotationWindowId === _this.options.id) {
         return;
       }
       _this.clearHighlights();
@@ -476,22 +476,6 @@ export default class AnnotationWindow {
       if (targeted.length > 0) {
         _this.highlightAnnotations(targeted, 'TARGET');
         return;
-      }
-    });
-
-    this._subscribe(jQuery, 'ANNOWIN_ANNOTATION_CLICKED.' + this.getId(), (event, options) => {
-      logger.debug('Annotation window ' + this.getId() + ' has received event ANNOWIN_ANNOTATION_CLICKED with options', options);
-      if (options.canvasId !== this.canvasWindow.getCurrentCanvasId()) {
-        this.canvasWindow.setCurrentCanvasId(options.canvasId, {
-          eventOriginatorType: 'AnnotationWindow'
-        });
-        /* doesn't work because the above is async
-        const imageView = this.canvasWindow.getImageView();
-        if (imageView) {
-          imageView.zoomToAnnotation(options.annotation);
-          imageView.panToAnnotation(options.annotation);
-        }
-        */
       }
     });
 

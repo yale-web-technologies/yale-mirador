@@ -19,7 +19,7 @@ import YaleEndpoint from '../annotation-data/yale-endpoint';
 
     // Get bounds of multiple paper.js shapes.
     getCombinedBounds: function(shapes) {
-      logger.debug('shapes: ' + shapes);
+      logger.debug('yaleExt.getCombinedBounds shapes:', shapes);
       var bounds = null;
       jQuery.each(shapes, function (index, shape) {
         if (bounds) {

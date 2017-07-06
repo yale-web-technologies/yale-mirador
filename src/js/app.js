@@ -9,6 +9,7 @@ import './extension/dialog-builder';
 import {AnnotationExplorer} from './import';
 import AnnotationSource from './annotation-data/annotation-source';
 import fatalError from './util/fatal-error';
+import getAnnotationCache from './annotation-data/annotation-cache';
 import getConfigFetcher from './config/config-fetcher';
 import getLogger from './util/logger';
 import getPageController from './page-controller';
@@ -44,6 +45,7 @@ class App {
 
   async init() {
     this.initHandlebars();
+    await getAnnotationCache(); // wait for annotation cache to be set up
 
     const configFetcher = getConfigFetcher();
     const settingsFromHtml = configFetcher.fetchSettingsFromHtml(this.options.dataElement);
