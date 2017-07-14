@@ -36,7 +36,8 @@ export default class AnnotationListWidget {
     }
     if (!this.options.annotationPageRenderer) {
       this.options.annotationPageRenderer = new AnnotationPageRenderer({
-        annotationRenderer: this.options.annotationRenderer
+        annotationRenderer: this.options.annotationRenderer,
+        annotationExplorer: this.options.annotationExplorer
       });
     }
   }
@@ -51,6 +52,14 @@ export default class AnnotationListWidget {
     this._bindEvents();
   }
 
+  getCurrentPageNum() {
+    return this._currentPageNum;
+  }
+
+  getCurrentPageItem() {
+    return this._pageStateList[this._currentPageNum];
+  }
+
   async moveToPage(pageNum) {
     logger.debug('AnnotationListWidgetr#moveToPage', pageNum);
     const rootElem = this.options.rootElem;
@@ -60,6 +69,7 @@ export default class AnnotationListWidget {
       this._currentPageNum = pageNum;
       await this._activatePage(pageNum);
       await this._activateMorePagesForwardFirst(pageNum);
+      this.scrollToPage(pageNum);
     } else {
       logger.error("AnnotationListWidget##moveTo couldn't find page number for", canvasId);
     }
@@ -86,7 +96,7 @@ export default class AnnotationListWidget {
         if (nextPage < this._pageStateList.length) {
           nextPage = await this._activateMorePagesForwardFirst(nextPage);
         }
-        this._currentPageNum = nextPage - 1;
+        this._currentPageNum = nextPage;
         this._deactivatePagesFromBack();
         this._windBack();
       }
@@ -112,7 +122,7 @@ export default class AnnotationListWidget {
         if (nextPage !== -1) {
           await this._activateMorePagesBackwardFirst(nextPage);
         }
-        this._currentPageNum = nextPage + 1;
+        this._currentPageNum = nextPage;
         this._deactivatePagesFromForward();
         this._windForward();
       }
@@ -142,6 +152,32 @@ export default class AnnotationListWidget {
     } else {
       logger.debug('AnnotationListWidget#scrollToAnnotation page not found for canvasId', canvasId);
     }
+  }
+
+  /**
+   * The page element must have already been loaded for this function to work.
+   *
+   * @param {number} pageNum
+   */
+  scrollToPage(pageNum) {
+    const pageItem = this._pageStateList[pageNum];
+    const pageHeaderElem = pageItem.element.find('.page-header');
+
+    this._unbindScrollEvent();
+    pageHeaderElem[0].scrollIntoView(true);
+    this._bindScrollEvent();
+  }
+
+  scrollToElem(annoElem) {
+    /*
+    this.options.rootElem.animate({
+      scrollTop: annoElem.position().top + this.options.rootElem.scrollTop()
+    }, 0);
+    */
+
+    this._unbindScrollEvent();
+    annoElem[0].scrollIntoView(true);
+    this._bindScrollEvent();
   }
 
   _highlightAnnotation(annoId, canvasId) {
@@ -178,10 +214,17 @@ export default class AnnotationListWidget {
    */
   _createPageElements() {
     logger.debug('AnnotationListWidget#_createPageElements');
-    for (var pageNum = 0; pageNum < this.options.canvases.length; ++pageNum) {
+    const pageRenderer = this.options.annotationPageRenderer;
+
+    for (let pageNum = 0; pageNum < this.options.canvases.length; ++pageNum) {
       let pageItem = this._pageStateList[pageNum];
-      let html = pageTemplate({pageNum: pageNum});
-      let pageElem = jQuery(html);
+      let pageElem = pageRenderer.createPageElement({
+        pageNum: pageNum,
+        canvasId: pageItem.canvas['@id'],
+        canvasLabel: pageItem.canvas.label,
+        layerId: this.options.layerId
+      });
+
       this.options.rootElem.append(pageElem);
       pageElem.hide();
       pageItem.element = pageElem;
@@ -204,7 +247,7 @@ export default class AnnotationListWidget {
       logger.error('AnnotationListWidget#_activatePage invalid pageNum', pageNum);
       return;
     }
-    this._currentPageNum = pageNum;
+    //this._currentPageNum = pageNum;
 
     const pageItem = this._pageStateList[pageNum];
     if (!pageItem.loaded) {
@@ -224,12 +267,12 @@ export default class AnnotationListWidget {
 
     let nextPage = pageNum + 1;
 
-    while (pageItem.annotations.length === 0 && nextPage < this._pageStateList.length) {
+    //while (pageItem.annotations.length === 0 && nextPage < this._pageStateList.length) {
       await this._activatePage(nextPage);
-      pageItem = this._pageStateList[nextPage];
-      logger.debug('AnnotationListWidget#_activatePageForward page:', nextPage, 'pageItem.annotations after activate:', pageItem.annotations);
-      ++nextPage;
-    }
+    //  pageItem = this._pageStateList[nextPage];
+    //  logger.debug('AnnotationListWidget#_activatePageForward page:', nextPage, 'pageItem.annotations after activate:', pageItem.annotations);
+    //  ++nextPage;
+    //}
     return nextPage;
   }
 
@@ -239,11 +282,12 @@ export default class AnnotationListWidget {
     let pageItem = this._pageStateList[pageNum];
     let nextPage = pageNum - 1;
 
-    while (pageItem.annotations.length === 0 && nextPage >= 0) {
+    //while (pageItem.annotations.length === 0 && nextPage >= 0) {
       await this._activatePage(nextPage);
-      pageItem = this._pageStateList[nextPage];
-      --nextPage;
-    }
+    //  pageItem = this._pageStateList[nextPage];
+    //  --nextPage;
+    //  ++count;
+    //}
     return nextPage;
   }
 
@@ -378,12 +422,8 @@ export default class AnnotationListWidget {
     pageItem.annotations = annotations.filter(anno => anno.layerId === this.options.layerId);
     pageItem.toc = toc;
 
-    this.options.annotationPageRenderer.render({
-      annotationWindow: this.options.annotationWindow,
-      container: pageItem.element,
-      canvas: pageItem.canvas,
+    this.options.annotationPageRenderer.render(pageItem.element, {
       annotations: annotations,
-      layerId: this.options.layerId,
       annotationToc: toc,
       isEditor: this.options.isEditor,
       pageNum: pageNum
@@ -394,10 +434,17 @@ export default class AnnotationListWidget {
     const numCanvases = this.options.canvases.length;
   }
 
-  _bindEvents() {
+  clearHighlights() {
+    this.options.rootElem.find('.annowin_anno').each((index, value) => {
+      jQuery(value).removeClass('annowin_targeted')
+        .removeClass('ym_anno_selected ym_anno_targeting ym_anno_targeted');
+    });
+  }
+
+  _bindScrollEvent() {
     const _this = this;
 
-    this.options.rootElem.scroll(function(event) {
+    this.options.rootElem.scroll(async function(event) {
       const elem = jQuery(this);
       const scrollTop = elem.scrollTop();
       const currentPos = scrollTop + elem.height();
@@ -406,15 +453,19 @@ export default class AnnotationListWidget {
       //logger.debug('contentHeight:', contentHeight, 'scrollTop:', scrollTop, 'scroll bottom:', currentPos);
 
       if (scrollTop < 20) {
-        _this.pageBack();
-      } else if (contentHeight - currentPos < 20) {
-        _this.pageForward();
+        await _this.pageBack();
+      }
+      if (contentHeight - currentPos < 20) {
+        await _this.pageForward();
       }
     });
   }
-}
 
-const pageTemplate = Handlebars.compile([
-  '<div class="ym-annotation-page page-{{pageNum}}">',
-  '</div>'
-].join(''));
+  _unbindScrollEvent() {
+    this.options.rootElem.off('scroll');
+  }
+
+  _bindEvents() {
+    this._bindScrollEvent();
+  }
+}

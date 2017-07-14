@@ -162,15 +162,13 @@ export default class AnnotationSource {
         dataType: 'json',
         data: JSON.stringify(request),
         contentType: 'application/json; charset=utf-8',
-        success: data => {
+        success: async data => {
           logger.debug('AnnotationSource#createAnnotation creation successful on the annotation server:', data);
           const annotation = data;
           const oaAnnotation = this._getAnnotationInOA(annotation);
           oaAnnotation.layerId = layerId;
           if (cache) {
-            setTimeout(() => {
-              cache.invalidateAnnotation(oaAnnotation);
-            }, 250);
+            await cache.invalidateAllCanvases();
           }
           resolve(oaAnnotation);
         },
@@ -201,12 +199,12 @@ export default class AnnotationSource {
         dataType: 'json',
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify(data),
-        success: (data, textStatus, jqXHR) => {
+        success: async (data, textStatus, jqXHR) => {
             logger.debug('AnnotationSource#updateAnnotation successful', data);
             const annotation = this._getAnnotationInOA(data);
             annotation.layerId = oaAnnotation.layerId;
             if (cache) {
-              cache.invalidateAnnotation(annotation);
+              await cache.invalidateAllCanvases();
             }
             resolve(annotation);
         },
@@ -221,7 +219,8 @@ export default class AnnotationSource {
   async deleteAnnotation(annotationId) {
     logger.debug('AnnotationSource#deleteAnnotations annotationId:', annotationId);
     const cache = await getAnnotationCache();
-    const url = annotationId;
+    const url = this.options.prefix + '/' + annotationId.replace(/^https?:\/\/.*?(\/.*)$/, '$1');
+    //const url = annotationId;
 
     return new Promise((resolve, reject) => {
       jQuery.ajax({
@@ -229,10 +228,10 @@ export default class AnnotationSource {
         type: 'DELETE',
         dataType: 'json',
         contentType: 'application/json; charset=utf-8',
-        success: (data, textStatus, jqXHR) => {
+        success: async (data, textStatus, jqXHR) => {
           logger.debug('AnnotationSource#deleteAnnotation success data:', data);
           if (cache) {
-            cache.invalidateAnnotationId(annotationId);
+            await cache.invalidateAllCanvases();
           }
           resolve();
         },
@@ -260,10 +259,10 @@ export default class AnnotationSource {
         dataType: 'json',
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify(data),
-        success: (data, textStatus, jqXHR) => {
+        success: async (data, textStatus, jqXHR) => {
           logger.debug('AnnotationSource#updateAnnotationListOrder successful', data);
           if (cache) {
-            cache.invalidateCanvasId(canvasId);
+            await cache.invalidateAllCanvases();
           }
           resolve(data);
         },

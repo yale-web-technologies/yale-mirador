@@ -1,3 +1,4 @@
+import {annoUtil} from './import';
 import getLogger from './util/logger';
 import getMiradorProxyManager from './mirador-proxy/mirador-proxy-manager';
 import MiradorWrapper from './mirador-wrapper';
@@ -65,19 +66,39 @@ class PageController {
 
     jQuery.subscribe('ANNOWIN_ANNOTATION_CLICKED', (event, params) => {
       logger.debug('PageController has received event ANNOWIN_ANNOTATION_CLICKED with options', params);
-
       const windowProxy = getMiradorProxyManager().getWindowProxyById(params.imageWindowId);
-
       const imageView = windowProxy.getImageView();
-      if (imageView) {
-        imageView._annotationToBeFocused = params.annotation;
-      }
+      const annoMap = {};
 
       if (params.canvasId === windowProxy.getCurrentCanvasId()) { // the clicked annotation belong to the current canvas
-        imageView.zoomToAnnotation(params.annotation);
-        imageView.panToAnnotation(params.annotation);
-        imageView.annotationsLayer.drawTool.updateHighlights(params.annotation);
+        for (let anno of windowProxy.getAnnotationsList()) {
+          annoMap[anno['id']] = anno;
+        }
+        let anno = params.annotation;
+
+        if (!annoUtil.hasTargetOnCanvas(anno)) {
+          let annos = annoUtil.findTransitiveTargetAnnotations(anno, annoMap);
+          console.log('H1 annos', annos);
+          annos = annos.filter(anno => {
+            for (let target of Anno(anno).targets) {
+              if (target.full === params.canvasId) {
+                return true;
+              }
+            }
+            return false;
+          });
+          console.log('H2 annos', annos);
+          anno = annos[0];
+        }
+        if (anno) {
+          imageView.zoomToAnnotation(anno);
+          imageView.panToAnnotation(anno);
+          imageView.annotationsLayer.drawTool.updateHighlights(anno);
+        } else {
+          logger.error('PageController:SUB:ANNOWIN_ANNOTATION_CLICKED annotation not found');
+        }
       } else { // need to load the canvas that the annotation is targeting
+        imageView._annotationToBeFocused = params.annotation;
         windowProxy.setCurrentCanvasId(params.canvasId, {
           eventOriginatorType: 'AnnotationWindow',
         });

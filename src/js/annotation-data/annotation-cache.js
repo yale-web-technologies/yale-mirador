@@ -1,6 +1,8 @@
-import {annoUtil} from '../import';
+import {Anno, annoUtil} from '../import';
 import getLogger from '../util/logger';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
+
+const logger = getLogger();
 
 export default function getAnnotationCache() {
   if (!instance) {
@@ -18,26 +20,24 @@ let instance = null;
 
 class AnnotationCache {
   constructor() {
-    this.logger = getLogger();
     this._dbName = 'anno_cache';
     this._valid = false;
     this._expiresInMS = 2 * 60 * 60 * 1000; // milliseconds
   }
 
   init() {
-    const _this = this;
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
       if (window.indexedDB) {
-        _this._initIndexedDb().then(() => {
-          _this._valid = true;
-          resolve(_this);
+        this._initIndexedDb().then(() => {
+          this._valid = true;
+          resolve(this);
         }).catch(function(reason) {
-          _this.logger.error('AnnotationCache#constructor promise rejected - ', reason);
-          reject(_this);
+          logger.error('AnnotationCache#constructor promise rejected - ', reason);
+          reject(this);
         });
       } else {
-        reject(_this);
-        _this.logger.info('IndexedDB is not available on this browser.');
+        reject(this);
+        logger.info('IndexedDB is not available on this browser.');
       }
     });
   }
@@ -48,7 +48,7 @@ class AnnotationCache {
   _initIndexedDb() {
     const _this = this;
     this._db = new Dexie(this._dbName).on('versionchange', function(event) {
-      _this.logger.debug('versionchange ' + event.newVersion);
+      logger.debug('versionchange ' + event.newVersion);
     });
 
     this._db.version(1).stores({
@@ -56,7 +56,7 @@ class AnnotationCache {
       annosPerCanvas: 'canvasId,jsonData,timestamp'
     });
     return this._db.open().catch(function(e) {
-      _this.logger.error('AnnotationCache#setupIndexDb open failed: ' + e);
+      logger.error('AnnotationCache#setupIndexDb open failed: ' + e);
       _this._valid = false;
     });
   }
@@ -66,9 +66,9 @@ class AnnotationCache {
    */
   clear() {
     const _this = this;
-    this.logger.debug('AnnotationCache#clear');
+    logger.debug('AnnotationCache#clear');
     return (new Dexie(this._dbName)).delete().catch(function(e) {
-      _this.logger.error('AnnotationCache#clear exception: ' + e.stack);
+      logger.error('AnnotationCache#clear exception: ' + e.stack);
     });
   }
 
@@ -80,9 +80,9 @@ class AnnotationCache {
     const table = this._db.table(name);
     return this._db.transaction('rw', table, function() {
       table.each(function (item, cursor) {
-        _this.logger.debug('AnnotationCache#emptyTable deleting', cursor.key);
+        logger.debug('AnnotationCache#emptyTable deleting', cursor.key);
         table.delete(cursor.key).catch(function(e) {
-          _this.logger.error('AnnotationCache#emptyTable deleting from table ' + name + ': ' + e);
+          logger.error('AnnotationCache#emptyTable deleting from table ' + name + ': ' + e);
         });
       });
     });
@@ -107,7 +107,7 @@ class AnnotationCache {
       .then(function() {
         return _this._db.layers.add({ id: 1, jsonData: layersJson})
           .catch(function(e) {
-            _this.logger.error('AnnotatinCache#setLayers update failed: ' + e);
+            logger.error('AnnotatinCache#setLayers update failed: ' + e);
             throw e;
           });
       });
@@ -121,8 +121,8 @@ class AnnotationCache {
     const coll = this._db.annosPerCanvas.where('canvasId').equals(canvasId)
       .and(function(rec) {
         const nowMS = new Date().valueOf();
-        _this.logger.debug('AnnotationCache#getAnnotationsPerCanvas expiration test: ' + (rec.timestamp > nowMS - _this._expiresInMS));
-        return rec.timestamp > nowMS - _this._expiresInMS;
+        logger.debug('AnnotationCache#getAnnotationsPerCanvas expiration test: ' + (nowMS <  rec.timestamp + _this._expiresInMS));
+        return nowMS < rec.timestamp  + _this._expiresInMS;
       });
     return coll.first(function(row) {
       return row ? row.jsonData : null;
@@ -149,7 +149,7 @@ class AnnotationCache {
     const table = this._db.annosPerCanvas;
     const coll = table.where('canvasId').equals(canvasId);
     return coll.delete().catch(function(e) {
-      _this.logger.error('AnnotationCache#deleteAnnotationsPerCanvas failed to delete canvasId: ' + canvasId);
+      logger.error('AnnotationCache#deleteAnnotationsPerCanvas failed to delete canvasId: ' + canvasId);
     });
   }
 
@@ -157,25 +157,28 @@ class AnnotationCache {
     return this._valid;
   }
 
+  invalidateAllCanvases() {
+    return this.emptyTable('annosPerCanvas');
+  }
+
   invalidateCanvasId(canvasId) {
-    this.logger.debug('CACHE INVALIDATED: ' + canvasId);
+    logger.debug('CACHE INVALIDATED: ' + canvasId);
     return this.deleteAnnotationsPerCanvas(canvasId);
   }
 
   invalidateAnnotation(annotation, annoIsNew) {
-    this.invalidateAnnotationId(annotation['@id']);
+    return this.invalidateAnnotationId(annotation['@id']);
   }
 
-  invalidateAnnotationId(annotationId) {
-    this.logger.debug('invalidateAnnotationId: ' + annotationId);
+  async invalidateAnnotationId(annotationId) {
+    logger.debug('invalidateAnnotationId: ' + annotationId);
     const proxyMgr = getMiradorProxyManager();
     const canvasIdSet = new Set();
     for (let windowProxy of proxyMgr.getAllWindowProxies()) {
       let annotations = windowProxy.getAnnotationsList();
       for (let annotation of annotations) {
         if (annotation['@id'] === annotationId) {
-          const targetCanvasIds = annoUtil.getTargetCanvasIds(annotation, {
-            annotations: annotations});
+          const targetCanvasIds = this._getTargetCanvasIds(annotation, annotations);
           for (let canvasId of targetCanvasIds) {
             canvasIdSet.add(canvasId);
           }
@@ -183,7 +186,28 @@ class AnnotationCache {
       }
     }
     for (let canvasId of canvasIdSet) {
-      this.invalidateCanvasId(canvasId);
+      await this.invalidateCanvasId(canvasId);
     }
+  }
+
+  _getTargetCanvasIds(annotation, annotations) {
+    const $anno = Anno(annotation);
+    const result = [];
+    const annoMap = {};
+
+    for (let anno of annotations) {
+      annoMap[anno['@id']] = anno;
+    }
+
+    let targetAnnos = annoUtil.findTransitiveTargetAnnotations($anno, annoMap);
+
+    for (let targetAnno of targetAnnos) {
+      for (let target of targetAnno.targets) {
+        if (annoUtil.targetIsAnnotationOnCanvas(target)) {
+          result.push(target.full);
+        }
+      }
+    }
+    return result;
   }
 }

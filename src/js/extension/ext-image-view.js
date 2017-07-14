@@ -1,4 +1,4 @@
-import {annoUtil} from '../import';
+import {Anno, annoUtil} from '../import';
 import getLogger from '../util/logger';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 
@@ -105,17 +105,39 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
   $.ImageView.prototype.listenForActions = function() {
     _listenForActions.call(this);
 
-    this.eventEmitter.subscribe('annotationsRendered.' + this.windowId, (event) => {
+    this.eventEmitter.subscribe('ANNOTATIONS_LIST_UPDATED', event => {
       logger.debug('ImageView in window ' + this.windowId + ' received annotationRendered; annotationToBeFocused:', this._annotationToBeFocused);
       if (this._annotationToBeFocused) {
-        const imageWindowProxy = getMiradorProxyManager().getWindowProxyById(this.windowId);
-        const anno = annoUtil.findFinalTargetAnnotation(this._annotationToBeFocused,
-           imageWindowProxy.getAnnotationsList());
+        // setTimeout in order to give the OsdRegionDrawTool time to create
+        // annotation shapes in the overlay after window.getAnnotations() is done
+        setTimeout(() => {
+          const imageWindowProxy = getMiradorProxyManager().getWindowProxyById(this.windowId);
+          let anno = this._annotationToBeFocused;
 
-        this._annotationToBeFocused = null;
-        this.zoomToAnnotation(anno);
-        this.panToAnnotation(anno);
-        this.annotationsLayer.drawTool.updateHighlights(anno);
+          if (!annoUtil.hasTargetOnCanvas(anno)) {
+            const annoMap = {};
+            for (let anno of imageWindowProxy.getAnnotationsList()) {
+              annoMap[anno['@id']] = anno;
+            }
+            anno = annoUtil.findTransitiveTargetAnnotations(anno, annoMap)
+            .filter(anno => {
+              for (let target of Anno(anno).targets) {
+                if (target.full === imageWindowProxy.getCurrentCanvasId()) {
+                  return true;
+                }
+              }
+              return false;
+            })[0];
+          }
+          this._annotationToBeFocused = null;
+          if (anno) {
+            this.zoomToAnnotation(anno);
+            this.panToAnnotation(anno);
+            this.annotationsLayer.drawTool.updateHighlights(anno);
+          } else {
+            logger.error('ImageWindow(ext):SUB:ANNOWIN_ANNOTATION_CLICKED annotation not found');
+          }
+        }, 500);
       }
     });
   };

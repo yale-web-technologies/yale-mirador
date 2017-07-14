@@ -17,8 +17,7 @@ export default class AnnotationRenderer {
 
   /**
    * options: {
-   *   annotations: <object[]>,
-   *   canvas: <object>,
+   *   canvasId: <string>,
    *   isEditor: <bool>
    * }
    *
@@ -36,7 +35,8 @@ export default class AnnotationRenderer {
     const annoHtml = annotationTemplate({
       content: content,
       tags: tagsHtml,
-      isEditor: options.isEditor
+      isEditor: options.isEditor,
+      orderable: options.isEditor
     });
 
     const layerIndex = this.layerIndexMap[annotation.layerId];
@@ -45,9 +45,11 @@ export default class AnnotationRenderer {
     util.setTextDirectionClass(contentElem, style);
 
     const menuBar = annoElem.find('.menu_bar');
+    const annoOrderButtonsRow = options.pageElem.find('.annowin_temp_row');
 
     annoElem.data('annotationId', annotation['@id']);
-    annoElem.data('canvasId', options.canvas['@id']);
+    annoElem.data('canvasId', options.canvasId);
+    annoElem.data('annoOrderButtonsRow', annoOrderButtonsRow);
 
     annoElem.find('.ui.dropdown').dropdown({ direction: 'downward' });
 
@@ -77,14 +79,11 @@ export default class AnnotationRenderer {
   bindAnnotationItemEvents(annoElem, annotation, options) {
     const _this = this;
     const annoWin =this.options.annotationWindow;
-    const finalTargetAnno = annoUtil.findFinalTargetAnnotation(annotation,
-      options.annotations);
 
     annoElem.click(function(event) {
       logger.debug('Clicked annotation:', annotation);
-      annoWin.clearHighlights();
+      annoWin.options.annotationListWidget.clearHighlights();
       annoWin.highlightAnnotation(annotation['@id']);
-      annoWin.miradorProxy.publish('ANNOTATION_FOCUSED', [annoWin.getId(), finalTargetAnno]);
       jQuery.publish('ANNOWIN_ANNOTATION_CLICKED', [{
         annotationWindowId: annoWin.getId(),
         annotation: annotation,
@@ -94,6 +93,8 @@ export default class AnnotationRenderer {
     });
 
     annoElem.find('.annotate').click(function (event) {
+      event.stopPropagation();
+
       const dialogElement = jQuery('#ym_annotation_dialog');
       const editor = new AnnotationEditor({
         parent: dialogElement,
@@ -122,6 +123,8 @@ export default class AnnotationRenderer {
     });
 
     annoElem.find('.edit').click(function(event) {
+      event.stopPropagation();
+
       const editor = new AnnotationEditor({
         parent: annoElem,
         windowId: _this.options.canvasWindowId,
@@ -152,30 +155,36 @@ export default class AnnotationRenderer {
     });
 
     annoElem.find('.delete').click(function(event) {
+      event.stopPropagation();
+
       if (window.confirm('Do you really want to delete the annotation?')) {
         annoWin.miradorProxy.publish('annotationDeleted.' + annoWin.canvasWindow.id, [annotation['@id']]);
       }
     });
 
     annoElem.find('.up.icon').click(function(event) {
+      event.stopPropagation();
       const sibling = annoElem.prev();
+
       if (sibling.length > 0 && sibling.hasClass('annowin_anno')) {
         annoWin.fadeDown(annoElem, function() {
           annoElem.after(sibling);
           annoWin.fadeUp(annoElem, function() {
-            annoWin.tempMenuRow.show();
+            annoElem.data('annoOrderButtonsRow').show();
           });
         });
       }
     });
 
     annoElem.find('.down.icon').click(function(event) {
+      event.stopPropagation();
       const sibling = annoElem.next();
+
       if (sibling.length > 0 && sibling.hasClass('annowin_anno')) {
         annoWin.fadeUp(annoElem, function() {
           annoElem.before(sibling);
           annoWin.fadeDown(annoElem, function() {
-            annoWin.tempMenuRow.show();
+            annoElem.data('annoOrderButtonsRow').show();
           });
         });
       }

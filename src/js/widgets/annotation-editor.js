@@ -38,7 +38,7 @@ export default class AnnotationEditor {
     this.endpoint = this.endpoint || this.miradorProxyManager.getWindowProxyById(this.windowId).getEndPoint();
     this.id = this.id || Mirador.genUUID();
 
-    var tagsStr = this.annotation ? annoUtil.getTags(this.annotation).join(' ') : '';
+    var tagsStr = this.annotation ? this._$anno.tags.join(' ') : '';
     this.element = jQuery(template({
       miradorDriven: this.miradorDriven,
       tags: tagsStr
@@ -71,7 +71,7 @@ export default class AnnotationEditor {
       } else { // update
         title.text('');
         if (this.annotation) {
-          this.textArea.val(annoUtil.getText(this.annotation));
+          this.textArea.val(this._$anno.bodyText);
           if (this.annotation.layerId) {
             this.layerSelector.val(this.annotation.layerId);
           }

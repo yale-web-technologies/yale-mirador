@@ -6,7 +6,7 @@ import './extension/ext-image-view';
 import './extension/ext-manifest';
 import './extension/ext-osd-region-draw-tool';
 import './extension/dialog-builder';
-import {AnnotationExplorer} from './import';
+import {AnnotationExplorer, annoUtil} from './import';
 import AnnotationSource from './annotation-data/annotation-source';
 import fatalError from './util/fatal-error';
 import getAnnotationCache from './annotation-data/annotation-cache';
@@ -117,6 +117,7 @@ class App {
     } else {
       logger.setLogLevel(logger.INFO);
     }
+    annoUtil.setLogger(logger);
   }
 
   _preConfigureTinyMce(miradorBuildPath) {
@@ -128,7 +129,8 @@ class App {
   getAnnotationExplorer() {
     if (!annotationExplorer) {
       annotationExplorer = new AnnotationExplorer({
-        dataSource: this.getAnnotationSource()
+        dataSource: this.getAnnotationSource(),
+        logger: logger
       });
     }
     return annotationExplorer;
