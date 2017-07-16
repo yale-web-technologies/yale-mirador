@@ -56,9 +56,9 @@ export default class AnnotationPageRenderer {
    */
   render(pageElem, options) {
     if (options.annotationToc) {
-      this.renderToc(pageElem, options);
+      this._renderToc(pageElem, options);
     } else {
-      this.renderDefault(pageElem, options);
+      this._renderDefault(pageElem, options);
     }
   }
 
@@ -72,8 +72,8 @@ export default class AnnotationPageRenderer {
    * @param {object} pageElem
    * @param {object} options
    */
-  renderDefault(pageElem, options) {
-    logger.debug('AnnotationPageRenderer#renderDefault options:', options);
+  _renderDefault(pageElem, options) {
+    logger.debug('AnnotationPageRenderer#_renderDefault options:', options);
     const canvasId = pageElem.data('canvasId');
     const layerId = pageElem.data('layerId');
     let count = 0;
@@ -91,20 +91,19 @@ export default class AnnotationPageRenderer {
           pageElem.append(annoElem);
         }
       } catch (e) {
-        logger.error('ERROR AnnotationListRenderer#render', e);
+        logger.error('ERROR AnnotationPageRenderer#_renderDefault', e);
         throw e;
       }
     }
     return count;
   }
 
-  renderToc(pageElem, options) {
-    logger.debug('AnnotationPageRenderer#renderToc options:', options);
+  _renderToc(pageElem, options) {
+    logger.debug('AnnotationPageRenderer#_renderToc options:', options);
     const renderer = new AnnotationTocRenderer({
-      container: options.container,
-      canvas: options.canvas,
-      layerId: options.layerId,
-      annotations: options.annotations, // all annotations on canvas
+      container: pageElem,
+      canvasId: pageElem.data('canvasId'),
+      layerId: pageElem.data('layerId'),
       toc: options.annotationToc,
       annotationRenderer: this.options.annotationRenderer
     });

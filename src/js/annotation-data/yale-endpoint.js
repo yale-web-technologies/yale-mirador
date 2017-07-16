@@ -241,8 +241,10 @@ export default class YaleEndpoint {
     }
   }
 
+  /*
   parseAnnotations() {
     const spec = getPageController().getConfig().extension.tagHierarchy;
     this._explorer.reloadAnnotationToc(spec, this.annotationsList);
   }
+  */
 }

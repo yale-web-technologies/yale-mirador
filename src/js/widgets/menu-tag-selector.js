@@ -7,9 +7,10 @@ const logger = getLogger();
 export default class MenuTagSelector {
   constructor(options) {
     logger.debug('MenuTagSelector#constructor options:', options);
-    jQuery.extend(this, {
+    this.options = Object.assign({
       selector: null,
       parent: null,
+      tocSpec: null,
       annotationExplorer: null,
       changeCallback: null,
       initialTags: null,
@@ -21,16 +22,16 @@ export default class MenuTagSelector {
 
   init() {
     var _this = this;
-    if (this.initialTags) {
-      this.initialTags = this.initialTags.slice(0, this.depth);
+    if (this.options.initialTags) {
+      this.options.initialTags = this.options.initialTags.slice(0, this.options.depth);
     }
 
-    this.selector = new Selector({
-      appendTo: this.parent,
+    this.options.selector = new Selector({
+      appendTo: this.options.parent,
       changeCallback: function(value, text) {
         logger.debug('MenuTagSelector select value:', value, 'text:', text);
-        if (typeof _this.changeCallback === 'function') {
-          _this.changeCallback(value, text);
+        if (typeof _this.options.changeCallback === 'function') {
+          _this.options.changeCallback(value, text);
         }
       }
     });
@@ -38,28 +39,35 @@ export default class MenuTagSelector {
   }
 
   reload() {
-    var _this = this;
-    var toc = this.annotationExplorer.getAnnotationToc();
-    var annoHierarchy = toc ? toc.annoHierarchy : null;
+    //var toc = this.options.annotationExplorer.getAnnotationToc();
+    //var annoHierarchy = toc ? toc.annoHierarchy : null;
+    const tocSpec = this.options.tocSpec;
 
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
+      /*
       if (!annoHierarchy) {
         reject('Undefined annoHierarchy');
         return;
       }
+      */
 
-      _this.selector.empty();
+      this.options.selector.empty();
 
       var layers = [];
-      var menu = _this.buildMenu(annoHierarchy, null, 0); //XXX
+      //var menu = this.buildMenu(annoHierarchy, null, 0); //XXX
+      var menu = this.buildMenu(tocSpec, null, 0); //XXX
       logger.debug('MenuTagSelector menu:', menu);
 
-      _this.selector.setItems(menu);
+      this.options.selector.setItems(menu);
 
-      setTimeout(function() {
-        const value = (_this.initialTags && _this.initialTags.length > 0) ? _this.initialTags.join('|') : 'all';
+      const topGen = tocSpec.generator[0];
+      const firstValue = topGen.tag.prefix + '1';
+
+      setTimeout(() => {
+        const value = (this.options.initialTags && this.options.initialTags.length > 0) ?
+          this.options.initialTags.join('|') : firstValue;
         logger.debug('MenuTagSelector#reload initially setting value to', value);
-        _this.selector.val(value, true);
+        this.options.selector.val(value, true);
         resolve();
       }, 0);
     });
@@ -67,15 +75,16 @@ export default class MenuTagSelector {
 
   val(value, skipNotify) {
     logger.debug('MenuTagSelector#val value:', value, 'skipNotify:', skipNotify);
-    return this.selector.val(value, skipNotify);
+    return this.options.selector.val(value, skipNotify);
   }
 
-  buildMenu(node, parentItem, currentDepth) {
+  buildMenu(tocSpec) {
+    const topGen = tocSpec.generator[0];
     const menu = [];
-    for (let i = 1; i <= 28; ++i) {
+    for (let i = 1; i <= topGen.max; ++i) {
       menu.push({
-        label: 'Chapter ' + i,
-        value: 'chapter' + i,
+        label: topGen.label.prefix + i,
+        value: topGen.tag.prefix + i,
         children: []
       });
     }
@@ -87,7 +96,7 @@ export default class MenuTagSelector {
    */
   buildMenu_old(node, parentItem, currentDepth) {
     logger.debug('MenuTagSelector#buildMenu node:', node, 'parentItem:', parentItem, 'currentDepth:', currentDepth);
-    if (currentDepth > this.depth) {
+    if (currentDepth > this.options.depth) {
       return null;
     }
     const _this = this;
@@ -120,6 +129,6 @@ export default class MenuTagSelector {
   }
 
   destroy() {
-    this.selector.destroy();
+    this.options.selector.destroy();
   }
 }

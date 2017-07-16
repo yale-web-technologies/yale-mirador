@@ -1,6 +1,7 @@
 import AnnotationRenderer from './renderer/annotation-renderer';
 import AnnotationPageRenderer from './renderer/annotation-page-renderer';
 import {AnnotationToc} from '../../import';
+import getApp from '../../app';
 import getLogger from '../../util/logger';
 
 const logger = getLogger();
@@ -365,7 +366,7 @@ export default class AnnotationListWidget {
   _deactivatePage(pageNum) {
     logger.debug('AnnotationListWidget#_deactivatePage', pageNum);
     const pageItem = this._pageStateList[pageNum];
-    pageElem.hide();
+    pageItem.element.hide();
   }
 
   _deactivatePagesFromForward() {
@@ -412,11 +413,12 @@ export default class AnnotationListWidget {
   async _loadPage(pageNum) {
     logger.debug('AnnotationListWidget#_loadPage pageNum:', pageNum);
     const pageItem = this._pageStateList[pageNum];
+    const canvasId = pageItem.canvas['@id'];
     const annotations = await this.options.annotationExplorer.getAnnotations({
-      canvasId: pageItem.canvas['@id']
+      canvasId: canvasId
     });
-    const toc = this._tocSpec ?
-      new AnnotationToc(this._tocSpec, annotations, {logger: logger}) : null;
+    const tocCache = getApp().getAnnotationTocCache();
+    const toc = await tocCache.getToc(canvasId);
     logger.debug('AnnotationListWidget#_loadPage toc:', toc);
 
     pageItem.annotations = annotations.filter(anno => anno.layerId === this.options.layerId);

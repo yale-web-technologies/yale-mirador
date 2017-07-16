@@ -1,12 +1,12 @@
 import {expect} from 'chai';
 import {AnnotationExplorer} from '../../../src/js/import';
-import AnnotationListRenderer from '../../../src/js/widgets/annotation-window/annotation-list-renderer';
+import AnnotationListWidget from '../../../src/js/widgets/annotation-window/annotation-list-widget';
 
 import '../../test-helpers/test-init';
-import fixture from './annotation-list-renderer.fixture';
+import fixture from './annotation-list-widget.fixture';
 import TestAnnotationSource from '../../test-helpers/test-annotation-source';
 
-describe('AnnotationListRenderer', () => {
+describe('AnnotationListWidget', () => {
 
   let parentElem = null;
   let annotationExplorer = null;
@@ -34,17 +34,16 @@ describe('AnnotationListRenderer', () => {
     state.getTransient.withArgs('layerIndexMap').returns({});
     state.getTransient.withArgs('hideTags').returns(true);
 
-    const renderer = new AnnotationListRenderer({
+    const listWidget = new AnnotationListWidget({
       parentElem: parentElem,
       annotationExplorer: annotationExplorer,
       state: state
     });
 
-    renderer.render({
+    listWidget.render({
       canvasId: '/canvas1',
       layerId: '/layer1'
     }).then(() => {
-      console.log('HTML:', jQuery('body').html());
       expect(parentElem.find('.annowin_anno').size()).to.equal(2);
       done();
     });
@@ -57,17 +56,16 @@ describe('AnnotationListRenderer', () => {
     state.getTransient.withArgs('layerIndexMap').returns({});
     state.getTransient.withArgs('hideTags').returns(true);
 
-    const renderer = new AnnotationListRenderer({
+    const listWidget = new AnnotationListWidget({
       parentElem: parentElem,
       annotationExplorer: annotationExplorer,
       state: state
     });
 
-    renderer.render({
+    listWidget.render({
       canvasId: '/canvas1',
       layerId: '/layer1'
     }).then(() => {
-      console.log('HTML:', jQuery('body').html());
       expect(parentElem.find('.annowin_anno').size()).to.equal(2);
       done();
     });

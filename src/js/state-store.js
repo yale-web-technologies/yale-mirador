@@ -16,6 +16,7 @@ const registeredKeys = new Set([
   'projectId',
   'tagHierarchy',
   'textDirection',
+  'tocSpec',
   'tooltipStyles'
 ]);
 

@@ -114,6 +114,10 @@ export default class AnnotationWindow {
     });
   }
 
+  getImageWindowId() {
+    return this.options.canvasWindowId;
+  }
+
   _setupAnnotationListWidget() {
     if (!this.options.annotationListWidget) {
       const windowProxy = getMiradorProxyManager().getWindowProxyById(this.options.canvasWindowId);
@@ -139,17 +143,18 @@ export default class AnnotationWindow {
   }
 
   initMenuTagSelector() {
-    var _this = this;
+    logger.debug('AnnotationWindow#initMenuTagSelector');
     if (this.menuTagSelector) {
       this.menuTagSelector.destroy();
     }
     this.menuTagSelector = new MenuTagSelector({
       parent: this.element.find('.menu_tag_selector_container'),
+      tocSpec: getStateStore().getTransient('tocSpec'),
       annotationExplorer: this.options.explorer,
       initialTags: this.options.initialTocTags,
       changeCallback: (value, text) => {
         logger.debug('Change from TOC selector: ', value);
-        _this.updateList();
+        this.updateList();
       }
     });
   }
@@ -209,7 +214,7 @@ export default class AnnotationWindow {
     var canvas = this.getCurrentCanvas();
     this.element.find('.title').text(canvas.label);
 
-    if (this.options.explorer.getAnnotationToc()) {
+    if (state.getTransient('tagHierarchy')) {
       this.initMenuTagSelector();
       this.element.find('.annowin_menu_tag_row').show();
     } else {
@@ -424,10 +429,7 @@ export default class AnnotationWindow {
       }
       let targeting = annoUtil.findTransitiveTargetingAnnotations(
         params.annotation, annoMap);
-      console.log('TTT0 targeting:', targeting);
       targeting = targeting.filter(anno => anno.layerId === this.getCurrentLayerId());
-
-      console.log('TTT1 targeting:', targeting);
 
       if (targeting.length > 0) {
         this.highlightAnnotations(targeting, 'TARGETING');

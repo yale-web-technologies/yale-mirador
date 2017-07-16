@@ -8,6 +8,7 @@ import './extension/ext-osd-region-draw-tool';
 import './extension/dialog-builder';
 import {AnnotationExplorer, annoUtil} from './import';
 import AnnotationSource from './annotation-data/annotation-source';
+import AnnotationTocCache from './annotation-data/annotation-toc-cache';
 import fatalError from './util/fatal-error';
 import getAnnotationCache from './annotation-data/annotation-cache';
 import getConfigFetcher from './config/config-fetcher';
@@ -66,6 +67,8 @@ class App {
     const settings = jQuery.extend(settingsFromHtml, settingsFromApi);
     await this.initState(settings);
 
+    this._setupAnnotationTocCache();
+
     const grid = new Grid(this.options.rootElement);
     //const mainMenu = new MainMenu();
 
@@ -97,6 +100,7 @@ class App {
     const layers = await explorer.getLayers();
     state.setTransient('annotationLayers', layers);
 
+    state.setTransient('tocSpec', settings.tocSpec);
     state.setTransient('tagHierarchy', settings.tagHierarchy);
 
     state.setTransient('copyrighted', settings.copyrighted);
@@ -126,6 +130,14 @@ class App {
     tinymce.setup();
   }
 
+  _setupAnnotationTocCache() {
+    const tocSpec = getStateStore().getTransient('tagHierarchy');
+    this._annotationTocCache = new AnnotationTocCache({
+      tocSpec: tocSpec,
+      annotationExplorer: this.getAnnotationExplorer()
+    });
+  }
+
   getAnnotationExplorer() {
     if (!annotationExplorer) {
       annotationExplorer = new AnnotationExplorer({
@@ -144,5 +156,9 @@ class App {
       });
     }
     return annotationSource;
+  }
+
+  getAnnotationTocCache() {
+    return this._annotationTocCache;
   }
 }

@@ -85,10 +85,12 @@ export default class MiradorWrapper {
       logger.debug('MiradorWrapper#bindEvents received ANNOTATIONS_LIST_UPDATED params:', params);
       const windowProxy = miradorProxy.getWindowProxyById(params.windowId);
 
+      /* XXXX
       if (options.tagHierarchy) {
         const endpoint = windowProxy.getEndPoint();
         endpoint.parseAnnotations();
       }
+      */
 
       if (!params.options || params.options.eventOriginatorType !== 'AnnotationWindow') {
         // Reload annotation windows

@@ -1,4 +1,5 @@
 import {Anno, annoUtil} from '../../../import';
+import AnnotationEditor from '../../annotation-editor';
 import getLogger from '../../../util/logger';
 import util from '../../../util/util';
 
@@ -17,6 +18,7 @@ export default class AnnotationRenderer {
 
   /**
    * options: {
+   *   pageElem: <object>,
    *   canvasId: <string>,
    *   isEditor: <bool>
    * }
@@ -25,7 +27,7 @@ export default class AnnotationRenderer {
    * @param {object} options
    */
   createAnnoElem(annotation, options) {
-    //logger.debug('AnnotationWindow#createAnnoElem anno:', annotation);
+    //logger.debug('AnnotationRenderer#createAnnoElem anno:', annotation);
     const anno = Anno(annotation);
     const content = anno.bodyText;
     const tags = anno.tags;
@@ -88,7 +90,7 @@ export default class AnnotationRenderer {
         annotationWindowId: annoWin.getId(),
         annotation: annotation,
         canvasId: jQuery(this).data('canvasId'),
-        imageWindowId: annoWin.options.canvasWindowId
+        imageWindowId: annoWin.getImageWindowId()
       }]);
     });
 
@@ -98,7 +100,7 @@ export default class AnnotationRenderer {
       const dialogElement = jQuery('#ym_annotation_dialog');
       const editor = new AnnotationEditor({
         parent: dialogElement,
-        windowId: _this.options.canvasWindowId,
+        windowId: annoWin.getImageWindowId(),
         mode: 'create',
         targetAnnotation: annotation,
         endpoint: annoWin.endpoint,
@@ -127,7 +129,7 @@ export default class AnnotationRenderer {
 
       const editor = new AnnotationEditor({
         parent: annoElem,
-        windowId: _this.options.canvasWindowId,
+        windowId: annoWin.getImageWindowId(),
         mode: 'update',
         endpoint: annoWin.endpoint,
         annotation: annotation,

@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 
-import AnnotationListRenderer from '../../src/js/widgets/annotation-window/annotation-list-renderer';
-import AnnotationWindow from '../../src/js/widgets/annotation-window/annotation-window';
-import getMiradorProxyManager from '../../src/js/mirador-proxy/mirador-proxy-manager';
-import getStateStore from '../../src/js/state-store';
+import AnnotationListWidget from '../../../src/js/widgets/annotation-window/annotation-list-widget';
+import AnnotationWindow from '../../../src/js/widgets/annotation-window/annotation-window';
+import getMiradorProxyManager from '../../../src/js/mirador-proxy/mirador-proxy-manager';
+import getStateStore from '../../../src/js/state-store';
 
 describe('AnnotationWindow', function() {
   let parent = null;
@@ -46,7 +46,7 @@ describe('AnnotationWindow', function() {
 
   it('something', function() {
     const canvasWindowId = 'window1';
-    const annotationListRenderer = new AnnotationListRenderer({
+    const listWidget = new AnnotationListWidget({
       canvasWindowId: canvasWindowId,
       state: getStateStore()
     });
@@ -54,7 +54,7 @@ describe('AnnotationWindow', function() {
       miradorId: 'mirador1',
       canvasWindowId: canvasWindowId,
       appendTo: jQuery('#parent'),
-      annotationListRenderer: annotationListRenderer,
+      annotationListWidget: listWidget,
       explorer: mockAnnotationExplorer,
       initialLayerId: null,
       initialTocTags: null,

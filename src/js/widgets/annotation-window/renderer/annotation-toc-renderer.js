@@ -10,12 +10,13 @@ export default class AnnotationTocRenderer {
   constructor(options) {
     this.options = Object.assign({
       container: null,
-      canvas: null,
+      canvasId: null,
       layerId: null,
       toc: null,
-      annotations: null, // all annotations on canvas
       annotationRenderer: null
     }, options);
+
+    logger.debug('AnnotationTocRenderer#constructor options:', options);
 
     this._isEditor = session.isEditor();
   }
@@ -53,8 +54,8 @@ export default class AnnotationTocRenderer {
     if (node.annotation && node.annotation.layerId === this.options.layerId) {
       const renderer = this.options.annotationRenderer;
       const annoElem = renderer.createAnnoElem(node.annotation, {
-        annotations: this.options.annotations,
-        canvas: this.options.canvas,
+        pageElem: this.options.container,
+        canvasId: this.options.canvasId,
         isEditor: this._isEditor
       });
       this.options.container.append(annoElem);
@@ -68,8 +69,10 @@ export default class AnnotationTocRenderer {
     const renderer = this.options.annotationRenderer;
 
     for (let annotation of node.childAnnotations) {
+      console.log('xx anno:', annotation, 'layer0:', this.options.layerId, 'layer1:', annotation.layerId);
       if (annotation.layerId === this.options.layerId) {
         let annoElem = renderer.createAnnoElem(annotation, {
+          pageElem: this.options.container,
           annotations: this.options.annotations,
           isEditor: this._isEditor
         });
