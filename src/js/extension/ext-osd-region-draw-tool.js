@@ -104,7 +104,7 @@ import getStateStore from '../state-store';
   },
 
   $.OsdRegionDrawTool.prototype.deHighlightShape = function(shape) {
-    logger.debug('deHighlightShape', shape);
+    //logger.debug('deHighlightShape', shape);
 
     if (shape.data._ym_defaultStrokeColor) {
       shape.strokeColor = shape.data._ym_defaultStrokeColor;

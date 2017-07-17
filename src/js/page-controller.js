@@ -72,22 +72,13 @@ class PageController {
 
       if (params.canvasId === windowProxy.getCurrentCanvasId()) { // the clicked annotation belong to the current canvas
         for (let anno of windowProxy.getAnnotationsList()) {
-          annoMap[anno['id']] = anno;
+          annoMap[anno['@id']] = anno;
         }
         let anno = params.annotation;
 
         if (!annoUtil.hasTargetOnCanvas(anno)) {
-          let annos = annoUtil.findTransitiveTargetAnnotations(anno, annoMap);
+          let annos = annoUtil.findTargetAnnotationsOnCanvas(anno, annoMap);
           console.log('H1 annos', annos);
-          annos = annos.filter(anno => {
-            for (let target of Anno(anno).targets) {
-              if (target.full === params.canvasId) {
-                return true;
-              }
-            }
-            return false;
-          });
-          console.log('H2 annos', annos);
           anno = annos[0];
         }
         if (anno) {

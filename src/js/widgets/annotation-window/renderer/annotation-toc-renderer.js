@@ -67,13 +67,13 @@ export default class AnnotationTocRenderer {
   appendAnnotationsForChildNodes(node) {
     logger.debug('AnnotationTocRenderer#appendAnnotationsForChildNodes children:', node.childAnnotations);
     const renderer = this.options.annotationRenderer;
+    const pageElem = this.options.container;
 
     for (let annotation of node.childAnnotations) {
-      console.log('xx anno:', annotation, 'layer0:', this.options.layerId, 'layer1:', annotation.layerId);
       if (annotation.layerId === this.options.layerId) {
         let annoElem = renderer.createAnnoElem(annotation, {
-          pageElem: this.options.container,
-          annotations: this.options.annotations,
+          pageElem: pageElem,
+          canvasId: pageElem.data('canvasId'),
           isEditor: this._isEditor
         });
         this.options.container.append(annoElem);
@@ -113,7 +113,10 @@ export default class AnnotationTocRenderer {
   createHeaderElem(node) {
     const text = node.cumulativeLabel;
     const headerHtml = headerTemplate({ text: text });
-    return jQuery(headerHtml);
+    const headerElem = jQuery(headerHtml);
+
+    headerElem.data('tags', node.cumulativeTags);
+    return headerElem;
   }
 }
 

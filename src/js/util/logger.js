@@ -11,7 +11,8 @@ class Logger {
   constructor(logLevel, trace) {
     this.DEBUG = 0;
     this.INFO = 1;
-    this.ERROR = 2;
+    this.WARNING = 2;
+    this.ERROR = 3;
 
     this._logLevel = logLevel || this.INFO;
     this._trace = trace || false;
@@ -33,6 +34,14 @@ class Logger {
     let args = Array.prototype.slice.call(arguments);
     args.unshift('ERROR');
     this.log.apply(this, args);
+  }
+
+  warning() {
+    if (this._logLevel <= this.WARNING) {
+      let args = Array.prototype.slice.call(arguments);
+      args.unshift('WARNING');
+      this.log.apply(this, args);
+    }
   }
 
   info() {

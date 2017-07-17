@@ -15,7 +15,6 @@ export default function getModalAlert() {
 class ModalAlert {
   constructor(elem) {
     this.elem = elem;
-    elem.html(template());
     elem.modal({
       closable: false,
       allowMultiple: true,
@@ -26,7 +25,8 @@ class ModalAlert {
     });
   }
 
-  show() {
+  show(text) {
+    this.elem.text(text);
     this.elem.modal('show');
   }
 
@@ -36,7 +36,3 @@ class ModalAlert {
 }
 
 let instance = null;
-
-const template = Handlebars.compile([
-  'Loading annotations ...'
-].join(''));

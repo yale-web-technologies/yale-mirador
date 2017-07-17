@@ -28,7 +28,7 @@ export default class YaleEndpoint {
     const progressPane = getModalAlert();
     const errorPane = getErrorDialog();
 
-    progressPane.show();
+    progressPane.show('Loading annotations...');
     this._explorer.getAnnotations({ canvasId: canvasId })
     .catch(reason => {
       const msg = 'ERROR YaleEndpoint#search getAnnotations - ' + reason;

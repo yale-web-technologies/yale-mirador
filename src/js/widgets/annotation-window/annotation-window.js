@@ -1,6 +1,7 @@
 import {Anno, annoUtil} from '../../import';
 import AnnotationListWidget from './annotation-list-widget';
 import fatalError from '../../util/fatal-error';
+import getApp from '../../app';
 import getLogger from '../../util/logger';
 import getMiradorProxyManager from '../../mirador-proxy/mirador-proxy-manager';
 import getStateStore from '../../state-store';
@@ -37,10 +38,10 @@ export default class AnnotationWindow {
   /**
    * @returns {Promise}
    */
-  init() {
+  async init() {
     const _this = this;
     const proxyMgr = getMiradorProxyManager();
-    const toc = this.options.explorer.getAnnotationToc();
+
     let annosToShow = [];
     let fullTagsTargets = null;
     let targetAnno = null;
@@ -50,6 +51,10 @@ export default class AnnotationWindow {
     }
     this.miradorProxy = proxyMgr.getMiradorProxy(this.options.miradorId);
     this.canvasWindow = this.miradorProxy.getWindowProxyById(this.options.canvasWindowId);
+
+    //const toc = this.options.explorer.getAnnotationToc();
+    const canvasId = this.canvasWindow.getCurrentCanvasId();
+    const toc = await getApp().getAnnotationTocCache().getToc(canvasId);
 
     this.element = jQuery(template({}));
     this.options.appendTo.append(this.element);
@@ -118,6 +123,11 @@ export default class AnnotationWindow {
     return this.options.canvasWindowId;
   }
 
+  getImageWindowProxy() {
+    const windowId = this.getImageWindowId();
+    return getMiradorProxyManager().getWindowProxyById(windowId);
+  }
+
   _setupAnnotationListWidget() {
     if (!this.options.annotationListWidget) {
       const windowProxy = getMiradorProxyManager().getWindowProxyById(this.options.canvasWindowId);
@@ -129,6 +139,7 @@ export default class AnnotationWindow {
         imageWindowId: this.options.canvasWindowId,
         canvases: canvases,
         layerId: this.options.initialLayerId,
+        tocTags: this.options.initialTocTags,
         annotationExplorer: this.options.explorer,
         state: getStateStore(),
         isEditor: session.isEditor()
@@ -152,9 +163,10 @@ export default class AnnotationWindow {
       tocSpec: getStateStore().getTransient('tocSpec'),
       annotationExplorer: this.options.explorer,
       initialTags: this.options.initialTocTags,
-      changeCallback: (value, text) => {
+      changeCallback: async (value, text) => {
         logger.debug('Change from TOC selector: ', value);
-        this.updateList();
+        await this.options.annotationListWidget.moveToTag(value);
+        //this.updateList();
       }
     });
   }
@@ -269,7 +281,16 @@ export default class AnnotationWindow {
     */
 
     listWidget.init(this.layerSelector.val());
-    const count = await this.options.annotationListWidget.moveToCanvas(canvasId);
+    let count = 0;
+
+    if (this.options.initialTocTags) {
+      count = await listWidget.moveToTags(this.options.initialTocTags);
+      if (this.options.annotationId) {
+        listWidget.scrollToAnnotation(this.options.annotationId);
+      }
+    } else {
+      count = await listWidget.moveToCanvas(canvasId);
+    }
 
     if (count === 0) {
       this.placeholder.text('No annotations found.').show();
@@ -392,7 +413,7 @@ export default class AnnotationWindow {
     logger.debug('AnnotationWindow#bindEvents');
 
     this._subscribe(jQuery, 'YM_READY_TO_RELOAD_ANNO_WIN', (event, imageWindowId) => {
-      logger.debug('AnnotationWindow:SUB:YM_READY_TO_RELOAD_ANNO_WIN annoWin:', this.id, 'imageWindow:', imageWindowId);
+      logger.debug('AnnotationWindow:SUB:YM_READY_TO_RELOAD_ANNO_WIN annoWin:', this.options.id, 'imageWindow:', imageWindowId);
       if (imageWindowId === this.options.canvasWindowId && !this.hasOpenEditor()) {
         this.reload();
       }
@@ -413,10 +434,11 @@ export default class AnnotationWindow {
 
       const annotations = this.canvasWindow.getAnnotationsList();
       const layerId = this.currentLayerId;
-      const toc = this.options.explorer.getAnnotationToc();
+      const tocSpec = getStateStore().getTransient('tocSpec');
 
-      if (toc) {
-        const siblings = annoUtil.findTocSiblings(annotation, annotations, layerId, toc);
+      if (tocSpec) {
+        const toc = await getApp().getAnnotationTocCache().getToc(params.canvasId);
+        const siblings = annoUtil.findTocSiblings(params.annotation, annotations, layerId, toc);
         logger.debug('AnnotationWindow SUB ANNOWIN_ANNOTATION_CLICKED siblings:', siblings);
         if (siblings.length > 0) {
           this.highlightAnnotations(siblings, 'SIBLING');

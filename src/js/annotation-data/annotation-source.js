@@ -1,4 +1,5 @@
 import getAnnotationCache from './annotation-cache';
+import getApp from '../app';
 import getLogger from '../util/logger';
 import getPageController from '../page-controller';
 import getStateStore from '../state-store';
@@ -108,7 +109,7 @@ export default class AnnotationSource {
   }
 
   _getRemoteAnnotations(canvasId) {
-    logger.debug('AnnotationSource#_getRemoteAnnotation canvas: ' + canvasId);
+    logger.debug('AnnotationSource#_getRemoteAnnotations canvas: ' + canvasId);
     return new Promise((resolve, reject) => {
       const url = this.options.prefix + '/getAnnotationsViaList?canvas_id=' + encodeURIComponent(canvasId);
       logger.debug('AnnotationSource#_getRemoteAnnotations url: ', url);
@@ -170,6 +171,10 @@ export default class AnnotationSource {
           if (cache) {
             await cache.invalidateAllCanvases();
           }
+          const tocCache = getApp().getAnnotationTocCache();
+          if (tocCache) {
+            tocCache.invalidate();
+          }
           resolve(oaAnnotation);
         },
         error: (jqXHR, textStatus, errorThrown) => {
@@ -206,6 +211,10 @@ export default class AnnotationSource {
             if (cache) {
               await cache.invalidateAllCanvases();
             }
+            const tocCache = getApp().getAnnotationTocCache();
+            if (tocCache) {
+              tocCache.invalidate();
+            }
             resolve(annotation);
         },
         error: (jqXHR, textStatus, errorThrown) => {
@@ -232,6 +241,10 @@ export default class AnnotationSource {
           logger.debug('AnnotationSource#deleteAnnotation success data:', data);
           if (cache) {
             await cache.invalidateAllCanvases();
+          }
+          const tocCache = getApp().getAnnotationTocCache();
+          if (tocCache) {
+            tocCache.invalidate();
           }
           resolve();
         },
@@ -263,6 +276,10 @@ export default class AnnotationSource {
           logger.debug('AnnotationSource#updateAnnotationListOrder successful', data);
           if (cache) {
             await cache.invalidateAllCanvases();
+          }
+          const tocCache = getApp().getAnnotationTocCache();
+          if (tocCache) {
+            tocCache.invalidate();
           }
           resolve(data);
         },

@@ -105,10 +105,14 @@ export default class AnnotationRenderer {
         targetAnnotation: annotation,
         endpoint: annoWin.endpoint,
         saveCallback: function(annotation) {
-          dialogElement.dialog('close');
-          annoWin.canvasWindow.annotationsList.push(annotation);
-          annoWin.miradorProxy.publish('ANNOTATIONS_LIST_UPDATED',
-            { windowId: annoWin.canvasWindow.id, annotationsList: annoWin.canvasWindow.annotationsList });
+          try {
+            dialogElement.dialog('close');
+            annoWin.canvasWindow.getAnnotationsList().push(annotation);
+            annoWin.miradorProxy.publish('ANNOTATIONS_LIST_UPDATED',
+              { windowId: annoWin.canvasWindow.id, annotationsList: annoWin.canvasWindow.annotationsList });
+          } catch(e) {
+            logger.error('AnnotationRenderer saving from "annotate" failed:', e);
+          }
         },
         cancelCallback: function() {
           dialogElement.dialog('close');

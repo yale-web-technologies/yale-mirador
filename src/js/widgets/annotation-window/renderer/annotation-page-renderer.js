@@ -30,7 +30,7 @@ export default class AnnotationPageRenderer {
     pageElem.data('layerId', options.layerId);
 
     const pageHeader = pageElem.find('.page-header');
-    pageHeader.text(options.canvasLabel + ' (' + options.pageNum + ')');
+    pageHeader.text(options.canvasLabel);
 
     saveOrderButtonRow.find('.ym_button.save').click(event => {
       this._saveAnnotationsOrder(pageElem);

@@ -27,4 +27,8 @@ export default class AnnotationTocCache {
     const toc = new AnnotationToc(this.options.tocSpec, annotations, {logger: logger});
     return toc;
   }
+
+  invalidate(canvasId) {
+    delete this._cache[canvasId];
+  }
 }

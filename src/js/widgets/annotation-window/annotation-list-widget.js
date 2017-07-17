@@ -3,6 +3,7 @@ import AnnotationPageRenderer from './renderer/annotation-page-renderer';
 import {AnnotationToc} from '../../import';
 import getApp from '../../app';
 import getLogger from '../../util/logger';
+import getModalAlert from '../../widgets/modal-alert';
 
 const logger = getLogger();
 
@@ -28,6 +29,7 @@ export default class AnnotationListWidget {
     this._currentPageNum = 0;
     this._loading = false;
     this._tocSpec = this.options.state.getTransient('tagHierarchy');
+    this._tocSpec2 = this.options.state.getTransient('tocSpec');
 
     if (!this.options.annotationRenderer) {
       this.options.annotationRenderer = new AnnotationRenderer({
@@ -64,13 +66,26 @@ export default class AnnotationListWidget {
   async moveToPage(pageNum) {
     logger.debug('AnnotationListWidgetr#moveToPage', pageNum);
     const rootElem = this.options.rootElem;
+    const imageWindowProxy = this.options.annotationWindow.getImageWindowProxy();
+    const oldCanvasId = imageWindowProxy.getCurrentCanvasId();
+    const newPageItem = this._pageStateList[pageNum];
+    const newCanvasId = newPageItem.canvas['@id'];
 
     if (pageNum !== -1) {
       this._deactivateAllPages();
       this._currentPageNum = pageNum;
       await this._activatePage(pageNum);
-      await this._activateMorePagesForwardFirst(pageNum);
-      this.scrollToPage(pageNum);
+
+      if (rootElem[0].scrollHeight <= rootElem.height()) {
+        await this._activateMorePagesForwardFirst(pageNum);
+      }
+      this.scrollToPage(pageNum, true);
+
+      if (oldCanvasId !== newCanvasId) {
+        imageWindowProxy.setCurrentCanvasId(newCanvasId, {
+          eventOriginatorType: 'AnnotationWindow'
+        });
+      }
     } else {
       logger.error("AnnotationListWidget##moveTo couldn't find page number for", canvasId);
     }
@@ -80,6 +95,24 @@ export default class AnnotationListWidget {
     logger.debug('AnnotationListWidgetr#moveToCanvas', canvasId);
     const pageNum = this._getPageNum(canvasId);
     await this.moveToPage(pageNum);
+  }
+
+  async moveToTag(tagValue) {
+    logger.debug('AnnotationListWidgetr#moveToTag', tagValue);
+    const canvasIds = this._tocSpec2.canvasMap[tagValue];
+    if (canvasIds instanceof Array && canvasIds.length > 0) {
+      await this.moveToCanvas(canvasIds[0]);
+      this.scrollToTag(tagValue);
+    }
+  }
+
+  async moveToTags(tags) {
+    logger.debug('AnnotationListWidgetr#moveToTags', tags);
+    const canvasIds = this._tocSpec2.canvasMap[tags[0]];
+    if (canvasIds instanceof Array && canvasIds.length > 0) {
+      await this.moveToCanvas(canvasIds[0]);
+      this.scrollToTags(tags);
+    }
   }
 
   async pageForward() {
@@ -94,10 +127,10 @@ export default class AnnotationListWidget {
 
       if (pageNum < this._pageStateList.length) {
         let nextPage = await this._activatePageForward(pageNum);
+        this._currentPageNum = nextPage;
         if (nextPage < this._pageStateList.length) {
           nextPage = await this._activateMorePagesForwardFirst(nextPage);
         }
-        this._currentPageNum = nextPage;
         this._deactivatePagesFromBack();
         this._windBack();
       }
@@ -120,10 +153,10 @@ export default class AnnotationListWidget {
 
       if (pageNum !== -1) {
         const nextPage = await this._activatePageBackward(pageNum);
+        this._currentPageNum = nextPage;
         if (nextPage !== -1) {
           await this._activateMorePagesBackwardFirst(nextPage);
         }
-        this._currentPageNum = nextPage;
         this._deactivatePagesFromForward();
         this._windForward();
       }
@@ -160,13 +193,57 @@ export default class AnnotationListWidget {
    *
    * @param {number} pageNum
    */
-  scrollToPage(pageNum) {
+  scrollToPage(pageNum, alignToTop) {
     const pageItem = this._pageStateList[pageNum];
     const pageHeaderElem = pageItem.element.find('.page-header');
 
     this._unbindScrollEvent();
-    pageHeaderElem[0].scrollIntoView(true);
+    pageHeaderElem[0].scrollIntoView(alignToTop);
     this._bindScrollEvent();
+  }
+
+  scrollToTag(targetTagValue) {
+    let targetElem = null;
+
+    this.options.rootElem.find('.annowin_group_header').each((index, value) => {
+      const headerElem = jQuery(value);
+      const tagValue = headerElem.data('tags')[0];
+      if (tagValue === targetTagValue) {
+        targetElem = headerElem;
+        return false;
+      }
+    });
+    if (targetElem) {
+      targetElem[0].scrollIntoView();
+    } else {
+      logger.warning('AnnotationListWidget#scrollToTag Header element not found for', targetTagValue);
+    }
+  }
+
+  scrollToTags(targetTags) {
+    logger.debug('AnnotationListWidget#srollToTags targetTags:', targetTags);
+    let targetElem = null;
+
+    this.options.rootElem.find('.annowin_group_header').each((index, value) => {
+      const headerElem = jQuery(value);
+      const tags = headerElem.data('tags');
+      console.log('tags:', tags, 'targetTags:', targetTags);
+      if (targetTags.length === 1) {
+        if (tags[0] === targetTags[0]) {
+          targetElem = headerElem;
+          return false;
+        }
+      } else if (tags[0] === targetTags[0] && tags[1] === targetTags[1]) {
+        targetElem = headerElem;
+        return false;
+      }
+    });
+    if (targetElem) {
+      targetElem[0].scrollIntoView();
+      targetElem.next().click();
+    } else {
+      logger.warning('AnnotationListWidget#scrollToTags Header element not found for', targetTags);
+    }
   }
 
   scrollToElem(annoElem) {
@@ -179,6 +256,17 @@ export default class AnnotationListWidget {
     this._unbindScrollEvent();
     annoElem[0].scrollIntoView(true);
     this._bindScrollEvent();
+  }
+
+  scrollToAnnotation(annotationId) {
+    const _this = this;
+    this.options.rootElem.find('.annowin_anno').each((index, value) => {
+      const annoElem = jQuery(value);
+      if (annoElem.data('annotationId') === annotationId) {
+        _this.scrollToElem(annoElem);
+        _this._highlightAnnotation(annotationId, annoElem.data('canvasId'));
+      }
+    });
   }
 
   _highlightAnnotation(annoId, canvasId) {
@@ -265,15 +353,17 @@ export default class AnnotationListWidget {
     let pageItem = this._pageStateList[pageNum];
     await this._activatePage(pageNum);
     logger.debug('AnnotationListWidget#_activatePageForward pageNum:', pageNum, 'pageItem.annotations after activate:', pageItem.annotations);
+    let nextPage = pageNum;
 
-    let nextPage = pageNum + 1;
-
+    if (pageNum < this._pageStateList.length - 1) {
+      ++nextPage;
     //while (pageItem.annotations.length === 0 && nextPage < this._pageStateList.length) {
       await this._activatePage(nextPage);
     //  pageItem = this._pageStateList[nextPage];
     //  logger.debug('AnnotationListWidget#_activatePageForward page:', nextPage, 'pageItem.annotations after activate:', pageItem.annotations);
     //  ++nextPage;
     //}
+    }
     return nextPage;
   }
 
@@ -281,14 +371,18 @@ export default class AnnotationListWidget {
     await this._activatePage(pageNum);
 
     let pageItem = this._pageStateList[pageNum];
-    let nextPage = pageNum - 1;
+    let nextPage = pageNum;
 
-    //while (pageItem.annotations.length === 0 && nextPage >= 0) {
-      await this._activatePage(nextPage);
-    //  pageItem = this._pageStateList[nextPage];
-    //  --nextPage;
-    //  ++count;
-    //}
+    if (pageNum > 0) {
+      --nextPage;
+
+      //while (pageItem.annotations.length === 0 && nextPage >= 0) {
+        await this._activatePage(nextPage);
+      //  pageItem = this._pageStateList[nextPage];
+      //  --nextPage;
+      //  ++count;
+      //}
+    }
     return nextPage;
   }
 
@@ -376,7 +470,7 @@ export default class AnnotationListWidget {
     const maxHeight = this.options.maxContentRelativeHeight * rootElemHeight;
 
     for (let nextPage = this._pageStateList.length - 1;
-         nextPage > this._currentPageNum && rootElem[0].scrollHeight - rootElemHeight > maxHeight;
+         nextPage > this._currentPageNum + 1 && rootElem[0].scrollHeight - rootElemHeight > maxHeight;
          --nextPage)
     {
       logger.debug('AnnotationListWidget#_deactivatePagesBackward nextPage:', nextPage, 'scroll height:', rootElem[0].scrollHeight, 'maxHeight:', maxHeight);
@@ -393,7 +487,7 @@ export default class AnnotationListWidget {
     const maxHeight = this.options.maxContentRelativeHeight * rootElemHeight;
 
     for (let nextPage = 0;
-         nextPage < this._currentPageNum && rootElem[0].scrollHeight - rootElemHeight > maxHeight;
+         nextPage < this._currentPageNum - 1 && rootElem[0].scrollHeight - rootElemHeight > maxHeight;
          ++nextPage)
     {
       logger.debug('AnnotationListWidget#_deactivatePagesFromBack nextPage:', nextPage, 'scroll height:', rootElem[0].scrollHeight, 'maxHeight:', maxHeight);
@@ -412,6 +506,7 @@ export default class AnnotationListWidget {
 
   async _loadPage(pageNum) {
     logger.debug('AnnotationListWidget#_loadPage pageNum:', pageNum);
+    getModalAlert().show('Loading');
     const pageItem = this._pageStateList[pageNum];
     const canvasId = pageItem.canvas['@id'];
     const annotations = await this.options.annotationExplorer.getAnnotations({
@@ -430,6 +525,7 @@ export default class AnnotationListWidget {
       isEditor: this.options.isEditor,
       pageNum: pageNum
     });
+    getModalAlert().hide();
   }
 
   _lessPagesFrom(pageNum) {
