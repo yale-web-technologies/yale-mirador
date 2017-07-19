@@ -1,0 +1,32 @@
+.mirador-container .sidePanel {
+  .ym-annotation-toc {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    overflow-y: scroll;
+
+
+    h1 {
+      margin: 15px;
+      font-size: 1.5rem;
+      color: @light-gray;
+    }
+  }
+
+  .ym-annotation-toc-item {
+    margin: 15px;
+
+    a {
+      color: @gray;
+
+      &:hover {
+      color: @white;
+      }
+    }
+
+    &.selected a {
+      color: @white;
+    }
+
+  }
+}

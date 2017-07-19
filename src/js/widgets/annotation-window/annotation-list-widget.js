@@ -1,6 +1,6 @@
 import AnnotationRenderer from './renderer/annotation-renderer';
 import AnnotationPageRenderer from './renderer/annotation-page-renderer';
-import {AnnotationToc} from '../../import';
+import {AnnotationToc, annoUtil} from '../../import';
 import getApp from '../../app';
 import getLogger from '../../util/logger';
 import getModalAlert from '../../widgets/modal-alert';
@@ -169,7 +169,7 @@ export default class AnnotationListWidget {
   }
 
   async moveToAnnotation(annoId, canvasId) {
-    logger.debug('AnnotationListWidget annoId:', annoId, 'canvasId:', canvasId);
+    logger.debug('AnnotationListWidget annoId', annoId, 'canvasId:', canvasId);
 
     let targetPage = -1;
 
@@ -182,6 +182,17 @@ export default class AnnotationListWidget {
 
     if (targetPage >= 0) {
       await this.moveToPage(targetPage);
+
+      const pageItem = this._pageStateList[targetPage];
+      let annoElem = null;
+      pageItem.element.find('.annowin_anno').each((index, value) => {
+        const currentElem = jQuery(value);
+        if (currentElem.data('annotationId') === annoId) {
+          annoElem = currentElem;
+          annoElem[0].scrollIntoView(true);
+          return false;
+        }
+      });
       this._highlightAnnotation(annoId, canvasId);
     } else {
       logger.debug('AnnotationListWidget#scrollToAnnotation page not found for canvasId', canvasId);
@@ -412,7 +423,9 @@ export default class AnnotationListWidget {
 
     if (diff === 0) {
       logger.debug('Winding back');
+      this._unbindScrollEvent();
       this.options.rootElem.scrollTop(scrollTop - 5);
+      this._bindScrollEvent();
     }
   }
 
@@ -423,7 +436,9 @@ export default class AnnotationListWidget {
 
     if (scrollTop === 0) {
       logger.debug('Winding forward');
+      this._unbindScrollEvent();
       this.options.rootElem.scrollTop(scrollTop + 5);
+      this._bindScrollEvent();
     }
   }
 
@@ -434,8 +449,9 @@ export default class AnnotationListWidget {
 
     while (nextPage < numPages) {
       logger.debug('AnnotationListWidget#_activateMorePagesForward nextPage:', nextPage, 'numPages:', numPages, 'scroll height:', rootElem[0].scrollHeight, 'element height:', rootElem.height());
-      nextPage = await this._activatePageForward(nextPage);
-      if (rootElem[0].scrollHeight > rootElem.height()) {
+      let currentPage = nextPage;
+      nextPage = await this._activatePageForward(currentPage);
+      if (nextPage === currentPage || rootElem[0].scrollHeight > rootElem.height()) {
         break;
       }
     }
@@ -449,8 +465,9 @@ export default class AnnotationListWidget {
 
     while (nextPage >= 0) {
       logger.debug('AnnotationListWidget#_activateMorePagesBackward nextPage:', nextPage, 'scroll height:', rootElem[0].scrollHeight, 'element height:', rootElem.height());
-      nextPage = await this._activatePageBackward(nextPage);
-      if (rootElem[0].scrollHeight > rootElem.height()) {
+      let currentPage = nextPage;
+      nextPage = await this._activatePageBackward(currentPage);
+      if (nextPage === currentPage || rootElem[0].scrollHeight > rootElem.height()) {
         break;
       }
     }
@@ -513,7 +530,7 @@ export default class AnnotationListWidget {
       canvasId: canvasId
     });
     const tocCache = getApp().getAnnotationTocCache();
-    const toc = await tocCache.getToc(canvasId);
+    const toc = tocCache ? await tocCache.getToc(canvasId) : null;
     logger.debug('AnnotationListWidget#_loadPage toc:', toc);
 
     pageItem.annotations = annotations.filter(anno => anno.layerId === this.options.layerId);
@@ -543,6 +560,7 @@ export default class AnnotationListWidget {
     const _this = this;
 
     this.options.rootElem.scroll(async function(event) {
+      console.log('SCROLL');
       const elem = jQuery(this);
       const scrollTop = elem.scrollTop();
       const currentPos = scrollTop + elem.height();

@@ -64,4 +64,15 @@ export default class WindowProxy {
     return imageView ? imageView.annotationsLayer.drawTool : null;
   }
 
+  getSidePanel() {
+    return this.window.sidePanel;
+  }
+
+  /**
+   * @param {*} klass CSS class for the root element of sidebar content (child of .tabContentArea)
+   */
+  getSidePanelTabContentElement(klass) {
+    return this.getSidePanel().element.find('.tabContentArea > .' + klass);
+  }
+
 }

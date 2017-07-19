@@ -26,6 +26,7 @@ export default class MiradorConfigBuilder {
   buildConfig() {
     const config = jQuery.extend(true, {}, this.options.defaultSettings);
     const annotationsOverlay = getStateStore().getTransient('annotationsOverlay');
+    const tocSpec = getStateStore().getTransient('tocSpec');
 
     jQuery.extend(config, {
       id: this.options.miradorId,
@@ -54,12 +55,19 @@ export default class MiradorConfigBuilder {
       }
     });
 
-    config.windowSettings.displayLayout = false;
+    const windowSettings = config.windowSettings;
+
+    windowSettings.displayLayout = false;
+
+    if (tocSpec) {
+      windowSettings.sidePanelOptions.annotationTocTabAvailable = true;
+      windowSettings.sidePanelOptions.toc = false;
+    }
 
     if (!this.options.isEditor) {
-      config.windowSettings.canvasControls.annotations.annotationCreation = false;
+      windowSettings.canvasControls.annotations.annotationCreation = false;
     }
-    config.windowSettings.canvasControls.annotations.annotationState = 'on';
+    windowSettings.canvasControls.annotations.annotationState = 'on';
 
     if (annotationsOverlay) {
       if (annotationsOverlay.hoverColor) {

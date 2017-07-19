@@ -12,7 +12,7 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
     logger.debug('ImageView(ext)#zoomToAnnotation annotation:', annotation);
     const viewport = this.osd.viewport;
     const currentZoom = viewport.getZoom();
-    logger.debug('panToAnnotation zoom: ' + currentZoom);
+    logger.debug('zoomToAnnotation zoom: ' + currentZoom);
     const shapes = this.annotationsLayer.drawTool.getShapesForAnnotation(annotation);
     const shapeBounds = $.yaleExt.getCombinedBounds(shapes); // in image coordinates
     const shapeWH = viewport.imageToViewportCoordinates(shapeBounds.width, shapeBounds.height);

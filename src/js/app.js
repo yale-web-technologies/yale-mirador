@@ -2,10 +2,7 @@ require('../css/main.less');
 
 import './extension/ext-global';
 import './extension/ext-hud';
-import './extension/ext-image-view';
-import './extension/ext-manifest';
-import './extension/ext-osd-region-draw-tool';
-import './extension/dialog-builder';
+import './extension/main';
 import {AnnotationExplorer, annoUtil} from './import';
 import AnnotationSource from './annotation-data/annotation-source';
 import AnnotationTocCache from './annotation-data/annotation-toc-cache';

@@ -27,6 +27,7 @@ export default class AnnotationWindow {
     }, options);
 
     logger.debug('AnnotationWindow#constructor options:', options);
+    this._tocSpec = getStateStore().getTransient('tocSpec');
     this._jQuerySubscribed = {};
     this._miradorSubscribed = {};
   }
@@ -54,7 +55,8 @@ export default class AnnotationWindow {
 
     //const toc = this.options.explorer.getAnnotationToc();
     const canvasId = this.canvasWindow.getCurrentCanvasId();
-    const toc = await getApp().getAnnotationTocCache().getToc(canvasId);
+
+    const toc = this._tocSpec ? await getApp().getAnnotationTocCache().getToc(canvasId) : null;
 
     this.element = jQuery(template({}));
     this.options.appendTo.append(this.element);
@@ -226,12 +228,15 @@ export default class AnnotationWindow {
     var canvas = this.getCurrentCanvas();
     this.element.find('.title').text(canvas.label);
 
+    /* We're not showing toc selector in annotation window. Annotation ToC is now in sidebar menu
     if (state.getTransient('tagHierarchy')) {
       this.initMenuTagSelector();
       this.element.find('.annowin_menu_tag_row').show();
     } else {
       this.element.find('.annowin_menu_tag_row').hide();
     }
+    */
+
     const layersPromise = new Promise(function(resolve, reject) {
       _this.options.explorer.getLayers().then(function(layers) {
         if (layers.length > 0) {
@@ -412,12 +417,14 @@ export default class AnnotationWindow {
   bindEvents() {
     logger.debug('AnnotationWindow#bindEvents');
 
+    /*
     this._subscribe(jQuery, 'YM_READY_TO_RELOAD_ANNO_WIN', (event, imageWindowId) => {
       logger.debug('AnnotationWindow:SUB:YM_READY_TO_RELOAD_ANNO_WIN annoWin:', this.options.id, 'imageWindow:', imageWindowId);
       if (imageWindowId === this.options.canvasWindowId && !this.hasOpenEditor()) {
         this.reload();
       }
     });
+    */
 
     this._subscribe(jQuery, 'ANNOWIN_ANNOTATION_CLICKED', async (event, params) => {
       logger.debug('Annotation window ' + this.options.id + ' received ANNOWIN_ANNOTATION_CLICKED params:', params, 'layer:', this.currentLayerId);
@@ -478,8 +485,15 @@ export default class AnnotationWindow {
       }
     });
 
+    /*
     this._subscribe(this.miradorProxy, 'currentCanvasIDUpdated.' + this.canvasWindow.id, event => {
       this.placeholder.text('Loading...').show();
+    });
+    */
+
+    this._subscribe(jQuery, 'YM_ANNOTATION_TOC_TAGS_SELECTED', (evnet, windowId, canvasId, tags) => {
+      logger.debug('AnnotationWindow:SUB:YM_ANNOTATION_TOC_TAGS_SELECTED imageWindow:', windowId, 'canvasId:', canvasId, 'tags:', tags);
+      this.options.annotationListWidget.moveToTags(tags);
     });
   }
 

@@ -98,9 +98,22 @@ export default class MiradorWrapper {
       }
     });
 
-    miradorProxy.subscribe('YM_ANNOWIN_ANNO_SHOW', (event, windowId, annoId) => {
+    miradorProxy.subscribe('YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED', async (event, windowId, annoId) => {
       logger.debug('MiradorWrapper SUB YM_ANNOWIN_ANNO_SHOW windowId: ' + windowId  + ', annoId: ' + annoId);
+      const miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
+      const windowProxy = miradorProxy.getWindowProxyById(windowId);
+      const canvasId = windowProxy.getCurrentCanvasId();
+      const tocPanel = windowProxy.getSidePanelTabContentElement('ym-annotation-toc');
+      const annoTocMenu = tocPanel.data('AnnotationTableOfContent');
+
       this.options.grid.showAnnotation(this._miradorId, windowId, annoId);
+
+      const toc = await getApp().getAnnotationTocCache().getToc(canvasId);
+      const annotation = toc.annotations.filter(anno => anno['@id'] === annoId)[0];
+
+      if (annotation && annoTocMenu) {
+        annoTocMenu.scrollToTags(annotation.tocTags);
+      }
     });
 
     miradorProxy.subscribe('YM_CLICKED_OPEN_ANNO_WINDOW', (event, canvasWindowId) => {
@@ -120,5 +133,52 @@ export default class MiradorWrapper {
         this._createAnnotationWindows(imageWindowId, options);
       }
     });
+
+    jQuery.subscribe('YM_ANNOTATION_TOC_TAGS_SELECTED', async (evnet, windowId, canvasId, tags) => {
+      logger.debug('MiradorWrapper:SUB:YM_ANNOTATION_TOC_TAGS_SELECTED imageWindow:', windowId, 'canvasId:', canvasId, 'tags:', tags);
+
+      const tocCache = getApp().getAnnotationTocCache();
+      const toc = await tocCache.getToc(canvasId);
+      const miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
+      const windowProxy = miradorProxy.getWindowProxyById(windowId);
+      const imageView = windowProxy.getImageView();
+      const tocNode = toc.getNodeFromTags(tags);
+      const annotation = tocNode.annotation;
+      let newCanvasId = canvasId;
+
+      const zoomToAnnotation = function(event) {
+        imageView.zoomToAnnotation(annotation);
+        imageView.panToAnnotation(annotation);
+        const drawTool = windowProxy.getDrawTool();
+        drawTool.updateHighlights(annotation);
+        miradorProxy.unsubscribe('annotationsRendered.' + windowId, zoomToAnnotation);
+      }
+
+      if (canvasId === windowProxy.getCurrentCanvasId()) {
+        zoomToAnnotation();
+      } else {
+        miradorProxy.subscribe('annotationsRendered.' + windowId, zoomToAnnotation);
+        windowProxy.setCurrentCanvasId(canvasId);
+      }
+    });
+
+     jQuery.subscribe('ANNOWIN_ANNOTATION_CLICKED', (event, params) => {
+       const miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
+       const windowProxy = miradorProxy.getWindowProxyById(params.imageWindowId);
+       const tocPanel = windowProxy.getSidePanelTabContentElement('ym-annotation-toc');
+       const annoTocMenu = tocPanel.data('AnnotationTableOfContent');
+
+       if (annoTocMenu) {
+         annoTocMenu.scrollToTags(params.annotation.tocTags);
+       }
+     });
+
+     /*
+     [{
+        annotationWindowId: annoWin.getId(),
+        annotation: annotation,
+        canvasId: jQuery(this).data('canvasId'),
+        imageWindowId: annoWin.getImageWindowId()
+      }]);*/
   }
 }
