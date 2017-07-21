@@ -238,7 +238,7 @@ export default class AnnotationListWidget {
     this.options.rootElem.find('.annowin_group_header').each((index, value) => {
       const headerElem = jQuery(value);
       const tags = headerElem.data('tags');
-      console.log('tags:', tags, 'targetTags:', targetTags);
+
       if (targetTags.length === 1) {
         if (tags[0] === targetTags[0]) {
           targetElem = headerElem;

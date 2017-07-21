@@ -22,7 +22,7 @@ export default class YaleEndpoint {
   }
 
   search(options) {
-    logger.debug('YaleEndpoint#search', options);
+    logger.debug('YaleEndpoint#search options:', options);
     const _this = this;
     const canvasId = options.uri;
     const progressPane = getModalAlert();
@@ -35,7 +35,7 @@ export default class YaleEndpoint {
       throw(msg);
     })
     .then(annotations => {
-      logger.debug('YaleEndpoint#search annotations: ', annotations);
+      logger.debug('YaleEndpoint#search annotations:', annotations);
       progressPane.hide();
       for (let anno of annotations) {
         anno.endpoint = _this;

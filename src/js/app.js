@@ -72,7 +72,8 @@ class App {
     getPageController().init({
       //mainMenu: mainMenu,
       grid: grid,
-      settings: settings
+      settings: settings,
+      state: getStateStore()
     });
 
     return this;

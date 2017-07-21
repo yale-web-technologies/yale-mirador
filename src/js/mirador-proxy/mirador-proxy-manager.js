@@ -17,7 +17,7 @@ class MiradorProxyManager {
     if (miradorProxy) {
       throw 'MiradorProxyManager#addMirador duplicate ID ' + miradorId;
     } else {
-      miradorProxy = new MiradorProxy(mirador);
+      miradorProxy = new MiradorProxy(mirador, miradorId);
       this._miradorProxiesMap[miradorId] = miradorProxy;
     }
     return miradorProxy;

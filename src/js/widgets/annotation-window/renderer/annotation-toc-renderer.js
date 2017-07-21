@@ -60,7 +60,7 @@ export default class AnnotationTocRenderer {
       });
       this.options.container.append(annoElem);
     } else {
-      logger.error('AnnotationTocRenderer#appendAnnotationForTocNode no annotation is associated with node', node);
+      //logger.debug('AnnotationTocRenderer#appendAnnotationForTocNode no annotation is associated with node', node, 'and layer', this.options.layerId);
     }
   }
 

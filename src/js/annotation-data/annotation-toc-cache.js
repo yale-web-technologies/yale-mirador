@@ -14,11 +14,14 @@ export default class AnnotationTocCache {
   }
 
   async getToc(canvasId) {
+    logger.debug('AnnotationTocCache#getToc canvasId:', canvasId);
+
     if (!this._cache[canvasId]) {
       this._cache[canvasId] = await this.createToc(canvasId);
     } else {
       logger.debug('AnnotationTocCache#getToc hit cache', canvasId);
     }
+    logger.debug('AnnotationTocCache getToc toc:', this._cache[canvasId]);
     return this._cache[canvasId];
   }
 

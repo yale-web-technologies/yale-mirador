@@ -359,20 +359,8 @@ export default class AnnotationWindow {
     });
   }
 
-  scrollToAnnotation_old(annoId) {
-    logger.debug('AnnotationWindow#scrollToAnnotation annoId: ' + annoId);
-    const _this = this;
-    let found = false;
-
-    this.listElem.find('.annowin_anno').each(function(index, value) {
-      const elem = jQuery(value);
-      if (elem.data('annotationId') === annoId) {
-        found = true;
-        _this.scrollToElem(elem);
-        return false;
-      }
-    });
-    return found;
+  scrollToAnnotation(annoId) {
+    this.options.annotationListWidget.scrollToAnnotation(annoId);
   }
 
   async moveToAnnotation(annoId, canvasId) {

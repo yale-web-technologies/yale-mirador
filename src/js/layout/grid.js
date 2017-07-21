@@ -136,8 +136,13 @@ export default class {
       this._annotationWindows[windowId] = annoWin;
       this._resizeWindows();
       return window;
-    })
-    .catch(reason => { throw reason; });
+    }).catch(reason => {
+      logger.error('Grid#addAnnotationWindow annoWin.init failed:', reason);
+    });
+  }
+
+  getAnnotationWindows() {
+    return this._annotationWindows;
   }
 
   bindEvents() {
@@ -151,42 +156,6 @@ export default class {
       logger.debug('Received YM_ADD_WINDOWS config:', config);
       this.addAnnotationWindows(config);
     });
-  }
-
-  async showAnnotation(miradorId, windowId, annoId) {
-    logger.debug('Grid#showAnnotation miradorId: ' + miradorId +
-      ', windowId: ' + windowId + ', annoId: ' + annoId);
-    const miradorProxy = this.miradorProxyManager.getMiradorProxy(miradorId);
-    const windowProxy = miradorProxy.getWindowProxyById(windowId);
-    const annotations = windowProxy.getAnnotationsList();
-    const annotation = annotations.filter(anno => anno['@id'] === annoId)[0];
-    const canvasId = windowProxy.getCurrentCanvasId();
-    const layerId = annotation.layerId;
-    let targetWindow = null;
-
-    for (let annoWindow of Object.values(this._annotationWindows)) {
-      if (annoWindow.getCurrentLayerId() === layerId) {
-        targetWindow = annoWindow;
-      }
-    }
-
-    if (targetWindow) {
-      await targetWindow.moveToAnnotation(annoId, canvasId);
-    } else {
-      if (annotation) {
-        this.addAnnotationWindow({
-          miradorId: miradorId,
-          imageWindowId: windowId,
-          layerId: annotation.layerId
-        }).then(function(annoWindow) {
-          annoWindow.scrollToAnnotation(annoId);
-        }).catch(function(reason) {
-          logger.error('Grid#showAnnotation addAnnotationWindow failed <- ' + reason);
-        });
-      } else {
-        logger.error('Grid#showAnnotation annotation not found from endpoint, id: ' + annoId);
-      }
-    }
   }
 
   _resizeWindows() {

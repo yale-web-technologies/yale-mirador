@@ -2,23 +2,26 @@ import getLogger from '../util/logger';
 import WorkspaceProxy from './workspace-proxy';
 import WindowProxy from './window-proxy';
 
+const logger = getLogger();
+
 export default class MiradorProxy {
-  constructor(mirador) {
-    this.logger = getLogger();
-    this.mirador = mirador;
-    this.workspaceProxy = null;
+  constructor(mirador, id) {
+    this._mirador = mirador;
+    this._workspaceProxy = null;
+    this._id = id;
   }
 
+  // Proxy ID. Mirador instance currently doesn't have an ID.
   getId() {
-    return this.mirador.id;
+    return this._id;
   }
 
     // Lazy call because workspace is set up asynchronously.
   getWorkspaceProxy() {
-    if (!this.workspaceProxy) {
-      this.workspaceProxy = new WorkspaceProxy(this.mirador.viewer.workspace);
+    if (!this._workspaceProxy) {
+      this._workspaceProxy = new WorkspaceProxy(this._mirador.viewer.workspace);
     }
-    return this.workspaceProxy;
+    return this._workspaceProxy;
   }
 
   getWindowProxies() {
@@ -30,22 +33,22 @@ export default class MiradorProxy {
   }
 
   getWindowById(windowId) {
-    this.logger.debug('MiradorProxy#getWindowById windowId:', windowId);
+    logger.debug('MiradorProxy#getWindowById windowId:', windowId);
     return this.getWorkspaceProxy().getWindowById(windowId);
   }
 
   publish() {
-    const eventEmitter = this.mirador.eventEmitter;
+    const eventEmitter = this._mirador.eventEmitter;
     let args = Array.from(arguments);
     eventEmitter.publish.apply(eventEmitter, args);
   }
 
   subscribe(eventName, callback) {
-    this.logger.debug('MiradorProxy#subscribe', eventName, callback);
-    this.mirador.eventEmitter.subscribe(eventName, callback);
+    logger.debug('MiradorProxy#subscribe', eventName, callback);
+    this._mirador.eventEmitter.subscribe(eventName, callback);
   }
 
   unsubscribe(eventName) {
-    this.mirador.eventEmitter.unsubscribe(eventName);
+    this._mirador.eventEmitter.unsubscribe(eventName);
   }
 }

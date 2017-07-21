@@ -11,7 +11,7 @@ export default class WindowProxy {
   /**
    * ID of the window
    */
-  getId() {
+  getWindowId() {
     return this.window.id;
   }
 

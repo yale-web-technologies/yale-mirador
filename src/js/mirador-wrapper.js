@@ -22,7 +22,7 @@ export default class MiradorWrapper {
     this._miradorId = options.miradorOptions.miradorId;
     this._miradorConfig = this._buildMiradorConfig(options.miradorOptions);
     this._mirador = Mirador(this._miradorConfig);
-    this._addToMiradorProxy(this._miradorId, this._mirador);
+    this._miradorProxy = this._addToMiradorProxy(this._miradorId, this._mirador);
     this._bindEvents(options.miradorOptions);
   }
 
@@ -30,11 +30,23 @@ export default class MiradorWrapper {
     return this._mirador;
   }
 
+  getMiradorProxy() {
+    return this._miradorProxy;
+  }
+
   getConfig() {
     return this._miradorConfig;
   }
 
-  _addToMiradorProxy(miradorId, mirador) {
+  /**
+   * Sets up configuration parameters to pass to Mirador.
+   */
+  _buildMiradorConfig(options) {
+    const builder = new MiradorConfigBuilder(options);
+    return builder.buildConfig();
+  }
+
+ _addToMiradorProxy(miradorId, mirador) {
     const miradorProxy = proxyMgr.addMirador(miradorId, mirador);
 
     miradorProxy.subscribe('OPEN_ANNOTATION_SELECTOR',
@@ -44,14 +56,8 @@ export default class MiradorWrapper {
         annotationEditor.loadAnnotation(annotation);
       });
     });
-  }
 
-  /**
-   * Sets up configuration parameters to pass to Mirador.
-   */
-  _buildMiradorConfig(options) {
-    const builder = new MiradorConfigBuilder(options);
-    return builder.buildConfig();
+    return miradorProxy;
   }
 
   /**
@@ -95,24 +101,6 @@ export default class MiradorWrapper {
       if (!params.options || params.options.eventOriginatorType !== 'AnnotationWindow') {
         // Reload annotation windows
         jQuery.publish('YM_READY_TO_RELOAD_ANNO_WIN', params.windowId);
-      }
-    });
-
-    miradorProxy.subscribe('YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED', async (event, windowId, annoId) => {
-      logger.debug('MiradorWrapper SUB YM_ANNOWIN_ANNO_SHOW windowId: ' + windowId  + ', annoId: ' + annoId);
-      const miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
-      const windowProxy = miradorProxy.getWindowProxyById(windowId);
-      const canvasId = windowProxy.getCurrentCanvasId();
-      const tocPanel = windowProxy.getSidePanelTabContentElement('ym-annotation-toc');
-      const annoTocMenu = tocPanel.data('AnnotationTableOfContent');
-
-      this.options.grid.showAnnotation(this._miradorId, windowId, annoId);
-
-      const toc = await getApp().getAnnotationTocCache().getToc(canvasId);
-      const annotation = toc.annotations.filter(anno => anno['@id'] === annoId)[0];
-
-      if (annotation && annoTocMenu) {
-        annoTocMenu.scrollToTags(annotation.tocTags);
       }
     });
 
