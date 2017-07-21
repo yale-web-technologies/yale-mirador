@@ -112,10 +112,12 @@ export default class AnnotationTocRenderer {
 
   createHeaderElem(node) {
     const text = node.cumulativeLabel;
+    const tags = node.cumulativeTags;
     const headerHtml = headerTemplate({ text: text });
-    const headerElem = jQuery(headerHtml);
+    const headerElem = jQuery(headerHtml)
+      .addClass('header-level-' + tags.length);
 
-    headerElem.data('tags', node.cumulativeTags);
+    headerElem.data('tags', tags);
     return headerElem;
   }
 }
