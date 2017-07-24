@@ -1,7 +1,5 @@
 require('../css/main.less');
 
-import './extension/ext-global';
-import './extension/ext-hud';
 import './extension/main';
 import {AnnotationExplorer, annoUtil} from './import';
 import AnnotationSource from './annotation-data/annotation-source';

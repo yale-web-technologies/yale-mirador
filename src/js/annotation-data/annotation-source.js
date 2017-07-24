@@ -1,5 +1,6 @@
 import getAnnotationCache from './annotation-cache';
 import getApp from '../app';
+import {getEndpoint} from './yale-endpoint';
 import getLogger from '../util/logger';
 import getPageController from '../page-controller';
 import getStateStore from '../state-store';
@@ -99,13 +100,36 @@ export default class AnnotationSource {
 
     if (!annotations) {
       annotations = await this._getRemoteAnnotations(canvasId);
+
       if (cache) {
-        cache.setAnnotationsPerCanvas(canvasId, annotations);
+        //this._detachEndpoint(annotations);
+        await cache.setAnnotationsPerCanvas(canvasId, annotations);
+        this._attachEndpoint(annotations);
       }
     }
+    //this._attachEndpoint(annotations);
 
-    return layerId ? annotations.filter((anno) => anno.layerId === layerId) :
-      annotations;
+    if (layerId) {
+      annotations = annotations.filter((anno) => anno.layerId === layerId);
+    }
+
+    return annotations;
+  }
+
+  _attachEndpoint(annotations) {
+    logger.debug('AnnotationSource#_attachEndpoint annotations:', annotations);
+    const endpoint = getEndpoint();
+
+    for (let anno of annotations) {
+      anno.endpoint = endpoint;
+    }
+  }
+
+  _detachEndpoint(annotations) {
+    logger.debug('AnnotationSource#_detachEndpoint annotations:', annotations);
+    for (let anno of annotations) {
+      delete anno.endpoint;
+    }
   }
 
   _getRemoteAnnotations(canvasId) {
@@ -121,12 +145,14 @@ export default class AnnotationSource {
         dataType: 'json',
         contentType: 'application/json; charset=utf-8',
         success: (data, textStatus, jqXHR) => {
-          logger.debug('AnnotationSource#_getAnnotations data: ', data);
+          logger.debug('AnnotationSource#_getRemoteAnnotations data: ', data);
           try {
-            for (let value of data) {
-              let annotation = this._getAnnotationInOA(value.annotation);
-              annotation.layerId = value.layer_id;
-              annotations.push(annotation);
+            const annotations = [];
+
+            for (let item of data) {
+              let annotation = item.annotation;
+              annotation.layerId = item.layer_id;
+              annotations.push(this._toMiradorAnnotation(annotation));
             }
             resolve(annotations);
           } catch(e) {
@@ -147,7 +173,9 @@ export default class AnnotationSource {
     logger.debug('AnnotationSource#createAnnotation oaAnnotation:', oaAnnotation);
     const cache = await getAnnotationCache();
     const layerId = oaAnnotation.layerId;
-    const annotation = this._getAnnotationInEndpoint(oaAnnotation);
+
+    const annotation = this._toBackendAnnotation(oaAnnotation);
+
     const url = this.options.prefix + '/annotations';
     const request = {
       layer_id: layerId,
@@ -166,8 +194,9 @@ export default class AnnotationSource {
         success: async data => {
           logger.debug('AnnotationSource#createAnnotation creation successful on the annotation server:', data);
           const annotation = data;
-          const oaAnnotation = this._getAnnotationInOA(annotation);
+          const oaAnnotation = this._toMiradorAnnotation(annotation);
           oaAnnotation.layerId = layerId;
+          oaAnnotation.endpoint = getEndpoint();
           if (cache) {
             await cache.invalidateAllCanvases();
           }
@@ -188,7 +217,7 @@ export default class AnnotationSource {
 
   async updateAnnotation(oaAnnotation) {
     const cache = await getAnnotationCache();
-    const annotation = this._getAnnotationInEndpoint(oaAnnotation);
+    const annotation = this.__toBackendAnnotation(oaAnnotation);
     const url = this.options.prefix + '/annotations';
     const data = {
       layer_id: [oaAnnotation.layerId],
@@ -206,15 +235,20 @@ export default class AnnotationSource {
         data: JSON.stringify(data),
         success: async (data, textStatus, jqXHR) => {
             logger.debug('AnnotationSource#updateAnnotation successful', data);
-            const annotation = this._getAnnotationInOA(data);
+            const annotation = this._toMiradorAnnotation(data);
             annotation.layerId = oaAnnotation.layerId;
+            annotation.endpoint = getEndpoint();
+
             if (cache) {
               await cache.invalidateAllCanvases();
             }
+
             const tocCache = getApp().getAnnotationTocCache();
+
             if (tocCache) {
               tocCache.invalidate();
             }
+
             resolve(annotation);
         },
         error: (jqXHR, textStatus, errorThrown) => {
@@ -292,62 +326,39 @@ export default class AnnotationSource {
     });
   }
 
-  // Convert Endpoint annotation to OA
-  _getAnnotationInOA(annotation) {
-    let motivation = annotation.motivation;
-    if (!(motivation instanceof Array)) {
-      if (motivation !== 'oa:commenting') {
-        this.logger.error('ERROR YaleEndpoint#getAnnotationInOA unexpected motivation value: ', motivation, ', id: ' + annotation['@id']);
-      }
-      motivation = ['oa:commenting'];
-    }
+  // Convert annotation to have format required by Mirador
+  _toMiradorAnnotation(annotation) {
+    const anno = jQuery.extend(true, {}, annotation);
+    let target = anno.on;
 
-    let target = annotation.on;
-
-    if (target.selector && target.selector['@type'] === 'oa:Choice') { // if the new (dual) mirador strategy format
+    if (target && target.selector && target.selector['@type'] === 'oa:Choice') { // if the new (dual) mirador strategy format
       target = [target];
     }
 
-    const oaAnnotation = {
-      '@context': 'http://iiif.io/api/presentation/2/context.json',
-      '@type': 'oa:Annotation',
-      '@id': annotation['@id'],
-      motivation: motivation,
-      resource : annotation.resource,
-      on: target,
-      within: annotation.within,
-    };
+    anno.on = target;
 
-    oaAnnotation.layerId = annotation.layerId;
-    return oaAnnotation;
+    return anno;
   }
 
-  // Converts OA Annotation to endpoint format
-  _getAnnotationInEndpoint(oaAnnotation) {
-    let target = oaAnnotation.on;
+  // Convert annotation to correct format to be saved in backend
+  _toBackendAnnotation(annotation) {
+    const endpoint = annotation.endpoint;
+    delete annotation.endpoint;
+    const anno = jQuery.extend(true, {}, annotation);
+    annotation.endpoint = endpoint;
+
+    let target = anno.on;
 
     // XXX temporary fix until the annotation server supports multiple targets
     if (target instanceof Array) {
       if (target.length !== 1) {
-        logger.error('AnnotationSource#_getAnnotationInEndpoint unexpected target length', target.length);
+        logger.error('AnnotationSource#__toBackendAnnotation unexpected target length', target.length);
       }
       target = target[0];
     }
 
-    const annotation = {
-      '@id': oaAnnotation['@id'],
-      '@type': oaAnnotation['@type'],
-      '@context': oaAnnotation['@context'],
-      motivation: oaAnnotation.motivation,
-      resource: oaAnnotation.resource,
-      on: target
-    };
-    if (oaAnnotation.within) {
-      annotation.within = oaAnnotation.within;
-    }
-    if (oaAnnotation.orderWeight) {
-      annotation.orderWeight = oaAnnotation.orderWeight;
-    }
-    return annotation;
+    anno.target = target;
+
+    return anno;
   }
 }

@@ -77,8 +77,6 @@ export default class MiradorWrapper {
     });
     const windowsConfig = parser.getWindowsConfig();
     if (windowsConfig) {
-      const miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
-      miradorProxy.publish('YM_DISPLAY_ON');
       jQuery.publish('YM_ADD_WINDOWS', windowsConfig);
     }
   }
@@ -118,6 +116,8 @@ export default class MiradorWrapper {
         return;
       } else {
         this._urlOptionsProcessed = true;
+        const miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
+        miradorProxy.publish('YM_DISPLAY_ON');
         this._createAnnotationWindows(imageWindowId, options);
       }
     });

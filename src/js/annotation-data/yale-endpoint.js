@@ -10,8 +10,14 @@ import util from '../util/util';
 
 const logger = getLogger();
 let _explorer = null;
+let _instances = [];
 
-export default class YaleEndpoint {
+function getEndpoint() {
+  logger.debug('getEndpoint _instances:', _instances.length, _instances);
+  return _instances[0];
+}
+
+class YaleEndpoint {
   constructor(options) {
     jQuery.extend(this, {
       annotationsList: [],
@@ -19,11 +25,11 @@ export default class YaleEndpoint {
       dfd: null
     }, options);
     this._explorer = getApp().getAnnotationExplorer();
+    _instances.push(this);
   }
 
   search(options) {
     logger.debug('YaleEndpoint#search options:', options);
-    const _this = this;
     const canvasId = options.uri;
     const progressPane = getModalAlert();
     const errorPane = getErrorDialog();
@@ -37,12 +43,9 @@ export default class YaleEndpoint {
     .then(annotations => {
       logger.debug('YaleEndpoint#search annotations:', annotations);
       progressPane.hide();
-      for (let anno of annotations) {
-        anno.endpoint = _this;
-      }
-      _this.annotationsList = annotations;
+      this.annotationsList = annotations;
       try {
-        _this.dfd.resolve(true);
+        this.dfd.resolve(true);
       } catch(e) {
         logger.error('YaleEndpoint#search dfd.resolve failed - ', e);
       }
@@ -65,7 +68,6 @@ export default class YaleEndpoint {
       })
       .then((anno) => {
         logger.debug('YaleEndpoint#create successful with anno: ', anno);
-        anno.endpoint = _this;
         if (typeof successCallback === 'function') {
           successCallback(anno);
         }
@@ -109,7 +111,6 @@ export default class YaleEndpoint {
         errorCallback();
       })
       .then((anno) => {
-        anno.endpoint = this;
         if (typeof successCallback === 'function') {
           successCallback(anno);
         }
@@ -248,3 +249,7 @@ export default class YaleEndpoint {
   }
   */
 }
+
+export {YaleEndpoint, getEndpoint};
+
+

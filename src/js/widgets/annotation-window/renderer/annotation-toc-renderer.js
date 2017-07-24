@@ -70,13 +70,16 @@ export default class AnnotationTocRenderer {
     const pageElem = this.options.container;
 
     for (let annotation of node.childAnnotations) {
+      console.log('LL0:', this.options.layerId);
+      console.log('LL1:', annotation.layerId);
+
       if (annotation.layerId === this.options.layerId) {
         let annoElem = renderer.createAnnoElem(annotation, {
           pageElem: pageElem,
           canvasId: pageElem.data('canvasId'),
           isEditor: this._isEditor
         });
-        this.options.container.append(annoElem);
+        pageElem.append(annoElem);
       }
     }
   }
