@@ -9,7 +9,7 @@ describe('AnnotationCache', function() {
   beforeEach(function(done) {
     getAnnotationCache().then(function(instance) {
       cache = instance;
-      cache.clear().then(function() {
+      cache.deleteDb().then(function() {
         cache.init().then(() => done());
       });
     });
