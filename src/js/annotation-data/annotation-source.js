@@ -1,3 +1,4 @@
+import {Anno} from '../import';
 import getAnnotationCache from './annotation-cache';
 import getApp from '../app';
 import {getEndpoint} from './yale-endpoint';

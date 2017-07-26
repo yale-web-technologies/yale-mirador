@@ -402,6 +402,16 @@ export default class AnnotationWindow {
     });
   }
 
+  _getParagraphTag(annotation) {
+    const tags = Anno(annotation).tags;
+    for (let tag of tags) {
+      if (tag.match(/^p\d+$/)) {
+        return tag;
+      }
+    }
+    return null;
+  }
+
   bindEvents() {
     logger.debug('AnnotationWindow#bindEvents');
 
@@ -433,8 +443,12 @@ export default class AnnotationWindow {
 
       if (tocSpec) {
         const toc = await getApp().getAnnotationTocCache().getToc(params.canvasId);
-        const siblings = annoUtil.findTocSiblings(params.annotation, annotations, layerId, toc);
+
+        let siblings = annoUtil.findTocSiblings(params.annotation, annotations, layerId, toc);
         logger.debug('AnnotationWindow SUB ANNOWIN_ANNOTATION_CLICKED siblings:', siblings);
+
+        siblings = siblings.filter(anno => this._getParagraphTag(anno) === this._getParagraphTag(params.annotation));
+
         if (siblings.length > 0) {
           this.highlightAnnotations(siblings, 'SIBLING');
           return;
