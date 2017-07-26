@@ -28,8 +28,9 @@ class AnnotationCache {
   async init() {
     if (this._dbCache.isValid()) {
       await this._dbCache.deleteDb();
+      await this._dbCache.init();
     }
-    await this._dbCache.init();
+    return this;
   }
 
   /**
