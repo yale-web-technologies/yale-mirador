@@ -2,6 +2,10 @@
 
 This file should be updated before a new release is deployed.
 
+## 0.7.0 <small>7/31/2017</small>
+* Side panel can now show table of contents for annotations
+* Using new version of AnnotationToc (joosugi 0.3.0) that assumes all annotations have toc tags, rather than non-toc annotations targeting toc annotations.
+
 ## 0.4.5 <small>2/17/2017</small>
 * Fix MenuTagSelector bug - chapter items were not being set up correctly, with blank text and no event handling
 
