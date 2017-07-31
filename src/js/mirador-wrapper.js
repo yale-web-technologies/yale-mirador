@@ -131,7 +131,7 @@ export default class MiradorWrapper {
       const windowProxy = miradorProxy.getWindowProxyById(windowId);
       const imageView = windowProxy.getImageView();
       const tocNode = toc.getNodeFromTags(tags);
-      const annotation = tocNode.annotation;
+      const annotation = tocNode.canvasAnnotations[0];
       let newCanvasId = canvasId;
 
       const zoomToAnnotation = function(event) {

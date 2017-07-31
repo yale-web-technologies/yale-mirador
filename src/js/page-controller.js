@@ -67,7 +67,7 @@ class PageController {
   }
 
   async _showAnnotation(windowId, annoId) {
-    logger.debug('PageController#showAnnotation windowId:', windowId, 'annoId:' + annoId);
+    logger.debug('PageController#showAnnotation windowId:', windowId, 'annoId:' + annoId, 'defaultLayer:', this._tocSpec.defaultLayer);
     const grid = this.options.grid;
     const windowProxy = this._miradorProxy.getWindowProxyById(windowId);
     const canvasId = windowProxy.getCurrentCanvasId();
