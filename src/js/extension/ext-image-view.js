@@ -140,6 +140,12 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
         }, 500);
       }
     });
+
+    this.eventEmitter.subscribe('YM_DISPLAY_ON', event => {
+      if (this.hud.annoState.current === 'off') {
+        _this.hud.annoState.displayOn(_this.element.find('.mirador-osd-annotations-layer'));
+      }
+    });
   };
 
 })(Mirador);
