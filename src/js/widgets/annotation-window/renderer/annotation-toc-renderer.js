@@ -29,8 +29,7 @@ export default class AnnotationTocRenderer {
         return; // do nothing with root node
       }
       this.appendHeader(node);
-      this.appendAnnotationForTocNode(node);
-      this.appendAnnotationsForChildNodes(node);
+      this.appendAnnotations(node);
     });
     this.appendUnattachedAnnotations();
   }
@@ -41,37 +40,20 @@ export default class AnnotationTocRenderer {
     // We are distinguishing between leaf and non-leaf nodes to ensure
     // only one header will show over any set of annotations.
 
-    if (nonLeafHasAnnotationsToShow(node, layerId) ||
-      leafHasAnnotationsToShow(node, layerId))
-    {
+    if (nodeHasAnnotationsToShow(node, layerId)) {
       const headerElem = this.createHeaderElem(node);
       this.options.container.append(headerElem);
     }
   }
 
-  appendAnnotationForTocNode(node) {
-    logger.debug('AnnotationTocRenderer#appendAnnotationsForTocNode node:', node);
-    if (node.annotation && node.annotation.layerId === this.options.layerId) {
-      const renderer = this.options.annotationRenderer;
-      const annoElem = renderer.createAnnoElem(node.annotation, {
-        pageElem: this.options.container,
-        canvasId: this.options.canvasId,
-        isEditor: this._isEditor
-      });
-      this.options.container.append(annoElem);
-    } else {
-      //logger.debug('AnnotationTocRenderer#appendAnnotationForTocNode no annotation is associated with node', node, 'and layer', this.options.layerId);
-    }
-  }
-
-  appendAnnotationsForChildNodes(node) {
-    logger.debug('AnnotationTocRenderer#appendAnnotationsForChildNodes children:', node.childAnnotations);
+  appendAnnotations(node) {
+    logger.debug('AnnotationTocRenderer#appendAnnotations node:', node);
     const renderer = this.options.annotationRenderer;
     const pageElem = this.options.container;
 
-    for (let annotation of node.childAnnotations) {
-      if (annotation.layerId === this.options.layerId) {
-        let annoElem = renderer.createAnnoElem(annotation, {
+    for (let anno of node.annotations) {
+      if (anno.layerId === this.options.layerId) {
+        let annoElem = renderer.createAnnoElem(anno, {
           pageElem: pageElem,
           canvasId: pageElem.data('canvasId'),
           isEditor: this._isEditor
@@ -111,13 +93,11 @@ export default class AnnotationTocRenderer {
   }
 
   createHeaderElem(node) {
-    const text = node.cumulativeLabel;
-    const tags = node.cumulativeTags;
-    const headerHtml = headerTemplate({ text: text });
+    const headerHtml = headerTemplate({ text: node.label });
     const headerElem = jQuery(headerHtml)
-      .addClass('header-level-' + tags.length);
+      .addClass('header-level-' + node.tags.length);
 
-    headerElem.data('tags', tags);
+    headerElem.data('tags', node.tags);
     return headerElem;
   }
 }
@@ -127,28 +107,8 @@ const headerTemplate = Handlebars.compile([
   '</div>'
 ].join(''));
 
-// True if node is a non-leaf and there are annotations to show under the header
-function nonLeafHasAnnotationsToShow(node, layerId) {
-  const numChildNodes = Object.keys(node.childNodes).length;
-
-  return numChildNodes > 0 && // non-leaf
-    (node.annotation && node.annotation.layerId === layerId || // the annotation for this node matches the current layer so it will show
-    hasChildAnnotationsToShow(node, layerId)); // there are annotations that target this non-leaf node directly
-}
-
-// True if node is a leaf and there are annotations to show under the header
-function leafHasAnnotationsToShow(node, layerId) {
-  const numChildNodes = Object.keys(node.childNodes).length;
-
-  return numChildNodes === 0 && // leaf
-    node.layerIds.has(layerId); // node is a leaf and there are annotations with matching layer
-}
-
-function hasChildAnnotationsToShow(node, layerId) {
-  const annos = node.childAnnotations;
-  const num = annos.length;
-  for (let i = 0; i < num; ++i) {
-    let anno = node.childAnnotations[i];
+function nodeHasAnnotationsToShow(node, layerId) {
+  for (let anno of node.annotations) {
     if (anno.layerId === layerId) {
       return true;
     }

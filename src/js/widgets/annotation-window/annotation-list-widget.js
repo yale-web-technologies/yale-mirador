@@ -560,7 +560,6 @@ export default class AnnotationListWidget {
     const _this = this;
 
     this.options.rootElem.scroll(async function(event) {
-      console.log('SCROLL');
       const elem = jQuery(this);
       const scrollTop = elem.scrollTop();
       const currentPos = scrollTop + elem.height();

@@ -127,7 +127,7 @@ class App {
   }
 
   _setupAnnotationTocCache() {
-    const tocSpec = getStateStore().getTransient('tagHierarchy');
+    const tocSpec = getStateStore().getTransient('tocSpec');
     if (tocSpec) {
       this._annotationTocCache = new AnnotationTocCache({
         tocSpec: tocSpec,
