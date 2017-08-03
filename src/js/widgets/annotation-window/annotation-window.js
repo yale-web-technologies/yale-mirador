@@ -22,7 +22,7 @@ export default class AnnotationWindow {
       annotationListWidget: null,
       explorer: null,
       initialLayerId: null,
-      initialTocTags: null,
+      initialTocTags: [],
       annotationId: null
     }, options);
 
@@ -40,9 +40,7 @@ export default class AnnotationWindow {
    * @returns {Promise}
    */
   async init() {
-    const _this = this;
     const proxyMgr = getMiradorProxyManager();
-
     let annosToShow = [];
     let fullTagsTargets = null;
     let targetAnno = null;
@@ -68,7 +66,7 @@ export default class AnnotationWindow {
           logger.error('AnnotationWindow#init Invalid annotation', anno);
           return false;
         }
-        return anno['@id'] === _this.options.annotationId;
+        return anno['@id'] === this.options.annotationId;
       });
       targetAnno = matched[0];
       if (matched.length > 0) {
@@ -80,8 +78,10 @@ export default class AnnotationWindow {
     }
 
     if (this.options.initialLayerId) { // layerIDs were given in the URL
-      annosToShow = this.canvasWindow.getAnnotationsList().filter(anno => anno.layerId == _this.options.initialLayerId);
-      if (this.options.initialTocTags) {
+      annosToShow = this.canvasWindow.getAnnotationsList();
+      annosToShow = annosToShow.filter(anno => anno.layerId == this.options.initialLayerId);
+
+      if (this.options.initialTocTags.length > 0) {
         if (toc) {
           annosToShow = annosToShow.filter(anno => toc.matchHierarchy(anno, this.options.initialTocTags.slice(0,1)));
           fullTagsTargets = annosToShow.filter(anno => toc.matchHierarchy(anno, this.options.initialTocTags));
@@ -110,9 +110,12 @@ export default class AnnotationWindow {
     })
     .then(() => {
       logger.debug('AnnotationWindow#init annosToShow:', annosToShow);
-      if ((this.options.annotationId || this.options.initialTocTags) && annosToShow.length > 0) {
+      //if ((this.options.annotationId || this.options.initialTocTags) && annosToShow.length > 0) {
+      if (this.options.annotationId) {
         this.options.annotationListWidget.highlightAnnotations([targetAnno], 'SELECTED');
         this.options.annotationListWidget.moveToAnnotation(this.options.annotationId, canvasId);
+      } else if (this.options.initialTocTags.length > 0) {
+        this.options.annotationListWidget.moveToTags(this.options.initialTocTags);
       }
       this.bindEvents();
       return this;

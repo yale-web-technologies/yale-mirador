@@ -75,8 +75,8 @@ class PageController {
 
     let annotation = annotations.filter(anno => anno['@id'] === annoId)[0];
     let layerId = annotation.layerId;
-    let targetWindow = null;
 
+    console.log('TTT', this._tocSpec);
     if (this._tocSpec && this._tocSpec.defaultLayer) {
       const derivedAnnotation = await this._getAnnotationByTagsAndLayer(Anno(annotation).tags,
         this._tocSpec.defaultLayer, canvasId);
@@ -89,11 +89,7 @@ class PageController {
       }
     }
 
-    for (let annoWindow of Object.values(grid.getAnnotationWindows())) {
-      if (annoWindow.getCurrentLayerId() === layerId) {
-        targetWindow = annoWindow;
-      }
-    }
+    const targetWindow = grid.getAnnotationWindowByLayer(layerId);
 
     if (targetWindow) {
       await targetWindow.moveToAnnotation(annotation['@id'], canvasId);
@@ -180,6 +176,24 @@ class PageController {
         imageView._annotationToBeFocused = params.annotation;
         windowProxy.setCurrentCanvasId(params.canvasId, {
           eventOriginatorType: 'AnnotationWindow',
+        });
+      }
+    });
+
+    jQuery.subscribe('YM_ANNOTATION_TOC_TAGS_SELECTED', async (evnet, windowId, canvasId, tags) => {
+      logger.debug('PageController:SUB:YM_ANNOTATION_TOC_TAGS_SELECTED imageWindow:', windowId, 'canvasId:', canvasId, 'tags:', tags);
+      const grid = this.options.grid;
+      const layerId = this._tocSpec.defaultLayer;
+      let annoWindow = grid.getAnnotationWindowByLayer(layerId);
+
+      if (!annoWindow) {
+        annoWindow =  await grid.addAnnotationWindow({
+          miradorId: this._miradorId,
+          imageWindowId: windowId,
+          layerId: layerId,
+          tocTags: tags
+        }).catch(reason => {
+          logger.error('PageController#_showAnnotation addAnnotationWindow failed <- ' + reason);
         });
       }
     });

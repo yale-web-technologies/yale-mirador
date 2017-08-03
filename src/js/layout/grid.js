@@ -145,6 +145,15 @@ export default class {
     return this._annotationWindows;
   }
 
+  getAnnotationWindowByLayer(layerId) {
+    for (let annoWindow of Object.values(this._annotationWindows)) {
+      if (annoWindow.getCurrentLayerId() === layerId) {
+        return annoWindow;
+      }
+    }
+    return null;
+  }
+
   bindEvents() {
     logger.debug('Grid#bindEvents');
 

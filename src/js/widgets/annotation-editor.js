@@ -232,6 +232,7 @@ export default class AnnotationEditor {
 
   // Called by Mirador core
   updateAnnotation(oaAnno) {
+    logger.debug('AnnotationEditor#updateAnnotation oaAnno:', oaAnno);
     var tagText = this.element.find('.tags_editor').val().trim();
     var resourceText = this.getEditor().getContent();
     var tags = [];
@@ -285,9 +286,11 @@ export default class AnnotationEditor {
         }
         _this.destroy();
       }, function() {
+        logger.error('AnnotationEditor#save endpoint.create failed for', annotation);
       });
     } else {
       annotation = this.updateAnnotation(this.annotation);
+      console.log('TTT UUU anno:', annotation);
       this.endpoint.update(annotation, function(data) {
         if (typeof _this.saveCallback === 'function') {
           var annotation = data;
@@ -296,6 +299,7 @@ export default class AnnotationEditor {
         }
         _this.destroy();
       }, function() {
+        logger.error('AnnotationEditor#save endpoint.update failed for', annotation);
       });
     }
   }
@@ -309,7 +313,7 @@ export default class AnnotationEditor {
         msg += 'Target annotation is missing.\n';
       }
     }
-    if (this._mode === 'create' && !this.layerSelector.val()) {
+    if (!this.layerSelector.val()) {
       msg += 'Layer is not selected.\n';
     }
     if (this.getEditor().getContent().trim() === '') {
@@ -326,27 +330,27 @@ export default class AnnotationEditor {
   bindEvents() {
     var _this = this;
 
-    this.element.find('.ym_save').click(function() {
+    this.element.find('.ym_save').click(function(event) {
       if (_this.validate()) {
         _this.save();
       }
     });
 
-    this.element.find('.ym_cancel').click(function() {
+    this.element.find('.ym_cancel').click(function(event) {
       _this.destroy();
       if (typeof _this.cancelCallback === 'function') {
         _this.cancelCallback();
       }
     });
 
-    this.element.find('.ym_vertical_inc').click(function() {
+    this.element.find('.ym_vertical_inc').click(function(event) {
       var iframeId = _this.getEditor().id + '_ifr';
       var element = tinyMCE.DOM.get(iframeId);
       var height = parseInt(tinyMCE.DOM.getStyle(element, 'height'), 10);
       tinyMCE.DOM.setStyle(element, 'height', (height + 75) + 'px');
     });
 
-    this.element.find('.ym_vertical_dec').click(function() {
+    this.element.find('.ym_vertical_dec').click(function(event) {
       var iframeId = _this.getEditor().id + '_ifr';
       var element = tinyMCE.DOM.get(iframeId);
       var height = parseInt(tinyMCE.DOM.getStyle(element, 'height'), 10);

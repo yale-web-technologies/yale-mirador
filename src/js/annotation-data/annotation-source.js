@@ -218,7 +218,7 @@ export default class AnnotationSource {
 
   async updateAnnotation(oaAnnotation) {
     const cache = await getAnnotationCache();
-    const annotation = this.__toBackendAnnotation(oaAnnotation);
+    const annotation = this._toBackendAnnotation(oaAnnotation);
     const url = this.options.prefix + '/annotations';
     const data = {
       layer_id: [oaAnnotation.layerId],
@@ -343,11 +343,11 @@ export default class AnnotationSource {
 
   // Convert annotation to correct format to be saved in backend
   _toBackendAnnotation(annotation) {
-    const endpoint = annotation.endpoint;
     delete annotation.endpoint;
-    const anno = jQuery.extend(true, {}, annotation);
-    annotation.endpoint = endpoint;
+    delete annotation.target;
+    delete annotation.targetedBy;
 
+    const anno = jQuery.extend(true, {}, annotation);
     let target = anno.on;
 
     // XXX temporary fix until the annotation server supports multiple targets
