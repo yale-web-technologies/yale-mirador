@@ -89,13 +89,6 @@ export default class MiradorWrapper {
       logger.debug('MiradorWrapper#bindEvents received ANNOTATIONS_LIST_UPDATED params:', params);
       const windowProxy = miradorProxy.getWindowProxyById(params.windowId);
 
-      /* XXXX
-      if (options.tagHierarchy) {
-        const endpoint = windowProxy.getEndPoint();
-        endpoint.parseAnnotations();
-      }
-      */
-
       if (!params.options || params.options.eventOriginatorType !== 'AnnotationWindow') {
         // Reload annotation windows
         jQuery.publish('YM_READY_TO_RELOAD_ANNO_WIN', params.windowId);
@@ -160,13 +153,5 @@ export default class MiradorWrapper {
          annoTocMenu.scrollToTags(params.annotation.tocTags);
        }
      });
-
-     /*
-     [{
-        annotationWindowId: annoWin.getId(),
-        annotation: annotation,
-        canvasId: jQuery(this).data('canvasId'),
-        imageWindowId: annoWin.getImageWindowId()
-      }]);*/
   }
 }

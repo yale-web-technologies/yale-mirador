@@ -1,6 +1,6 @@
 import AnnotationRenderer from './renderer/annotation-renderer';
 import AnnotationPageRenderer from './renderer/annotation-page-renderer';
-import {AnnotationToc, annoUtil} from '../../import';
+import {Anno, AnnotationToc, annoUtil} from '../../import';
 import getApp from '../../app';
 import getLogger from '../../util/logger';
 import getModalAlert from '../../widgets/modal-alert';
@@ -30,6 +30,7 @@ export default class AnnotationListWidget {
     this._loading = false;
     this._tocSpec = this.options.state.getTransient('tagHierarchy');
     this._tocSpec2 = this.options.state.getTransient('tocSpec');
+    this._groupHeaderHeight = 19;
 
     if (!this.options.annotationRenderer) {
       this.options.annotationRenderer = new AnnotationRenderer({
@@ -79,7 +80,7 @@ export default class AnnotationListWidget {
       if (rootElem[0].scrollHeight <= rootElem.height()) {
         await this._activateMorePagesForwardFirst(pageNum);
       }
-      this.scrollToPage(pageNum, true);
+      await this.scrollToPage(pageNum, true);
 
       if (oldCanvasId !== newCanvasId) {
         imageWindowProxy.setCurrentCanvasId(newCanvasId, {
@@ -169,7 +170,7 @@ export default class AnnotationListWidget {
   }
 
   async moveToAnnotation(annoId, canvasId) {
-    logger.debug('AnnotationListWidget annoId', annoId, 'canvasId:', canvasId);
+    logger.debug('AnnotationListWidget#moveToAnnotation annoId', annoId, 'canvasId:', canvasId);
 
     let targetPage = -1;
 
@@ -181,19 +182,12 @@ export default class AnnotationListWidget {
     }
 
     if (targetPage >= 0) {
+      const pageItem = this._pageStateList[targetPage];
       await this.moveToPage(targetPage);
 
-      const pageItem = this._pageStateList[targetPage];
-      let annoElem = null;
-      pageItem.element.find('.annowin_anno').each((index, value) => {
-        const currentElem = jQuery(value);
-        if (currentElem.data('annotationId') === annoId) {
-          annoElem = currentElem;
-          annoElem[0].scrollIntoView(true);
-          return false;
-        }
-      });
-      this._highlightAnnotation(annoId, canvasId);
+      this.scrollToAnnotation(annoId);
+      this.clearAnnotationHighlights();
+      this.highlightAnnotation(annoId, 'SELECTED');
     } else {
       logger.debug('AnnotationListWidget#scrollToAnnotation page not found for canvasId', canvasId);
     }
@@ -209,8 +203,15 @@ export default class AnnotationListWidget {
     const pageHeaderElem = pageItem.element.find('.page-header');
 
     this._unbindScrollEvent();
-    pageHeaderElem[0].scrollIntoView(alignToTop);
-    this._bindScrollEvent();
+
+    return new Promise((resolve, reject) => {
+      this.options.rootElem.scrollTo(pageHeaderElem, {
+        onAfter: () => {
+          this._bindScrollEvent();
+          resolve();
+        }
+      });
+    });
   }
 
   scrollToTag(targetTagValue) {
@@ -257,42 +258,71 @@ export default class AnnotationListWidget {
     }
   }
 
-  scrollToElem(annoElem) {
-    /*
-    this.options.rootElem.animate({
-      scrollTop: annoElem.position().top + this.options.rootElem.scrollTop()
-    }, 0);
-    */
-
+  scrollToElem(annoElem, yOffset) {
     this._unbindScrollEvent();
-    annoElem[0].scrollIntoView(true);
-    this._bindScrollEvent();
-  }
 
-  scrollToAnnotation(annotationId) {
-    const _this = this;
-    this.options.rootElem.find('.annowin_anno').each((index, value) => {
-      const annoElem = jQuery(value);
-      if (annoElem.data('annotationId') === annotationId) {
-        _this.scrollToElem(annoElem);
-        _this._highlightAnnotation(annotationId, annoElem.data('canvasId'));
-      }
+    return new Promise((resolve, reject) => {
+      this.options.rootElem.scrollTo(annoElem, {
+        offset: {
+          top: yOffset || -this._groupHeaderHeight
+        },
+        onAfter: () => {
+          this._bindScrollEvent();
+          resolve();
+        }
+      });
     });
   }
 
-  _highlightAnnotation(annoId, canvasId) {
-    for (let pageItem of this._pageStateList) {
-      for (let annoElem of pageItem.element.find('.annowin_anno')) {
-        let $annoElem = jQuery(annoElem);
-        let curAnnoId = $annoElem.data('annotationId');
+  scrollToAnnotation(annotationId, yOffset) {
+    logger.debug('AnnotationListWidget#scrollToAnnotation annotationId:', annotationId, 'yOffset:', yOffset);
+    for (let annoElem of this.getAnnotationElems()) {
+      const $annoElem = jQuery(annoElem);
+      if ($annoElem.data('annotationId') === annotationId) {
+        return this.scrollToElem($annoElem, yOffset);
+      }
+    }
+  }
 
-        if (curAnnoId === annoId) {
-          $annoElem.addClass('ym_anno_selected');
-        } else {
-          $annoElem.removeClass('ym_anno_selected');
+  clearAnnotationHighlights() {
+    for (let elem of this.getAnnotationElems()) {
+      jQuery(elem).removeClass('ym_anno_selected');
+    }
+  }
+
+  highlightAnnotations(annotations, flag) {
+    logger.debug('AnnotationListWidget#highlightAnnotations annotations:', annotations, 'flag:', flag);
+
+    this.clearAnnotationHighlights();
+
+    for (let annoElem of this.getAnnotationElems()) {
+      const $annoElem = jQuery(annoElem);
+      const annoId = $annoElem.data('annotationId');
+
+      for (let anno of annotations) {
+        if (anno['@id'] === annoId) {
+          this.highlightAnnotationElem($annoElem, flag);
         }
       }
     }
+  }
+
+  highlightAnnotation(annoId, flag) {
+    for (let annoElem of this.getAnnotationElems()) {
+      let $annoElem = jQuery(annoElem);
+
+      if ($annoElem.data('annotationId') === annoId) {
+        this.highlightAnnotationElem($annoElem, flag);
+      }
+    }
+  }
+
+  highlightAnnotationElem(annoElem, flag) {
+    logger.debug('AnnotationListWidget#highlightAnnotationElem annoElem:', annoElem, 'flag:', flag, 'annoId:', annoElem.data('annotationId'));
+    const klass = (flag === 'TARGETING' ? 'ym_anno_targeting' :
+      (flag === 'TARGETED' ? 'ym_anno_targeted' : 'ym_anno_selected'));
+
+    annoElem.addClass(klass);
   }
 
   _createPageStateList() {
@@ -554,6 +584,44 @@ export default class AnnotationListWidget {
       jQuery(value).removeClass('annowin_targeted')
         .removeClass('ym_anno_selected ym_anno_targeting ym_anno_targeted');
     });
+  }
+
+  getAnnotationElems() {
+    return this.options.rootElem.find('.annowin_anno').toArray();
+  }
+
+  /**
+   * Find annotation's siblings from annotations
+   * A sibling is an annotation that points to the same TOC node.
+   * For example, annotation A and B are siblings if they both belong to
+   * ["chapter1", "scene2", "p1"].
+   */
+  getTocSiblingElems(annotation, annotations, layerId, toc) {
+    const result = [];
+    let siblings = annoUtil.findTocSiblings(annotation, annotations, layerId, toc);
+    siblings = siblings.filter(anno => this._getParagraphTag(anno) === this._getParagraphTag(annotation));
+
+    for (let annoElem of this.getAnnotationElems()) {
+      const $annoElem = jQuery(annoElem);
+      const annoId = $annoElem.data('annotationId');
+
+      for (let sibling of siblings) {
+        if (sibling['@id'] === annoId) {
+          result.push($annoElem);
+        }
+      }
+    }
+    return result;
+  }
+
+  _getParagraphTag(annotation) {
+    const tags = Anno(annotation).tags;
+    for (let tag of tags) {
+      if (tag.match(/^p\d+$/)) {
+        return tag;
+      }
+    }
+    return null;
   }
 
   _bindScrollEvent() {

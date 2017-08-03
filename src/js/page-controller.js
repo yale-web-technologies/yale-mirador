@@ -99,7 +99,7 @@ class PageController {
       await targetWindow.moveToAnnotation(annotation['@id'], canvasId);
     } else {
       if (annotation) {
-       const annoWindow =  await grid.addAnnotationWindow({
+        const annoWindow =  await grid.addAnnotationWindow({
           miradorId: this._miradorId,
           imageWindowId: windowId,
           layerId: layerId,
@@ -145,7 +145,6 @@ class PageController {
       const annoTocMenu = tocPanel.data('AnnotationTableOfContent');
 
       this._showAnnotation(windowId, annoId);
-
       const toc = await this._annotationTocCache.getToc(canvasId);
       const annotation = toc.annotations.filter(anno => anno['@id'] === annoId)[0];
 
@@ -168,7 +167,6 @@ class PageController {
 
         if (!annoUtil.hasTargetOnCanvas(anno)) {
           let annos = annoUtil.findTargetAnnotationsOnCanvas(anno, annoMap);
-          console.log('H1 annos', annos);
           anno = annos[0];
         }
         if (anno) {

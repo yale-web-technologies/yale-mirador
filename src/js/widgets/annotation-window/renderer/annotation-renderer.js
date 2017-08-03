@@ -84,13 +84,15 @@ export default class AnnotationRenderer {
 
     annoElem.click(function(event) {
       logger.debug('Clicked annotation:', annotation);
-      annoWin.options.annotationListWidget.clearHighlights();
-      annoWin.highlightAnnotation(annotation['@id']);
+      annoWin.clearAnnotationHighlights();
+      annoWin.highlightAnnotationElem(annoElem, 'SELECTED');
+
       jQuery.publish('ANNOWIN_ANNOTATION_CLICKED', [{
         annotationWindowId: annoWin.getId(),
         annotation: annotation,
         canvasId: jQuery(this).data('canvasId'),
-        imageWindowId: annoWin.getImageWindowId()
+        imageWindowId: annoWin.getImageWindowId(),
+        offset: annoElem.position().top
       }]);
     });
 
@@ -118,6 +120,7 @@ export default class AnnotationRenderer {
           dialogElement.dialog('close');
         }
       });
+
       dialogElement.dialog({ // jQuery-UI dialog
         title: 'Create annotation',
         modal: true,

@@ -135,7 +135,7 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
             this.panToAnnotation(anno);
             this.annotationsLayer.drawTool.updateHighlights(anno);
           } else {
-            logger.error('ImageWindow(ext):SUB:ANNOWIN_ANNOTATION_CLICKED annotation not found');
+            logger.error('ImageWindow(ext):SUB:ANNOTATIONS_LIST_UPDATED annotation not found');
           }
         }, 500);
       }
