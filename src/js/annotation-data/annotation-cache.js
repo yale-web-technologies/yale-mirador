@@ -45,7 +45,6 @@ class AnnotationCache {
       return Promise.resolve(annotations);
     } else if (this._dbCache.isValid()) {
       annotations = await this._dbCache.getAnnotationsPerCanvas(canvasId);
-      console.log('dadada dbcache annos:', annotations);
       if (annotations !== null) {
         logger.debug('db cache hit', canvasId, annotations);
         this._memCache.setAnnotationsPerCanvas(canvasId, annotations);

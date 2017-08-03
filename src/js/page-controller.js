@@ -76,7 +76,6 @@ class PageController {
     let annotation = annotations.filter(anno => anno['@id'] === annoId)[0];
     let layerId = annotation.layerId;
 
-    console.log('TTT', this._tocSpec);
     if (this._tocSpec && this._tocSpec.defaultLayer) {
       const derivedAnnotation = await this._getAnnotationByTagsAndLayer(Anno(annotation).tags,
         this._tocSpec.defaultLayer, canvasId);
@@ -92,7 +91,7 @@ class PageController {
     const targetWindow = grid.getAnnotationWindowByLayer(layerId);
 
     if (targetWindow) {
-      await targetWindow.moveToAnnotation(annotation['@id'], canvasId);
+      //await targetWindow.moveToAnnotation(annotation['@id'], canvasId); //XXX dealt with by annotation window
     } else {
       if (annotation) {
         const annoWindow =  await grid.addAnnotationWindow({
@@ -134,7 +133,7 @@ class PageController {
     });
 
    this._miradorProxy.subscribe('YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED', async (event, windowId, annoId) => {
-      logger.debug('MiradorWrapper:SUB:YM_IMAGE_WINDOW_TOOLtip_ANNO_CLICKED windowId: ' + windowId  + ', annoId: ' + annoId);
+      logger.debug('MiradorWrapper:SUB:YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED windowId: ' + windowId  + ', annoId: ' + annoId);
       const windowProxy = this._miradorProxy.getWindowProxyById(windowId);
       const canvasId = windowProxy.getCurrentCanvasId();
       const tocPanel = windowProxy.getSidePanelTabContentElement('ym-annotation-toc');
@@ -170,7 +169,7 @@ class PageController {
           imageView.panToAnnotation(anno);
           imageView.annotationsLayer.drawTool.updateHighlights(anno);
         } else {
-          logger.error('PageController:SUB:ANNOWIN_ANNOTATION_CLICKED annotation not found');
+          logger.error('PageController:SUB:ANNOWIN_ANNOTATION_CLICKED annotation not found', params.annotation);
         }
       } else { // need to load the canvas that the annotation is targeting
         imageView._annotationToBeFocused = params.annotation;

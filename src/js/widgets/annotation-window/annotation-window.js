@@ -30,6 +30,7 @@ export default class AnnotationWindow {
     this._tocSpec = getStateStore().getTransient('tocSpec');
     this._jQuerySubscribed = {};
     this._miradorSubscribed = {};
+    this._annotationTocCache = getApp().getAnnotationTocCache();
   }
 
   getId() {
@@ -159,7 +160,7 @@ export default class AnnotationWindow {
 
   destroy() {
     logger.debug('AnnotationWindow#destroy');
-    this._unsubscribeAll();
+    //this._unsubscribeAll(); //XXXX
   }
 
   initMenuTagSelector() {
@@ -460,6 +461,18 @@ export default class AnnotationWindow {
     this._subscribe(jQuery, 'YM_ANNOTATION_TOC_TAGS_SELECTED', (evnet, windowId, canvasId, tags) => {
       logger.debug('AnnotationWindow:SUB:YM_ANNOTATION_TOC_TAGS_SELECTED imageWindow:', windowId, 'canvasId:', canvasId, 'tags:', tags);
       this.options.annotationListWidget.moveToTags(tags);
+    });
+
+    this._subscribe(this.miradorProxy, 'YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED', async (event, windowId, annoId) => {
+      logger.debug('AnnotationWindow:SUB:YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED windowId:', windowId, 'annoId:', annoId, 'annoWin:', this.id);
+      const windowProxy = this.miradorProxy.getWindowProxyById(windowId);
+      const canvasId = windowProxy.getCurrentCanvasId();
+      const toc = await this._annotationTocCache.getToc(canvasId);
+      const annotation = toc.annotations.filter(anno => anno['@id'] === annoId)[0];
+
+      if (annotation) {
+        this.options.annotationListWidget.moveToTags(annotation.tocTags);
+      }
     });
   }
 
