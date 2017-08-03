@@ -110,12 +110,15 @@ export default class AnnotationWindow {
     })
     .then(() => {
       logger.debug('AnnotationWindow#init annosToShow:', annosToShow);
+      const listWidget = this.options.annotationListWidget;
       //if ((this.options.annotationId || this.options.initialTocTags) && annosToShow.length > 0) {
       if (this.options.annotationId) {
-        this.options.annotationListWidget.highlightAnnotations([targetAnno], 'SELECTED');
-        this.options.annotationListWidget.moveToAnnotation(this.options.annotationId, canvasId);
+        listWidget.highlightAnnotations([targetAnno], 'SELECTED');
+        listWidget.moveToAnnotation(this.options.annotationId, canvasId);
       } else if (this.options.initialTocTags.length > 0) {
-        this.options.annotationListWidget.moveToTags(this.options.initialTocTags);
+        listWidget.moveToTags(this.options.initialTocTags);
+      } else {
+        listWidget.moveToPage(0);
       }
       this.bindEvents();
       return this;

@@ -129,7 +129,7 @@ export default class {
       miradorId: options.miradorId || null,
       canvasWindowId: imageWindowId,
       initialLayerId: options.layerId || this._pickLayer(),
-      initialTocTags: options.tocTags || null,
+      initialTocTags: options.tocTags || [],
       annotationId: options.annotationId || null
     });
     return annoWin.init().then(window => {
