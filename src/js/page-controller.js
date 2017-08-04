@@ -133,7 +133,7 @@ class PageController {
     });
 
    this._miradorProxy.subscribe('YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED', async (event, windowId, annoId) => {
-      logger.debug('MiradorWrapper:SUB:YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED windowId: ' + windowId  + ', annoId: ' + annoId);
+      logger.debug('PageController:SUB:YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED windowId: ' + windowId  + ', annoId: ' + annoId);
       const windowProxy = this._miradorProxy.getWindowProxyById(windowId);
       const canvasId = windowProxy.getCurrentCanvasId();
       const tocPanel = windowProxy.getSidePanelTabContentElement('ym-annotation-toc');

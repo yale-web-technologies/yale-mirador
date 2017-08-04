@@ -1,3 +1,4 @@
+import AnnotationNav from './annotation-nav';
 import AnnotationRenderer from './renderer/annotation-renderer';
 import AnnotationPageRenderer from './renderer/annotation-page-renderer';
 import {Anno, AnnotationToc, annoUtil} from '../../import';
@@ -26,9 +27,9 @@ export default class AnnotationListWidget {
       maxContentRelativeHeight: 5
     }, options);
 
-    this._currentPageNum = 0;
+    this._nav = this._setupNavigation();
+
     this._loading = false;
-    this._tocSpec = this.options.state.getTransient('tagHierarchy');
     this._tocSpec2 = this.options.state.getTransient('tocSpec');
     this._groupHeaderHeight = 19;
 
@@ -51,110 +52,103 @@ export default class AnnotationListWidget {
       this.options.layerId = layerId;
     }
     this.options.rootElem.empty();
-    this._pageStateList = this._createPageStateList();
     this._createPageElements();
     this._bindEvents();
   }
 
-  getCurrentPageNum() {
-    return this._currentPageNum;
+  _setupNavigation() {
+    const nav = new AnnotationNav({
+      canvases: this.options.canvases
+    });
+    nav.registerCallbacks({
+      onSetPage: (pageNum, canvas) => {
+        return this._onSetPage(pageNum, canvas);
+      }
+    });
+    return nav;
   }
 
-  getCurrentPageItem() {
-    return this._pageStateList[this._currentPageNum];
+  async _onSetPage(pageNum, canvas) {
+    const rootElem = this.options.rootElem;
+    const imageWindowProxy = this.options.annotationWindow.getImageWindowProxy();
+    const oldCanvasId = imageWindowProxy.getCurrentCanvasId();
+    const newCanvasId = canvas['@id'];
+
+    this._deactivateAllPages();
+    await this._activatePage(pageNum);
+
+    if (rootElem[0].scrollHeight <= rootElem.height()) {
+      await this._activateMorePagesForwardFirst(pageNum);
+    }
+    await this.scrollToPage(pageNum, true);
+
+    if (oldCanvasId !== newCanvasId) {
+      imageWindowProxy.setCurrentCanvasId(newCanvasId, {
+        eventOriginatorType: 'AnnotationWindow'
+      });
+    }
   }
 
   async moveToPage(pageNum) {
     logger.debug('AnnotationListWidgetr#moveToPage', pageNum);
-    const rootElem = this.options.rootElem;
-    const imageWindowProxy = this.options.annotationWindow.getImageWindowProxy();
-    const oldCanvasId = imageWindowProxy.getCurrentCanvasId();
-    const newPageItem = this._pageStateList[pageNum];
-    const newCanvasId = newPageItem.canvas['@id'];
-
-    if (pageNum !== -1) {
-      this._deactivateAllPages();
-      this._currentPageNum = pageNum;
-      await this._activatePage(pageNum);
-
-      if (rootElem[0].scrollHeight <= rootElem.height()) {
-        await this._activateMorePagesForwardFirst(pageNum);
-      }
-      await this.scrollToPage(pageNum, true);
-
-      if (oldCanvasId !== newCanvasId) {
-        imageWindowProxy.setCurrentCanvasId(newCanvasId, {
-          eventOriginatorType: 'AnnotationWindow'
-        });
-      }
-    } else {
-      logger.error("AnnotationListWidget##moveTo couldn't find page number for", canvasId);
-    }
+    await this._nav.setPage(pageNum);
   }
 
   async moveToCanvas(canvasId) {
     logger.debug('AnnotationListWidgetr#moveToCanvas', canvasId);
-    const pageNum = this._getPageNum(canvasId);
+    const pageNum = this._nav.getPageNumForCanvas(canvasId);
     await this.moveToPage(pageNum);
-  }
-
-  async moveToTag(tagValue) {
-    logger.debug('AnnotationListWidgetr#moveToTag', tagValue);
-    const canvasIds = this._tocSpec2.canvasMap[tagValue];
-    if (canvasIds instanceof Array && canvasIds.length > 0) {
-      await this.moveToCanvas(canvasIds[0]);
-      this.scrollToTag(tagValue);
-    }
   }
 
   async moveToTags(tags) {
     logger.debug('AnnotationListWidgetr#moveToTags', tags);
     const canvasIds = this._tocSpec2.canvasMap[tags[0]];
+
     if (canvasIds instanceof Array && canvasIds.length > 0) {
       await this.moveToCanvas(canvasIds[0]);
       this.scrollToTags(tags);
     }
   }
 
-  async pageForward() {
-    logger.debug('AnnotationListWidget#pageForward', this._loading);
+  async loadForward() {
+    logger.debug('AnnotationListWidget#loadForward', this._loading);
     if (this._loading) {
       return;
     }
     this._loading = true;
+    const nav = this._nav;
 
     try {
-      const pageNum = this._currentPageNum + 1;
+      const pageNum = nav.activeRange.endPage + 1;
 
-      if (pageNum < this._pageStateList.length) {
+      if (pageNum < nav.getNumPages()) {
         let nextPage = await this._activatePageForward(pageNum);
-        this._currentPageNum = nextPage;
-        if (nextPage < this._pageStateList.length) {
+        if (nextPage < nav.getNumPages()) {
           nextPage = await this._activateMorePagesForwardFirst(nextPage);
         }
         this._deactivatePagesFromBack();
         this._windBack();
       }
     } catch (e) {
-      logger.error('AnnotationListWidget#pageForward failed', e);
+      logger.error('AnnotationListWidget#loadForward failed', e);
     } finally {
       this._loading = false;
     }
   }
 
-  async pageBack() {
+  async loadBackward() {
     logger.debug('AnnotationListWidget#pageBack', this._loading);
     if (this._loading) {
       return;
     }
     this._loading = true;
+    const nav = this._nav;
 
     try {
-      const pageNum = this._currentPageNum - 1;
+      const pageNum = nav.activeRange.startPage - 1;
 
       if (pageNum !== -1) {
         const nextPage = await this._activatePageBackward(pageNum);
-        this._currentPageNum = nextPage;
         if (nextPage !== -1) {
           await this._activateMorePagesBackwardFirst(nextPage);
         }
@@ -163,7 +157,7 @@ export default class AnnotationListWidget {
       }
       this._loading = false;
     } catch (e) {
-      logger.error('AnnotationListWidget#pageBack failed', e);
+      logger.error('AnnotationListWidget#loadBackward failed', e);
     } finally {
       this._loading = false;
     }
@@ -172,17 +166,10 @@ export default class AnnotationListWidget {
   async moveToAnnotation(annoId, canvasId) {
     logger.debug('AnnotationListWidget#moveToAnnotation annoId', annoId, 'canvasId:', canvasId);
 
-    let targetPage = -1;
-
-    for (let i = 0; i < this._pageStateList.length; ++i) {
-      if (this._pageStateList[i].canvas['@id'] === canvasId) {
-        targetPage = i;
-        break;
-      }
-    }
+    const nav = this._nav;
+    const targetPage = nav.getPageNumForCanvas(canvasId);
 
     if (targetPage >= 0) {
-      const pageItem = this._pageStateList[targetPage];
       await this.moveToPage(targetPage);
 
       this.scrollToAnnotation(annoId);
@@ -199,8 +186,7 @@ export default class AnnotationListWidget {
    * @param {number} pageNum
    */
   scrollToPage(pageNum, alignToTop) {
-    const pageItem = this._pageStateList[pageNum];
-    const pageHeaderElem = pageItem.element.find('.page-header');
+    const pageHeaderElem = this._nav.getPageElement(pageNum).find('.page-header');
 
     this._unbindScrollEvent();
 
@@ -212,24 +198,6 @@ export default class AnnotationListWidget {
         }
       });
     });
-  }
-
-  scrollToTag(targetTagValue) {
-    let targetElem = null;
-
-    this.options.rootElem.find('.annowin_group_header').each((index, value) => {
-      const headerElem = jQuery(value);
-      const tagValue = headerElem.data('tags')[0];
-      if (tagValue === targetTagValue) {
-        targetElem = headerElem;
-        return false;
-      }
-    });
-    if (targetElem) {
-      targetElem[0].scrollIntoView();
-    } else {
-      logger.warning('AnnotationListWidget#scrollToTag Header element not found for', targetTagValue);
-    }
   }
 
   scrollToTags(targetTags) {
@@ -252,7 +220,6 @@ export default class AnnotationListWidget {
     });
     if (targetElem) {
       targetElem[0].scrollIntoView();
-      targetElem.next().click();
     } else {
       logger.warning('AnnotationListWidget#scrollToTags Header element not found for', targetTags);
     }
@@ -325,104 +292,57 @@ export default class AnnotationListWidget {
     annoElem.addClass(klass);
   }
 
-  _createPageStateList() {
-    const pages = [];
-    for (let canvas of this.options.canvases) {
-      pages.push({
-        toc: null,
-        canvas: canvas,
-        loaded: false,
-        annotations: [],
-        element: null
-      });
-    }
-    return pages;
-  }
-
   /**
    * Create empty page elements under the root.
    */
   _createPageElements() {
     logger.debug('AnnotationListWidget#_createPageElements');
+    const nav = this._nav;
     const pageRenderer = this.options.annotationPageRenderer;
 
     for (let pageNum = 0; pageNum < this.options.canvases.length; ++pageNum) {
-      let pageItem = this._pageStateList[pageNum];
+      let canvas = nav.getCanvas(pageNum);
       let pageElem = pageRenderer.createPageElement({
         pageNum: pageNum,
-        canvasId: pageItem.canvas['@id'],
-        canvasLabel: pageItem.canvas.label,
+        canvasId: canvas['@id'],
+        canvasLabel: canvas.label,
         layerId: this.options.layerId
       });
 
       this.options.rootElem.append(pageElem);
       pageElem.hide();
-      pageItem.element = pageElem;
+      nav.setPageElement(pageNum, pageElem);
     }
-  }
-
-  _getPageNum(canvasId) {
-    for (let i = 0; i < this._pageStateList.length; ++i) {
-      let item = this._pageStateList[i];
-      if (item.canvas['@id'] === canvasId) {
-        return i;
-      }
-    }
-    return -1;
   }
 
   async _activatePage(pageNum) {
     logger.debug('AnnotationListWidget#_activatePage', pageNum);
-    if (pageNum < 0 || pageNum >= this._pageStateList.length) {
-      logger.error('AnnotationListWidget#_activatePage invalid pageNum', pageNum);
-      return;
-    }
-    //this._currentPageNum = pageNum;
+    const nav = this._nav;
 
-    const pageItem = this._pageStateList[pageNum];
-    if (!pageItem.loaded) {
-      pageItem.loaded = true;
+    if (!nav.isLoaded(pageNum)) {
       await this._loadPage(pageNum);
     }
-
-    //if (pageItem.annotations.length > 0) {
-      pageItem.element.show();
-    //}
+    nav.getPageElement(pageNum).show();
   }
 
   async _activatePageForward(pageNum) {
-    let pageItem = this._pageStateList[pageNum];
     await this._activatePage(pageNum);
-    logger.debug('AnnotationListWidget#_activatePageForward pageNum:', pageNum, 'pageItem.annotations after activate:', pageItem.annotations);
     let nextPage = pageNum;
 
-    if (pageNum < this._pageStateList.length - 1) {
+    if (pageNum < this._nav.getNumPages() - 1) {
       ++nextPage;
-    //while (pageItem.annotations.length === 0 && nextPage < this._pageStateList.length) {
       await this._activatePage(nextPage);
-    //  pageItem = this._pageStateList[nextPage];
-    //  logger.debug('AnnotationListWidget#_activatePageForward page:', nextPage, 'pageItem.annotations after activate:', pageItem.annotations);
-    //  ++nextPage;
-    //}
     }
     return nextPage;
   }
 
   async _activatePageBackward(pageNum) {
     await this._activatePage(pageNum);
-
-    let pageItem = this._pageStateList[pageNum];
     let nextPage = pageNum;
 
     if (pageNum > 0) {
       --nextPage;
-
-      //while (pageItem.annotations.length === 0 && nextPage >= 0) {
-        await this._activatePage(nextPage);
-      //  pageItem = this._pageStateList[nextPage];
-      //  --nextPage;
-      //  ++count;
-      //}
+      await this._activatePage(nextPage);
     }
     return nextPage;
   }
@@ -506,24 +426,23 @@ export default class AnnotationListWidget {
 
   _deactivatePage(pageNum) {
     logger.debug('AnnotationListWidget#_deactivatePage', pageNum);
-    const pageItem = this._pageStateList[pageNum];
-    pageItem.element.hide();
+    this._nav.getPageElement(pageNum).hide();
+    this._nav.unload(pageNum);
   }
 
   _deactivatePagesFromForward() {
     logger.debug('AnnotationListWidget#_deactivatePagesFromForward');
+    const nav = this._nav;
     const rootElem = this.options.rootElem;
     const rootElemHeight = rootElem.height();
     const maxHeight = this.options.maxContentRelativeHeight * rootElemHeight;
 
-    for (let nextPage = this._pageStateList.length - 1;
-         nextPage > this._currentPageNum + 1 && rootElem[0].scrollHeight - rootElemHeight > maxHeight;
+    for (let nextPage = nav.activeRange.endPage;
+         nextPage > nav.getPage() + 1 && rootElem[0].scrollHeight - rootElemHeight > maxHeight;
          --nextPage)
     {
       logger.debug('AnnotationListWidget#_deactivatePagesBackward nextPage:', nextPage, 'scroll height:', rootElem[0].scrollHeight, 'maxHeight:', maxHeight);
-      let pageItem = this._pageStateList[nextPage];
-      console.log('HIDING ', nextPage);
-      pageItem.element.hide();
+      nav.getPageElement(nextPage).hide();
     }
   }
 
@@ -538,35 +457,32 @@ export default class AnnotationListWidget {
          ++nextPage)
     {
       logger.debug('AnnotationListWidget#_deactivatePagesFromBack nextPage:', nextPage, 'scroll height:', rootElem[0].scrollHeight, 'maxHeight:', maxHeight);
-      let pageItem = this._pageStateList[nextPage];
-      console.log('HIDING ', nextPage);
-      pageItem.element.hide();
+      nav.getPageElement(nextPage).hide();
     }
   }
 
   _deactivateAllPages() {
-    for (let nextPage = 0; nextPage < this._pageStateList.length; ++nextPage) {
-      let pageItem = this._pageStateList[nextPage];
-      pageItem.element.hide();
+    for (let elem of this._nav.getPageElements()) {
+      elem.hide();
     }
   }
 
   async _loadPage(pageNum) {
     logger.debug('AnnotationListWidget#_loadPage pageNum:', pageNum);
     getModalAlert().show('Loading');
-    const pageItem = this._pageStateList[pageNum];
-    const canvasId = pageItem.canvas['@id'];
-    const annotations = await this.options.annotationExplorer.getAnnotations({
+    const nav = this._nav;
+    const canvasId = nav.getCanvas(pageNum)['@id'];
+    let annotations = await this.options.annotationExplorer.getAnnotations({
       canvasId: canvasId
     });
+    annotations = annotations.filter(anno => anno.layerId === this.options.layerId);
     const tocCache = getApp().getAnnotationTocCache();
     const toc = tocCache ? await tocCache.getToc(canvasId) : null;
-    logger.debug('AnnotationListWidget#_loadPage toc:', toc);
+    const element = nav.getPageElement(pageNum);
 
-    pageItem.annotations = annotations.filter(anno => anno.layerId === this.options.layerId);
-    pageItem.toc = toc;
+    nav.load(pageNum, annotations, toc);
 
-    this.options.annotationPageRenderer.render(pageItem.element, {
+    this.options.annotationPageRenderer.render(element, {
       annotations: annotations,
       annotationToc: toc,
       isEditor: this.options.isEditor,
@@ -636,10 +552,10 @@ export default class AnnotationListWidget {
       //logger.debug('contentHeight:', contentHeight, 'scrollTop:', scrollTop, 'scroll bottom:', currentPos);
 
       if (scrollTop < 20) {
-        await _this.pageBack();
+        await _this.loadBackward();
       }
       if (contentHeight - currentPos < 20) {
-        await _this.pageForward();
+        await _this.loadForward();
       }
     });
   }
@@ -650,5 +566,13 @@ export default class AnnotationListWidget {
 
   _bindEvents() {
     this._bindScrollEvent();
+    this.options.rootElem.keydown(function(event) {
+      console.log('keydown');
+      event.preventDefault();
+    });
+    this.options.rootElem.keyup(function(event) {
+      console.log('keyup');
+      event.preventDefault();
+    });
   }
 }

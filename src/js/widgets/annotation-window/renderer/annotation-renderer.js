@@ -202,7 +202,7 @@ export default class AnnotationRenderer {
 }
 
 const annotationTemplate = Handlebars.compile([
-  '<div class="annowin_anno">',
+  '<div class="annowin_anno tabindex=-1">',
   '  <div class="normal_view">',
   '    {{#if isEditor}}',
   '      <div class="menu_bar">',

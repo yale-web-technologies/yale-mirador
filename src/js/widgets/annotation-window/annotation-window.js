@@ -175,7 +175,7 @@ export default class AnnotationWindow {
       initialTags: this.options.initialTocTags,
       changeCallback: async (value, text) => {
         logger.debug('Change from TOC selector: ', value);
-        await this.options.annotationListWidget.moveToTag(value);
+        await this.options.annotationListWidget.moveToTags([value]);
         //this.updateList();
       }
     });
@@ -452,12 +452,6 @@ export default class AnnotationWindow {
       }
     });
 
-    /*
-    this._subscribe(this.miradorProxy, 'currentCanvasIDUpdated.' + this.canvasWindow.id, event => {
-      this.placeholder.text('Loading...').show();
-    });
-    */
-
     this._subscribe(jQuery, 'YM_ANNOTATION_TOC_TAGS_SELECTED', (evnet, windowId, canvasId, tags) => {
       logger.debug('AnnotationWindow:SUB:YM_ANNOTATION_TOC_TAGS_SELECTED imageWindow:', windowId, 'canvasId:', canvasId, 'tags:', tags);
       this.options.annotationListWidget.moveToTags(tags);
@@ -519,7 +513,7 @@ const template = Handlebars.compile([
   '    </div>',
   '  </div>',
   '  <div class="placeholder"></div>',
-  '  <div class="annowin_list">',
+  '  <div class="annowin_list" tabindex=-1>',
   '  </div>',
   '</div>'
 ].join(''));
