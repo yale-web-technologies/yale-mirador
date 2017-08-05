@@ -18,7 +18,6 @@ export default class AnnotationNav {
     this._numPages = this.options.canvases.length;
     this._activeRange = { startPage: -1, endPage: -1 }; // marks pages that are loaded and visible
     this._pageStateList = this._createPageStateList();
-    this._callbacks = {};
   }
 
   getPage() {
@@ -27,13 +26,20 @@ export default class AnnotationNav {
 
   setPage(pageNum) {
     if (pageNum >= 0 && pageNum < this._numPages) {
-      const canvas = this._pageStateList[pageNum].canvas;
-
       this._pageNum = pageNum;
-      return this._callbacks.onSetPage(pageNum, canvas);
     } else {
       throw 'AnnotationNav#setPage invalid pageNum ' + pageNum;
     }
+  }
+
+  setPageByCanvasId(canvasId) {
+    for (let i = 0; i < this._pageStateList.length; ++i) {
+      if (this._pageStateList[i].canvas['@id'] === canvasId) {
+        this.setPage(i);
+        return;
+      }
+    }
+    logger.error('AnnotationNav#setPageByCanvasId page not found for canvas', canvasId);
   }
 
   getNumPages() {
@@ -80,7 +86,7 @@ export default class AnnotationNav {
     this._removeFromActiveRange(pageNum);
   }
 
-  get activeRange() {
+  getActiveRange() {
     logger.debug('AnnotationNav get activeRange', this._activeRange.startPage, this._activeRange.endPage);
     return this._activeRange;
   }
@@ -121,16 +127,6 @@ export default class AnnotationNav {
       }
     }
     return -1;
-  }
-
-  registerCallbacks(callbacksMap) {
-    for (let [key, value] of Object.entries(callbacksMap)) {
-      if (callbackKeys.has(key)) {
-        this._callbacks[key] = value;
-      } else {
-        throw 'AnnotationNav#registerCallbacks invalid key ' + key;
-      }
-    }
   }
 
   _createPageStateList() {

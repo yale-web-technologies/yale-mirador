@@ -154,7 +154,7 @@ export default class AnnotationWindow {
         state: getStateStore(),
         isEditor: session.isEditor()
       });
-      this.options.annotationListWidget.init();
+      this.options.annotationListWidget.reload();
     }
   }
 
@@ -182,7 +182,6 @@ export default class AnnotationWindow {
   }
 
   initLayerSelector() {
-    const _this = this;
     this._setCurrentLayerId(this.options.initialLayerId);
     this.layerSelector = new LayerSelector({
       parent: this.element.find('.layer_selector_container'),
@@ -190,8 +189,8 @@ export default class AnnotationWindow {
       initialLayerId: this.options.initialLayerId,
       changeCallback: (value, text) => {
         logger.debug('Change from Layer selector: ', value);
-        _this._setCurrentLayerId(value);
-        _this.updateList();
+        this._setCurrentLayerId(value);
+        this.updateList();
       }
     });
   }
@@ -293,10 +292,10 @@ export default class AnnotationWindow {
     }
     */
 
-    listWidget.init(this.layerSelector.val());
+    await listWidget.reload(this.layerSelector.val());
     let count = 0;
 
-    if (this.options.initialTocTags) {
+    if (this.options.initialTocTags.length > 0) {
       count = await listWidget.moveToTags(this.options.initialTocTags);
       if (this.options.annotationId) {
         listWidget.scrollToAnnotation(this.options.annotationId);
@@ -513,7 +512,7 @@ const template = Handlebars.compile([
   '    </div>',
   '  </div>',
   '  <div class="placeholder"></div>',
-  '  <div class="annowin_list" tabindex=-1>',
+  '  <div class="annowin_list" tabindex="-1">',
   '  </div>',
   '</div>'
 ].join(''));

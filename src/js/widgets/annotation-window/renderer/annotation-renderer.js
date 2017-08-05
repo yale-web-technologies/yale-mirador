@@ -80,13 +80,11 @@ export default class AnnotationRenderer {
 
   bindAnnotationItemEvents(annoElem, annotation, options) {
     const _this = this;
-    const annoWin =this.options.annotationWindow;
+    const annoWin = this.options.annotationWindow;
+    const listWidget = annoWin.options.annotationListWidget;
+    const nav = listWidget.getNav();
 
-    annoElem.click(function(event) {
-      logger.debug('Clicked annotation:', annotation);
-      annoWin.clearAnnotationHighlights();
-      annoWin.highlightAnnotationElem(annoElem, 'SELECTED');
-
+    annoElem.focus(function(event) {
       jQuery.publish('ANNOWIN_ANNOTATION_CLICKED', [{
         annotationWindowId: annoWin.getId(),
         annotation: annotation,
@@ -94,6 +92,23 @@ export default class AnnotationRenderer {
         imageWindowId: annoWin.getImageWindowId(),
         offset: annoElem.position().top
       }]);
+    });
+
+    annoElem.click(function(event) {
+      logger.debug('Clicked annotation:', annotation);
+      annoWin.clearAnnotationHighlights();
+      annoWin.highlightAnnotationElem(annoElem, 'SELECTED');
+      nav.setPageByCanvasId(annoElem.data('canvasId'));
+      annoElem.focus();
+      /*
+      jQuery.publish('ANNOWIN_ANNOTATION_CLICKED', [{
+        annotationWindowId: annoWin.getId(),
+        annotation: annotation,
+        canvasId: jQuery(this).data('canvasId'),
+        imageWindowId: annoWin.getImageWindowId(),
+        offset: annoElem.position().top
+      }]);
+      */
     });
 
     annoElem.find('.annotate').click(function (event) {
@@ -202,7 +217,7 @@ export default class AnnotationRenderer {
 }
 
 const annotationTemplate = Handlebars.compile([
-  '<div class="annowin_anno tabindex=-1">',
+  '<div class="annowin_anno" tabindex="-1">',
   '  <div class="normal_view">',
   '    {{#if isEditor}}',
   '      <div class="menu_bar">',
