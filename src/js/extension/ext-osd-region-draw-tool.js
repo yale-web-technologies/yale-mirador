@@ -95,7 +95,6 @@ import getStateStore from '../state-store';
       }
       if (setting.hoverWidthFactor) {
         const defaultWidth = shape.data._ym_defaultStrokeWidth;
-        console.log('default width', defaultWidth);
         shape.data.strokeWidth = setting.hoverWidthFactor *
           (typeof defaultWidth === 'number' ? defaultWidth : shape.data.strokeWidth);
       }
