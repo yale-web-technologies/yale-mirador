@@ -1,20 +1,13 @@
 {
-  "isEditor": "true",
+  "isEditor": false,
   "__manifestUrl": "http://media.nga.gov/public/manifests/nga_highlights.json",
-  "manifestUrl": "https://s3.amazonaws.com/tempmanifests/ten_thousand_rooms/KZJY.json",
-  "__manifestUrl": "https://s3.amazonaws.com/tempmanifests/life_of_the_buddha/LOTB.json",
+  "__manifestUrl": "https://s3.amazonaws.com/tempmanifests/ten_thousand_rooms/KZJY.json",
+  "manifestUrl": "https://s3.amazonaws.com/tempmanifests/life_of_the_buddha/LOTB.json",
   "__manifestUrl": "https://s3.amazonaws.com/tempmanifests/life_of_the_buddha/LOTB-test.json",
   "apiSettings": {
     "buildPath": "/dist/mirador/",
-    "endpointUrl": "http://mirador-annotations-tenkr-stg.herokuapp.com",
-    "__endpointUrl": "http://mirador-annotations-lotb-stg.herokuapp.com",
-    "__endpointUrl": "firebase",
-    "firebase": {
-      "apiKey": "AIzaSyAmsETcxLRWXpkGd4r-EFpyBGk1Q5ejuHc",
-      "authDomain": "ydc-annotations.firebaseapp.com",
-      "databaseUrl": "https://ydc-annotations.firebaseio.com",
-      "storageBuket": "ydc-annotations.appspot.com"
-    },
+    "endpointUrl": "http://mirador-annotations-lotb-stg.herokuapp.com",
+    "__endpointUrl": "http://localhost:3100",
     "disableAuthz": true,
     "copyrighted": false,
     "copyrightedImageServiceUrl": "http://images.tenthousandrooms.yale.edu/loris/tenkr:original/copyrighted.jpg",
@@ -23,79 +16,97 @@
       "textDirection": "horizontal-lr",
       "annotationsOverlay": {
         "hideUnfocused": true,
-        "hoverColor": "#3084a7",
+        "hoverColor": "yellow",
         "hoverWidthFactor": 2
       },
-      "tooltipStyles": null,
-      "__tooltipStyles": {
+      "tooltipStyles": {
         "color": "#fff",
         "backgroundColor": "rgba(0, 0, 0, 0.2)",
         "border": "solid 1px rgba(187, 187, 187, 0.5)"
+      },
+      "hideTagsInAnnotation": true,
+      "i18nOverrides": {
+        "en": {
+          "nextCanvas": "Next Panel",
+          "previousCanvas": "Previous Panel",
+          "showBottomPanel": "View Panels",
+          "hideBottomPanel": "Hide Panels"
+        },
+        "ko": {
+          "nextCanvas": "이전 패널",
+          "previousCanvas": "다음 패널",
+          "showBottomPanel": "패널 썸네일 리스트",
+          "hideBottomPanel": "패널 썸네일 리스트 감추기"
+        }
       }
     },
-    "tagHierarchy": null,
-    "__tagHierarchy": {
-      "shortLabelSeparator": ".",
-      "nodeSpecs": [
-        [
-          { "tag" : "chapter1", "label": "Chapter 1", "short": "1" },
-          { "tag" : "chapter2", "label": "Chapter 2", "short": "2" },
-          { "tag" : "chapter3", "label": "Chapter 3", "short": "3" },
-          { "tag" : "chapter4", "label": "Chapter 4", "short": "4" },
-          { "tag" : "chapter5", "label": "Chapter 5", "short": "5" },
-          { "tag" : "chapter6", "label": "Chapter 6", "short": "6" },
-          { "tag" : "chapter7", "label": "Chapter 7", "short": "7" },
-          { "tag" : "chapter8", "label": "Chapter 8", "short": "8" },
-          { "tag" : "chapter9", "label": "Chapter 9", "short": "9" },
-          { "tag" : "chapter10", "label": "Chapter 10", "short": "10" },
-          { "tag" : "chapter11", "label": "Chapter 11", "short": "11" },
-          { "tag" : "chapter12", "label": "Chapter 12", "short": "12" },
-          { "tag" : "chapter13", "label": "Chapter 13", "short": "13" },
-          { "tag" : "chapter14", "label": "Chapter 14", "short": "14" },
-          { "tag" : "chapter15", "label": "Chapter 15", "short": "15" },
-          { "tag" : "chapter16", "label": "Chapter 16", "short": "16" },
-          { "tag" : "chapter17", "label": "Chapter 17", "short": "17" },
-          { "tag" : "chapter18", "label": "Chapter 18", "short": "18" },
-          { "tag" : "chapter19", "label": "Chapter 19", "short": "19" },
-          { "tag" : "chapter20", "label": "Chapter 20", "short": "20" },
-          { "tag" : "chapter21", "label": "Chapter 21", "short": "21" },
-          { "tag" : "chapter22", "label": "Chapter 22", "short": "22" },
-          { "tag" : "chapter23", "label": "Chapter 23", "short": "23" },
-          { "tag" : "chapter24", "label": "Chapter 24", "short": "24" },
-          { "tag" : "chapter25", "label": "Chapter 25", "short": "25" },
-          { "tag" : "chapter26", "label": "Chapter 26", "short": "26" },
-          { "tag" : "chapter27", "label": "Chapter 27", "short": "27" },
-          { "tag" : "chapter28", "label": "Chapter 28", "short": "28" },
-          { "tag" : "chapter29", "label": "Chapter 29", "short": "29" },
-          { "tag" : "chapter30", "label": "Chapter 30", "short": "30" },
-          { "tag" : "chapter30", "label": "Chapter 30", "short": "31" },
-          { "tag" : "chapter30", "label": "Chapter 30", "short": "32" },
-          { "tag" : "chapter30", "label": "Chapter 30", "short": "33" },
-          { "tag" : "chapter30", "label": "Chapter 30", "short": "34" },
-          { "tag" : "chapter30", "label": "Chapter 30", "short": "35" }
-        ], [
-          { "tag" : "scene1", "label": "Scene 1", "short": "1" },
-          { "tag" : "scene2", "label": "Scene 2", "short": "2" },
-          { "tag" : "scene3", "label": "Scene 3", "short": "3" },
-          { "tag" : "scene4", "label": "Scene 4", "short": "4" },
-          { "tag" : "scene5", "label": "Scene 5", "short": "5" },
-          { "tag" : "scene6", "label": "Scene 6", "short": "6" },
-          { "tag" : "scene7", "label": "Scene 7", "short": "7" },
-          { "tag" : "scene8", "label": "Scene 8", "short": "8" },
-          { "tag" : "scene9", "label": "Scene 9", "short": "9" },
-          { "tag" : "scene10", "label": "Scene 10", "short": "10" },
-          { "tag" : "scene11", "label": "Scene 11", "short": "11" },
-          { "tag" : "scene12", "label": "Scene 12", "short": "12" },
-          { "tag" : "scene13", "label": "Scene 13", "short": "13" },
-          { "tag" : "scene14", "label": "Scene 14", "short": "14" },
-          { "tag" : "scene15", "label": "Scene 15", "short": "15" },
-          { "tag" : "scene16", "label": "Scene 16", "short": "16" },
-          { "tag" : "scene17", "label": "Scene 17", "short": "17" },
-          { "tag" : "scene18", "label": "Scene 18", "short": "18" },
-          { "tag" : "scene19", "label": "Scene 19", "short": "19" },
-          { "tag" : "scene20", "label": "Scene 20", "short": "20" }
-        ]
-      ]
+    "tocSpec": {
+      "defaultLayer": "http://mirador-annotations-lotb-stg.herokuapp.com/layers/English",
+      "generator": [
+        {"tag": { "prefix": "chapter" }, "label": { "prefix": "Chapter "}, "max": 28,
+         "descriptions": [
+          "Chapter 1. How the Bodhisattva Becomes the Divine Son Shvetaketu in Tushita<br/>དེ་ལས་དང་པོ་དགའ་ལྡན་དུ་ལྷའི་བུ་དམ་པ་ཏོག་དཀར་པོར་གྱུར་པའི་ཚུལ་ནི།",
+          "Chapter 2. The Advent of an Extraordinary Lineage<br/>གཉིས་པ་རིགས་མཆོག་ཏུ་གྱུར་པ་ནི།",
+          "Chapter 3. The Bodhisattva Sees the Five Sights<br/>གསུམ་པ་གཟིགས་པ་ལྔ་ལ་གཟིགས་པ་ནི།",
+          "Chapter 4. The Bodhisattva Decends from Tushita into His Mother’s Womb<br/>བཞི་པ་དགའ་ལྡན་ནས་ཡུམ་གྱི་ལྷུམས་སུ་འཕོ་བ་ནི།",
+          "Chapter 5. The Gestation<br/>ལྔ་པ་ལྷུམས་ན་བཞུགས་པ་ནི།",
+          "Chapter 6. The Birth<br/>དྲུག་པ་སྐུ་བལྟམས་པའི་མཛད་པ་ནི།",
+          "Chapter 7. Entering Kapilavastu<br/>བདུན་པ་གྲོང་ཁྱེར་སེར་སྐྱར་གཤེགས་པ་ནི།",
+          "Chapter 8. The Sage Asita’s Predictions<br/>བརྒྱད་པ་དྲང་སྲོང་ཆེན་པོས་ལུང་བསྟན་པ་སོགས་ནི།",
+          "Chapter 9. The Bodhisattva’s Training in the Arts<br/>དགུ་པ་བཟོའི་གནས་ལ་སྦྱངས་པ་ནི།",
+          "Chapter 10. The Bodhisattva Shows his Prowess in the Martial Arts<br/>བཅུ་པ་སྒྱུ་རྩལ་གྱི་སྟོབས་བསྟན་པ་ནི།",
+          "Chapter 11. Princess Yaśodharā is Selected<br/>བཅུ་གཅིག་པ་གྲགས་འཛིན་མ་ཁབ་ཏུ་གསོལ་བ་ནི།",
+          "Chapter 12. The Tale of the Good-Hearted Tree<br/>བཅུ་གཉིས་པ་ཤིང་དགེ་བའི་སྙིང་པོའི་གཏམ་ནི།",
+          "Chapter 13. Gopa Becomes Queen<br/>བཅུ་གསུམ་པ་ས་འཚོ་མ་བཙུན་མོར་བཞེས་པ་ནི།",
+          "Chapter 14. The Events That Motivated the Prince to Renounce the World<br/>བཅུ་བཞི་བ་ངེས་པར་འབྱུང་བའི་རྐྱེན་ནི།",
+          "Chapter 15. The Meditation in the Countryside<br/>བཅོ་ལྔ་པ་ཞིང་པའི་སར་བསམ་གཏན་བསྒྲུབས་པ་སོགས་ནི།",
+          "Chapter 16. The Bodhisattva takes Mṛgajā in Marriage<br/>བཅུ་དྲུག་པ་བཙུན་མོ་རི་དྭགས་སྐྱེས་བ་ཞེས་པ་ནི།",
+          "Chapter 17. The Imperial Guard<br/>བཅུ་བདུན་པ་སྲུང་མས་བསྐོར་བ་ནི།",
+          "Chapter 18. The Bodhisattva Leaves Home<br/>བཅོ་བརྒྱད་པ་ཁྱིམ་ནས་མངོན་པར་བྱུང་བ་ནི།",
+          "Chapter 19. Renunciation<br/>བཅུ་དགུ་པ་རབ་ཏུ་བྱུང་བ་ནི།",
+          "Chapter 20. Searching for the Path<br/>ཉི་ཤུ་པ་ལམ་འཚོལ་བར་བསྟན་པ་ནི།",
+          "Chapter 21. Practicing Austerities<br/>ཉེར་གཅིག་པ་དཀའ་བ་སྤྱད་པ་ནི།",
+          "Chapter 22. Completing Austerities<br/>ཉེར་གཉིས་པ་དཀའ་ཐུབ་གྲོལ་བ་ནི།",
+          "Chapter 23. Proceeding to Bodhgaya<br/>ཉེར་གསུམ་པ་བྱང་ཆུབ་སྙིང་པོར་གཤེགས་པ་ནི།",
+          "Chapter 24. Subduing the Demon [Māra]<br/>ཉེར་བཞི་པ་བདུད་བཏུལ་བ་ནི།",
+          "Chapter 25. The Attainment of the Unsurpassable Wisdom of Perfect Awakening<br/>ཉེར་ལྔ་པ་མངོན་པར་རྫོགས་པར་སངས་རྒྱས་པའི་བླ་ན་མེད་པའི་ཡེ་ཤེས་བརྙེས་པ་ནི།",
+          "Chapter 26. Living in the Wilderness<br/>ཉེར་དྲུག་པ་ནགས་ཁྲོད་དུ་དལ་བར་བཞུགས་པ་",
+          "Chapter 27. Great Brahmā Makes a Request, and [Buddha] Travels to Varanasi<br/>ཉེར་བདུན་པ་ཚངས་པ་ཆེན་པོས་གསོལ་བ་བཏབ་སྟེ་ཝཱ་རཱ་ཎ་སཱིར་གཤེགས་པ་ནི།",
+          "Chapter 28. The First Turning of the Wheel<br/>ཉེར་བརྒྱད་པ་ཆོས་འཁོར་ཐོག་མ་བསྐོར་བ་ནི།"
+         ]
+        },
+        {"tag": { "prefix": "scene" },   "label": { "prefix": "Scene " },  "max": 20}
+      ],
+      "canvasMap": {
+        "chapter1": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter2": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter3": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter4": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter5": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter6": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter7": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter8": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter9": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter10": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter11": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter12": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter13": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter14": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter15": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter16": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter17": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter18": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
+        "chapter19": ["http://manifests.ydc2.yale.edu/LOTB/canvas/bv11"],
+        "chapter20": ["http://manifests.ydc2.yale.edu/LOTB/canvas/bv11"],
+        "chapter21": ["http://manifests.ydc2.yale.edu/LOTB/canvas/bv11"],
+        "chapter22": ["http://manifests.ydc2.yale.edu/LOTB/canvas/bv11"],
+        "chapter23": ["http://manifests.ydc2.yale.edu/LOTB/canvas/bv11"],
+        "chapter24": ["http://manifests.ydc2.yale.edu/LOTB/canvas/bv11"],
+        "chapter25": ["http://manifests.ydc2.yale.edu/LOTB/canvas/bv11"],
+        "chapter26": ["http://manifests.ydc2.yale.edu/LOTB/canvas/bv11"],
+        "chapter27": ["http://manifests.ydc2.yale.edu/LOTB/canvas/bv11"],
+        "chapter28": ["http://manifests.ydc2.yale.edu/LOTB/canvas/bv11"]
+      }
     }
   }
 }
