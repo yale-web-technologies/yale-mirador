@@ -143,7 +143,7 @@ export default class MiradorWrapper {
       }
     });
 
-     jQuery.subscribe('ANNOWIN_ANNOTATION_CLICKED', (event, params) => {
+     jQuery.subscribe('ANNOWIN_ANNOTATION_FOCUSED', (event, params) => {
        const miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
        const windowProxy = miradorProxy.getWindowProxyById(params.imageWindowId);
        const tocPanel = windowProxy.getSidePanelTabContentElement('ym-annotation-toc');

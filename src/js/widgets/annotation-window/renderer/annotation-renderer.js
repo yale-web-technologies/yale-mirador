@@ -85,7 +85,7 @@ export default class AnnotationRenderer {
     const nav = listWidget.getNav();
 
     annoElem.focus(function(event) {
-      jQuery.publish('ANNOWIN_ANNOTATION_CLICKED', [{
+      jQuery.publish('ANNOWIN_ANNOTATION_FOCUSED', [{
         annotationWindowId: annoWin.getId(),
         annotation: annotation,
         canvasId: jQuery(this).data('canvasId'),
@@ -97,18 +97,8 @@ export default class AnnotationRenderer {
     annoElem.click(function(event) {
       logger.debug('Clicked annotation:', annotation);
       annoWin.clearAnnotationHighlights();
-      annoWin.highlightAnnotationElem(annoElem, 'SELECTED');
       nav.setPageByCanvasId(annoElem.data('canvasId'));
       annoElem.focus();
-      /*
-      jQuery.publish('ANNOWIN_ANNOTATION_CLICKED', [{
-        annotationWindowId: annoWin.getId(),
-        annotation: annotation,
-        canvasId: jQuery(this).data('canvasId'),
-        imageWindowId: annoWin.getImageWindowId(),
-        offset: annoElem.position().top
-      }]);
-      */
     });
 
     annoElem.find('.annotate').click(function (event) {

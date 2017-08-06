@@ -148,8 +148,8 @@ class PageController {
       }
     });
 
-    jQuery.subscribe('ANNOWIN_ANNOTATION_CLICKED', (event, params) => {
-      logger.debug('PageController has received event ANNOWIN_ANNOTATION_CLICKED with options', params);
+    jQuery.subscribe('ANNOWIN_ANNOTATION_FOCUSED', (event, params) => {
+      logger.debug('PageController has received event ANNOWIN_ANNOTATION_FOCUSED with options', params);
       const windowProxy = this._miradorProxy.getWindowProxyById(params.imageWindowId);
       const imageView = windowProxy.getImageView();
       const annoMap = {};
@@ -169,7 +169,7 @@ class PageController {
           imageView.panToAnnotation(anno);
           imageView.annotationsLayer.drawTool.updateHighlights(anno);
         } else {
-          logger.error('PageController:SUB:ANNOWIN_ANNOTATION_CLICKED annotation not found', params.annotation);
+          logger.error('PageController:SUB:ANNOWIN_ANNOTATION_FOCUSED annotation not found', params.annotation);
         }
       } else { // need to load the canvas that the annotation is targeting
         imageView._annotationToBeFocused = params.annotation;

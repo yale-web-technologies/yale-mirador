@@ -379,17 +379,8 @@ export default class AnnotationWindow {
   bindEvents() {
     logger.debug('AnnotationWindow#bindEvents');
 
-    /*
-    this._subscribe(jQuery, 'YM_READY_TO_RELOAD_ANNO_WIN', (event, imageWindowId) => {
-      logger.debug('AnnotationWindow:SUB:YM_READY_TO_RELOAD_ANNO_WIN annoWin:', this.options.id, 'imageWindow:', imageWindowId);
-      if (imageWindowId === this.options.canvasWindowId && !this.hasOpenEditor()) {
-        this.reload();
-      }
-    });
-    */
-
-    this._subscribe(jQuery, 'ANNOWIN_ANNOTATION_CLICKED', async (event, params) => {
-      logger.debug('Annotation window ' + this.options.id + ' received ANNOWIN_ANNOTATION_CLICKED params:', params, 'layer:', this.currentLayerId);
+    this._subscribe(jQuery, 'ANNOWIN_ANNOTATION_FOCUSED', async (event, params) => {
+      logger.debug('Annotation window ' + this.options.id + ' received ANNOWIN_ANNOTATION_FOCUSED params:', params, 'layer:', this.currentLayerId);
       const $anno = Anno(params.annotation);
       const listWidget = this.options.annotationListWidget;
 
