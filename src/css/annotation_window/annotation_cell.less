@@ -11,9 +11,11 @@
     border-color: @gray;
     border-width: 1px;
     padding: 1px;
+    cursor: pointer;
   }
 
-  &:focus {
+  &:focus,
+  &:hover:focus {
     border-color: @anno-selected-border-color;
     outline: none;
 

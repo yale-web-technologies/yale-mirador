@@ -85,6 +85,9 @@ export default class AnnotationRenderer {
     const nav = listWidget.getNav();
 
     annoElem.focus(function(event) {
+      annoWin.clearAnnotationHighlights();
+      nav.setPageByCanvasId(annoElem.data('canvasId'));
+
       jQuery.publish('ANNOWIN_ANNOTATION_FOCUSED', [{
         annotationWindowId: annoWin.getId(),
         annotation: annotation,
@@ -92,13 +95,6 @@ export default class AnnotationRenderer {
         imageWindowId: annoWin.getImageWindowId(),
         offset: annoElem.position().top
       }]);
-    });
-
-    annoElem.click(function(event) {
-      logger.debug('Clicked annotation:', annotation);
-      annoWin.clearAnnotationHighlights();
-      nav.setPageByCanvasId(annoElem.data('canvasId'));
-      annoElem.focus();
     });
 
     annoElem.find('.annotate').click(function (event) {

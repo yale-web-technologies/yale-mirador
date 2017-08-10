@@ -44,6 +44,10 @@ export default class AnnotationListWidget {
     }
   }
 
+  getRootElement() {
+    return this.options.rootElem;
+  }
+
   reload(layerId) {
     this._nav = this._setupNavigation();
     this._loading = false;
