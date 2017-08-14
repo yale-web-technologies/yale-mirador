@@ -390,8 +390,6 @@ export default class AnnotationWindow {
       }
       listWidget.clearHighlights();
 
-      await listWidget.moveToCanvas(params.canvasId);
-
       const annotations = this.canvasWindow.getAnnotationsList();
       const layerId = this.currentLayerId;
       const tocSpec = getStateStore().getTransient('tocSpec');
@@ -406,10 +404,13 @@ export default class AnnotationWindow {
         }
 
         if (siblingElems.length > 0) {
+          await listWidget.moveToCanvas(params.canvasId);
           listWidget.scrollToElem(siblingElems[0], -params.offset);
         }
         return;
       }
+
+      await listWidget.moveToCanvas(params.canvasId);
 
       const annoMap = {};
       for (let anno of annotations) {

@@ -230,13 +230,16 @@ export default class AnnotationListWidget {
     }
   }
 
-  scrollToElem(annoElem, yOffset) {
+  scrollToElem(annoElem, yOffsetIn) {
+    console.log('yOffsetIn:', yOffsetIn);
+    const yOffset = this._calcOffset(annoElem, yOffsetIn);
+
     this._unbindScrollEvent();
 
     return new Promise((resolve, reject) => {
       this.options.rootElem.scrollTo(annoElem, {
         offset: {
-          top: yOffset || -this._groupHeaderHeight
+          top: yOffset
         },
         onAfter: () => {
           this._bindScrollEvent();
@@ -244,6 +247,18 @@ export default class AnnotationListWidget {
         }
       });
     });
+  }
+
+  // Note to avoid confusion: yOffsetIn will typically have a negative value if defined
+  _calcOffset(annoElem, yOffsetIn) {
+    if (yOffsetIn === undefined) {
+      return -this._groupHeaderHeight;
+    }
+    const minOffset = annoElem.height() - this.options.rootElem.height();
+    console.log('minOffset:', minOffset);
+    const yOffset = yOffsetIn < minOffset ? minOffset : yOffsetIn;
+    console.log('yOffset:', yOffset);
+    return yOffset;
   }
 
   scrollToAnnotation(annotationId, yOffset) {
