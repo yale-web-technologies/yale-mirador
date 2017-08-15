@@ -115,11 +115,11 @@ export default class AnnotationWindow {
       //if ((this.options.annotationId || this.options.initialTocTags) && annosToShow.length > 0) {
       if (this.options.annotationId) {
         listWidget.highlightAnnotations([targetAnno], 'SELECTED');
-        listWidget.moveToAnnotation(this.options.annotationId, canvasId);
+        listWidget.goToAnnotation(this.options.annotationId, canvasId);
       } else if (this.options.initialTocTags.length > 0) {
-        listWidget.moveToTags(this.options.initialTocTags);
+        //listWidget.goToPageByTags(this.options.initialTocTags);
       } else {
-        listWidget.moveToPage(0);
+        listWidget.goToPage(0);
       }
       this.bindEvents();
       return this;
@@ -175,7 +175,7 @@ export default class AnnotationWindow {
       initialTags: this.options.initialTocTags,
       changeCallback: async (value, text) => {
         logger.debug('Change from TOC selector: ', value);
-        await this.options.annotationListWidget.moveToTags([value]);
+        await this.options.annotationListWidget.goToPageByTags([value]);
         //this.updateList();
       }
     });
@@ -296,12 +296,12 @@ export default class AnnotationWindow {
     let count = 0;
 
     if (this.options.initialTocTags.length > 0) {
-      count = await listWidget.moveToTags(this.options.initialTocTags);
+      count = await listWidget.goToPageByTags(this.options.initialTocTags);
       if (this.options.annotationId) {
         listWidget.scrollToAnnotation(this.options.annotationId);
       }
     } else {
-      count = await listWidget.moveToCanvas(canvasId);
+      count = await listWidget.goToPageByCanvas(canvasId);
     }
 
     if (count === 0) {
@@ -311,13 +311,17 @@ export default class AnnotationWindow {
     }
   }
 
+  getCurrentCanvasId() {
+    return this.canvasWindow.getCurrentCanvasId();
+  }
+
   getCurrentCanvas() {
-    const window = this.canvasWindow;
-    const id = window.getCurrentCanvasId();
-    const canvases = window.getManifest().getCanvases();
+    const id = this.getCurrentCanvasId();
+    const canvases = this.canvasWindow.getManifest().getCanvases();
     const current = canvases.filter(canvas => {
       return canvas['@id'] === id;
     });
+
     if (current.length < 1) {
       fatalError('Could not find the requested canvas: ' + id);
     } else {
@@ -329,10 +333,10 @@ export default class AnnotationWindow {
     this.options.annotationListWidget.scrollToAnnotation(annoId);
   }
 
-  async moveToAnnotation(annoId, canvasId) {
-    logger.debug('AnnotationWindow#moveToAnnotation annoId:', annoId, 'canvasId:', canvasId);
+  async goToAnnotation(annoId, canvasId) {
+    logger.debug('AnnotationWindow#goToAnnotation annoId:', annoId, 'canvasId:', canvasId);
 
-    return this.options.annotationListWidget.moveToAnnotation(annoId, canvasId);
+    return this.options.annotationListWidget.goToAnnotation(annoId, canvasId);
   }
 
   createInfoDiv(annotation, callback) {
@@ -404,13 +408,13 @@ export default class AnnotationWindow {
         }
 
         if (siblingElems.length > 0) {
-          await listWidget.moveToCanvas(params.canvasId);
+          await listWidget.goToPageByCanvas(params.canvasId);
           listWidget.scrollToElem(siblingElems[0], -params.offset);
         }
         return;
       }
 
-      await listWidget.moveToCanvas(params.canvasId);
+      await listWidget.goToPageByCanvas(params.canvasId);
 
       const annoMap = {};
       for (let anno of annotations) {
@@ -445,7 +449,7 @@ export default class AnnotationWindow {
 
     this._subscribe(jQuery, 'YM_ANNOTATION_TOC_TAGS_SELECTED', (evnet, windowId, canvasId, tags) => {
       logger.debug('AnnotationWindow:SUB:YM_ANNOTATION_TOC_TAGS_SELECTED imageWindow:', windowId, 'canvasId:', canvasId, 'tags:', tags);
-      this.options.annotationListWidget.moveToTags(tags);
+      this.options.annotationListWidget.goToPageByTags(tags);
     });
 
     this._subscribe(this.miradorProxy, 'YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED', async (event, windowId, annoId) => {
@@ -456,7 +460,7 @@ export default class AnnotationWindow {
       const annotation = toc.annotations.filter(anno => anno['@id'] === annoId)[0];
 
       if (annotation) {
-        this.options.annotationListWidget.moveToTags(annotation.tocTags);
+        this.options.annotationListWidget.goToPageByTags(annotation.tocTags);
       }
     });
   }

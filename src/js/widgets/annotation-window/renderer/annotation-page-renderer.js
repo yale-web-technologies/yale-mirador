@@ -62,6 +62,10 @@ export default class AnnotationPageRenderer {
     }
   }
 
+  unload(pageElem) {
+    pageElem.find('.annowin_group_header, .annowin_anno').remove();
+  }
+
   /**
    * options: {
    *   annotations: <object[]>,
@@ -88,7 +92,7 @@ export default class AnnotationPageRenderer {
               canvasId: canvasId,
               isEditor: options.isEditor
             });
-          pageElem.append(annoElem);
+          annoElem.append(annoElem);
         }
       } catch (e) {
         logger.error('ERROR AnnotationPageRenderer#_renderDefault', e);

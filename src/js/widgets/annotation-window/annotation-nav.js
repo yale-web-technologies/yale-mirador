@@ -1,9 +1,6 @@
 import getLogger from '../../util/logger';
 
 const logger = getLogger();
-const callbackKeys = new Set([
-  'onSetPage'
-]);
 
 /**
  *  Navigation controller for the annotation window
@@ -14,7 +11,7 @@ export default class AnnotationNav {
       canvases: []
     }, options);
 
-    this._pageNum = 0;
+    this._pageNum = -1;
     this._numPages = this.options.canvases.length;
     this._activeRange = { startPage: -1, endPage: -1 }; // marks pages that are loaded and visible
     this._pageStateList = this._createPageStateList();
@@ -80,10 +77,23 @@ export default class AnnotationNav {
 
   unload(pageNum) {
     const item = this._pageStateList[pageNum];
+    this._unloadPageItem(item);
+    this._removeFromActiveRange(pageNum);
+  }
+
+  _unloadPageItem(item) {
     delete item.annotations;
     delete item.toc;
     item.loaded = false;
-    this._removeFromActiveRange(pageNum);
+
+  }
+
+  unloadAll() {
+    for (let item of this._pageStateList) {
+      this._unloadPageItem(item);
+    }
+    this._activeRange.startPage = -1;
+    this._activeRange.endPage = -1;
   }
 
   getActiveRange() {

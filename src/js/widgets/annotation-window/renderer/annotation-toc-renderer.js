@@ -47,7 +47,7 @@ export default class AnnotationTocRenderer {
   }
 
   appendAnnotations(node) {
-    logger.debug('AnnotationTocRenderer#appendAnnotations node:', node);
+    //logger.debug('AnnotationTocRenderer#appendAnnotations node:', node);
     const renderer = this.options.annotationRenderer;
     const pageElem = this.options.container;
 

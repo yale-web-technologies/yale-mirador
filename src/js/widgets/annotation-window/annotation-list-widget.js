@@ -27,6 +27,7 @@ export default class AnnotationListWidget {
       maxContentRelativeHeight: 5
     }, options);
 
+    this._annoWin = this.options.annotationWindow;
     this._tocSpec = this.options.state.getTransient('tocSpec');
     this._groupHeaderHeight = 19;
 
@@ -73,50 +74,53 @@ export default class AnnotationListWidget {
   }
 
   async _onSetPage(pageNum, canvas) {
+    logger.debug('AnnotationListWidget#_onSetPage pageNum:', pageNum, 'canvas:', canvas);
     const rootElem = this.options.rootElem;
-    const imageWindowProxy = this.options.annotationWindow.getImageWindowProxy();
-    const oldCanvasId = imageWindowProxy.getCurrentCanvasId();
+    const oldCanvasId = this._annoWin.getCurrentCanvasId();
     const newCanvasId = canvas['@id'];
 
-    this._deactivateAllPages();
-    await this._activatePage(pageNum);
+    if (!this._nav.isLoaded(pageNum)) {
+      this._unloadAllPages();
+      await this._loadPage(pageNum);
+    }
 
     if (rootElem[0].scrollHeight <= rootElem.height()) {
-      await this._activateMorePagesForwardFirst(pageNum);
+      //await this._activateMorePagesForwardFirst(pageNum);
     }
     await this.scrollToPage(pageNum, true);
 
     if (oldCanvasId !== newCanvasId) {
-      imageWindowProxy.setCurrentCanvasId(newCanvasId, {
+      this._annoWin.getImageWindowProxy().setCurrentCanvasId(newCanvasId, {
         eventOriginatorType: 'AnnotationWindow'
       });
     }
   }
 
-  async moveToPage(pageNum) {
-    logger.debug('AnnotationListWidgetr#moveToPage', pageNum);
-    this._nav.setPage(pageNum);
-    await this._onSetPage(pageNum, this._nav.getCanvas(pageNum));
+  async goToPage(pageNum) {
+    logger.debug('AnnotationListWidgetr#goToPage', pageNum, 'from', this._nav.getPage());
+    if (pageNum !== this._nav.getPage()) {
+      this._nav.setPage(pageNum);
+      await this._onSetPage(pageNum, this._nav.getCanvas(pageNum));
+    }
   }
 
-  async moveToCanvas(canvasId) {
-    logger.debug('AnnotationListWidgetr#moveToCanvas', canvasId);
+  async goToPageByCanvas(canvasId) {
+    logger.debug('AnnotationListWidgetr#goToPageByCanvas', canvasId);
     const pageNum = this._nav.getPageNumForCanvas(canvasId);
-    await this.moveToPage(pageNum);
+    await this.goToPage(pageNum);
   }
 
-  async moveToTags(tags) {
-    logger.debug('AnnotationListWidgetr#moveToTags', tags);
+  async goToPageByTags(tags) {
+    logger.debug('AnnotationListWidgetr#goToPageByTags', tags);
     const canvasIds = this._tocSpec.canvasMap[tags[0]];
-
     if (canvasIds instanceof Array && canvasIds.length > 0) {
-      await this.moveToCanvas(canvasIds[0]);
+      await this.goToPageByCanvas(canvasIds[0]);
       this.scrollToTags(tags);
     }
   }
 
-  async loadForward() {
-    logger.debug('AnnotationListWidget#loadForward', this._loading);
+  async loadNextPages() {
+    logger.debug('AnnotationListWidget#loadNextPages', this._loading);
     if (this._loading) {
       return;
     }
@@ -131,18 +135,18 @@ export default class AnnotationListWidget {
         if (nextPage < nav.getNumPages()) {
           nextPage = await this._activateMorePagesForwardFirst(nextPage);
         }
-        this._deactivatePagesFromBack();
+        this._unloadPreviousPages();
         this._windBack();
       }
     } catch (e) {
-      logger.error('AnnotationListWidget#loadForward failed', e);
+      logger.error('AnnotationListWidget#loadNextPages failed', e);
     } finally {
       this._loading = false;
     }
   }
 
-  async loadBackward() {
-    logger.debug('AnnotationListWidget#pageBack', this._loading);
+  async loadPreviousPages() {
+    logger.debug('AnnotationListWidget#loadPreviousPages', this._loading);
     if (this._loading) {
       return;
     }
@@ -152,30 +156,30 @@ export default class AnnotationListWidget {
     try {
       const pageNum = nav.getActiveRange().startPage - 1;
 
-      if (pageNum !== -1) {
+      if (pageNum >= 0) {
         const nextPage = await this._activatePageBackward(pageNum);
         if (nextPage !== -1) {
           await this._activateMorePagesBackwardFirst(nextPage);
         }
-        this._deactivatePagesFromForward();
+        this._unloadNextPages();
         this._windForward();
       }
       this._loading = false;
     } catch (e) {
-      logger.error('AnnotationListWidget#loadBackward failed', e);
+      logger.error('AnnotationListWidget#loadPreviousPages failed', e);
     } finally {
       this._loading = false;
     }
   }
 
-  async moveToAnnotation(annoId, canvasId) {
-    logger.debug('AnnotationListWidget#moveToAnnotation annoId', annoId, 'canvasId:', canvasId);
+  async goToAnnotation(annoId, canvasId) {
+    logger.debug('AnnotationListWidget#goToAnnotation annoId', annoId, 'canvasId:', canvasId);
 
     const nav = this._nav;
     const targetPage = nav.getPageNumForCanvas(canvasId);
 
     if (targetPage >= 0) {
-      await this.moveToPage(targetPage);
+      await this.goToPage(targetPage);
 
       this.scrollToAnnotation(annoId);
       this.clearAnnotationHighlights();
@@ -206,7 +210,7 @@ export default class AnnotationListWidget {
   }
 
   scrollToTags(targetTags) {
-    logger.debug('AnnotationListWidget#srollToTags targetTags:', targetTags);
+    logger.debug('AnnotationListWidget#scrollToTags targetTags:', targetTags);
     let targetElem = null;
 
     this.options.rootElem.find('.annowin_group_header').each((index, value) => {
@@ -223,8 +227,11 @@ export default class AnnotationListWidget {
         return false;
       }
     });
+    console.log('targetElem:', targetElem[0].outerHTML);
     if (targetElem) {
-      targetElem[0].scrollIntoView();
+      this.options.rootElem.scrollTo(targetElem.next(), {
+        offset: { top: -this._groupHeaderHeight }
+      });
     } else {
       logger.warning('AnnotationListWidget#scrollToTags Header element not found for', targetTags);
     }
@@ -335,34 +342,24 @@ export default class AnnotationListWidget {
     }
   }
 
-  async _activatePage(pageNum) {
-    logger.debug('AnnotationListWidget#_activatePage', pageNum);
-    const nav = this._nav;
-
-    if (!nav.isLoaded(pageNum)) {
-      await this._loadPage(pageNum);
-    }
-    nav.getPageElement(pageNum).show();
-  }
-
   async _activatePageForward(pageNum) {
-    await this._activatePage(pageNum);
+    await this._loadPage(pageNum);
     let nextPage = pageNum;
 
     if (pageNum < this._nav.getNumPages() - 1) {
       ++nextPage;
-      await this._activatePage(nextPage);
+      await this._loadPage(nextPage);
     }
     return nextPage;
   }
 
   async _activatePageBackward(pageNum) {
-    await this._activatePage(pageNum);
+    await this._loadPage(pageNum);
     let nextPage = pageNum;
 
     if (pageNum > 0) {
       --nextPage;
-      await this._activatePage(nextPage);
+      await this._loadPage(nextPage);
     }
     return nextPage;
   }
@@ -450,8 +447,8 @@ export default class AnnotationListWidget {
     this._nav.unload(pageNum);
   }
 
-  _deactivatePagesFromForward() {
-    logger.debug('AnnotationListWidget#_deactivatePagesFromForward');
+  _unloadNextPages() {
+    logger.debug('AnnotationListWidget#_unloadNextPages');
     const nav = this._nav;
     const rootElem = this.options.rootElem;
     const rootElemHeight = rootElem.height();
@@ -466,8 +463,8 @@ export default class AnnotationListWidget {
     }
   }
 
-  _deactivatePagesFromBack() {
-    logger.debug('AnnotationListWidget#_deactivatePagesFromBack');
+  _unloadPreviousPages() {
+    logger.debug('AnnotationListWidget#_unloadPreviousPages');
     const rootElem = this.options.rootElem;
     const rootElemHeight = rootElem.height();
     const maxHeight = this.options.maxContentRelativeHeight * rootElemHeight;
@@ -476,21 +473,28 @@ export default class AnnotationListWidget {
          nextPage < this._currentPageNum - 1 && rootElem[0].scrollHeight - rootElemHeight > maxHeight;
          ++nextPage)
     {
-      logger.debug('AnnotationListWidget#_deactivatePagesFromBack nextPage:', nextPage, 'scroll height:', rootElem[0].scrollHeight, 'maxHeight:', maxHeight);
+      logger.debug('AnnotationListWidget#_unloadPreviousPages nextPage:', nextPage, 'scroll height:', rootElem[0].scrollHeight, 'maxHeight:', maxHeight);
       nav.getPageElement(nextPage).hide();
     }
   }
 
-  _deactivateAllPages() {
+  _unloadAllPages() {
     for (let elem of this._nav.getPageElements()) {
       elem.hide();
     }
+    this._nav.unloadAll();
   }
 
   async _loadPage(pageNum) {
     logger.debug('AnnotationListWidget#_loadPage pageNum:', pageNum);
-    getModalAlert().show('Loading');
     const nav = this._nav;
+
+    if (nav.isLoaded(pageNum)) {
+      return;
+    }
+
+    getModalAlert().show('Loading');
+
     const canvasId = nav.getCanvas(pageNum)['@id'];
     let annotations = await this.options.annotationExplorer.getAnnotations({
       canvasId: canvasId
@@ -508,6 +512,7 @@ export default class AnnotationListWidget {
       isEditor: this.options.isEditor,
       pageNum: pageNum
     });
+    element.show();
     getModalAlert().hide();
   }
 
@@ -573,7 +578,7 @@ export default class AnnotationListWidget {
       const nextPage = nav.getPage() + 1;
       if (nextPage < nav.getNumPages()) {
         if (!nav.isLoaded(nextPage)) {
-          await this.loadForward();
+          await this.loadNextPages();
         }
         const nextPageElem = nav.getPageElement(nextPage);
         next = nextPageElem.find('.annowin_anno').first();
@@ -599,7 +604,7 @@ export default class AnnotationListWidget {
       const prevPage = nav.getPage() - 1;
       if (prevPage >= 0) {
         if (!nav.isLoaded(prevPage)) {
-          await this.loadBackward();
+          await this.loadPreviousPages();
         }
         const prevPageElem = nav.getPageElement(prevPage);
         prev = prevPageElem.find('.annowin_anno').last();
@@ -623,10 +628,10 @@ export default class AnnotationListWidget {
       //logger.debug('contentHeight:', contentHeight, 'scrollTop:', scrollTop, 'scroll bottom:', currentPos);
 
       if (scrollTop < 20) {
-        await _this.loadBackward();
+        await _this.loadPreviousPages();
       }
       if (contentHeight - currentPos < 20) {
-        await _this.loadForward();
+        await _this.loadNextPages();
       }
     });
   }
