@@ -185,6 +185,8 @@ class PageController {
       const layerId = this._tocSpec.defaultLayer;
       let annoWindow = grid.getAnnotationWindowByLayer(layerId);
 
+      await this._miradorWrapper.zoomToTags(windowId, canvasId, tags);
+
       if (!annoWindow) {
         annoWindow =  await grid.addAnnotationWindow({
           miradorId: this._miradorId,

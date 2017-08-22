@@ -146,15 +146,13 @@ export default class AnnotationWindow {
       this.options.annotationListWidget =  new AnnotationListWidget({
         annotationWindow: this,
         rootElem: this.listElem,
-        imageWindowId: this.options.canvasWindowId,
         canvases: canvases,
-        layerId: this.options.initialLayerId,
         tocTags: this.options.initialTocTags,
         annotationExplorer: this.options.explorer,
         state: getStateStore(),
         isEditor: session.isEditor()
       });
-      this.options.annotationListWidget.reload();
+      this.options.annotationListWidget.reload(this.options.initialLayerId);
     }
   }
 
@@ -211,12 +209,12 @@ export default class AnnotationWindow {
   }
 
   getCurrentLayerId() {
-    return this.currentLayerId;
+    return this._currentLayerId;
   }
 
   _setCurrentLayerId(layerId) {
     logger.debug('AnnotationWindow#_setCurrentLayerId layerId:', layerId);
-    this.currentLayerId = layerId;
+    this._currentLayerId = layerId;
   }
 
   reload() {
@@ -276,16 +274,18 @@ export default class AnnotationWindow {
     });
 
     return Promise.all([layersPromise, tocPromise]).then(async () => {
-      await this.updateList();
+      await this.updateList().catch(reason => {
+        throw 'AnnotationWindow#updateList failed: ' + reason;
+      });
       return this;
     });
   }
 
   async updateList() {
-    logger.debug('AnnotationWindow#updateList');
     const listWidget = this.options.annotationListWidget;
     const state = getStateStore();
     const canvasId = this.canvasWindow.getCurrentCanvasId();
+    logger.debug('AnnotationWindow#updateList canvasId:', canvasId);
     /*
     if (this.options.explorer.getAnnotationToc()) {
       options.selectedTags = this.menuTagSelector.val().split('|');
@@ -296,12 +296,16 @@ export default class AnnotationWindow {
     let count = 0;
 
     if (this.options.initialTocTags.length > 0) {
-      count = await listWidget.goToPageByTags(this.options.initialTocTags);
+      count = await listWidget.goToPageByTags(this.options.initialTocTags).catch(reason => {
+        throw 'listWidget#goToPageByTags failed: ' + reason + '(tags: ' + this.options.initialTocTags + ')';
+      });
       if (this.options.annotationId) {
         listWidget.scrollToAnnotation(this.options.annotationId);
       }
     } else {
-      count = await listWidget.goToPageByCanvas(canvasId);
+      count = await listWidget.goToPageByCanvas(canvasId).catch(reason => {
+        throw 'listWidget#goToPageByCanvas failed: ' + reason;
+      });
     }
 
     if (count === 0) {
@@ -384,7 +388,7 @@ export default class AnnotationWindow {
     logger.debug('AnnotationWindow#bindEvents');
 
     this._subscribe(jQuery, 'ANNOWIN_ANNOTATION_FOCUSED', async (event, params) => {
-      logger.debug('Annotation window ' + this.options.id + ' received ANNOWIN_ANNOTATION_FOCUSED params:', params, 'layer:', this.currentLayerId);
+      logger.debug('Annotation window ' + this.options.id + ' received ANNOWIN_ANNOTATION_FOCUSED params:', params, 'layer:', this.getCurrentLayerId());
       const $anno = Anno(params.annotation);
       const listWidget = this.options.annotationListWidget;
 
@@ -395,7 +399,7 @@ export default class AnnotationWindow {
       listWidget.clearHighlights();
 
       const annotations = this.canvasWindow.getAnnotationsList();
-      const layerId = this.currentLayerId;
+      const layerId = this.getCurrentLayerId();
       const tocSpec = getStateStore().getTransient('tocSpec');
 
       if (tocSpec) {

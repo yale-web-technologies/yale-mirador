@@ -1,10 +1,11 @@
 import AnnotationNav from './annotation-nav';
-import AnnotationRenderer from './renderer/annotation-renderer';
 import AnnotationPageRenderer from './renderer/annotation-page-renderer';
 import {Anno, AnnotationToc, annoUtil} from '../../import';
 import getApp from '../../app';
 import getLogger from '../../util/logger';
 import getModalAlert from '../../widgets/modal-alert';
+import getStateStore from '../../state-store';
+import ScrollHelper from './scroll-helper';
 
 const logger = getLogger();
 
@@ -13,58 +14,53 @@ const logger = getLogger();
  */
 export default class AnnotationListWidget {
   constructor(options) {
-    this.options = Object.assign({
-      annotationWindow: null,
-      rootElem: null,
-      imageWindowId: null,
-      canvases: [],
-      layerId: null,
-      state: null,
-      isEditor: false,
-      annotationExplorer: null,
-      annotationPageRenderer: null,
-      annotationRenderer: null,
-      maxContentRelativeHeight: 5
-    }, options);
+    this._annoWin = options.annotationWindow; // annotation window to which this widget belongs
+    this._rootElem = options.rootElem; // root HTML element for this list widget
+    this._annoPageRenderer = options.annotationPageRenderer;
+    this._annoExplorer = options.annotationExplorer;
+    this._canvases = options.canvases;
+    this._state = options.state;
+    this._isEditor = options.isEditor;
 
-    this._annoWin = this.options.annotationWindow;
-    this._tocSpec = this.options.state.getTransient('tocSpec');
-    this._groupHeaderHeight = 19;
+    this._minContentRelativeHeight = 1.5;
+    this._maxContentRelativeHeight = 5;
 
-    if (!this.options.annotationRenderer) {
-      this.options.annotationRenderer = new AnnotationRenderer({
-        annotationWindow: this.options.annotationWindow,
-        state: this.options.state
+    if (!this._state) {
+      this._state = getStateStore();
+    }
+
+    if (!this._annoPageRenderer) {
+      this._annoPageRenderer = new AnnotationPageRenderer({
+        annotationWindow: this._annoWin,
+        annotationExplorer: this._annoExplorer
       });
     }
-    if (!this.options.annotationPageRenderer) {
-      this.options.annotationPageRenderer = new AnnotationPageRenderer({
-        annotationRenderer: this.options.annotationRenderer,
-        annotationExplorer: this.options.annotationExplorer
-      });
-    }
+
+    this._tocSpec = this._state.getTransient('tocSpec');
   }
 
   getRootElement() {
-    return this.options.rootElem;
+    return this._rootElem;
   }
 
   reload(layerId) {
+    this._layerId = layerId;
     this._nav = this._setupNavigation();
     this._loading = false;
-
-    if (layerId) {
-      this.options.layerId = layerId;
-    }
-    this.options.rootElem.empty();
+    this._rootElem.empty();
     this._createPageElements();
+    this._scrollHelper = new ScrollHelper({
+      listWidget: this,
+      listNavigator: this._nav,
+      groupHeaderHeight: 19
+    });
     this._unbindEvents();
     this._bindEvents();
   }
 
   _setupNavigation() {
     const nav = new AnnotationNav({
-      canvases: this.options.canvases
+      canvases: this._canvases
     });
     return nav;
   }
@@ -73,41 +69,22 @@ export default class AnnotationListWidget {
     return this._nav;
   }
 
-  async _onSetPage(pageNum, canvas) {
-    logger.debug('AnnotationListWidget#_onSetPage pageNum:', pageNum, 'canvas:', canvas);
-    const rootElem = this.options.rootElem;
-    const oldCanvasId = this._annoWin.getCurrentCanvasId();
-    const newCanvasId = canvas['@id'];
-
-    if (!this._nav.isLoaded(pageNum)) {
-      this._unloadAllPages();
-      await this._loadPage(pageNum);
-    }
-
-    if (rootElem[0].scrollHeight <= rootElem.height()) {
-      //await this._activateMorePagesForwardFirst(pageNum);
-    }
-    await this.scrollToPage(pageNum, true);
-
-    if (oldCanvasId !== newCanvasId) {
-      this._annoWin.getImageWindowProxy().setCurrentCanvasId(newCanvasId, {
-        eventOriginatorType: 'AnnotationWindow'
-      });
-    }
-  }
-
   async goToPage(pageNum) {
     logger.debug('AnnotationListWidgetr#goToPage', pageNum, 'from', this._nav.getPage());
     if (pageNum !== this._nav.getPage()) {
       this._nav.setPage(pageNum);
-      await this._onSetPage(pageNum, this._nav.getCanvas(pageNum));
+      await this._onNavSetPage(pageNum).catch(reason => {
+        throw 'AnnotationListWidget#goToPage _onNavSetPage(' + pageNum + ') failed: ' + reason;
+      });
     }
   }
 
   async goToPageByCanvas(canvasId) {
-    logger.debug('AnnotationListWidgetr#goToPageByCanvas', canvasId);
+    logger.debug('AnnotationListWidgetr#goToPageByCanvas canvasId:', canvasId);
     const pageNum = this._nav.getPageNumForCanvas(canvasId);
-    await this.goToPage(pageNum);
+    await this.goToPage(pageNum).catch(reason => {
+      throw 'AnnotationListWidget#goToPageByCanvas: goToPage(' + pageNum + ') failed: ' + reason;
+    });
   }
 
   async goToPageByTags(tags) {
@@ -115,60 +92,7 @@ export default class AnnotationListWidget {
     const canvasIds = this._tocSpec.canvasMap[tags[0]];
     if (canvasIds instanceof Array && canvasIds.length > 0) {
       await this.goToPageByCanvas(canvasIds[0]);
-      this.scrollToTags(tags);
-    }
-  }
-
-  async loadNextPages() {
-    logger.debug('AnnotationListWidget#loadNextPages', this._loading);
-    if (this._loading) {
-      return;
-    }
-    this._loading = true;
-    const nav = this._nav;
-
-    try {
-      const pageNum = nav.getActiveRange().endPage + 1;
-
-      if (pageNum < nav.getNumPages()) {
-        let nextPage = await this._activatePageForward(pageNum);
-        if (nextPage < nav.getNumPages()) {
-          nextPage = await this._activateMorePagesForwardFirst(nextPage);
-        }
-        this._unloadPreviousPages();
-        this._windBack();
-      }
-    } catch (e) {
-      logger.error('AnnotationListWidget#loadNextPages failed', e);
-    } finally {
-      this._loading = false;
-    }
-  }
-
-  async loadPreviousPages() {
-    logger.debug('AnnotationListWidget#loadPreviousPages', this._loading);
-    if (this._loading) {
-      return;
-    }
-    this._loading = true;
-    const nav = this._nav;
-
-    try {
-      const pageNum = nav.getActiveRange().startPage - 1;
-
-      if (pageNum >= 0) {
-        const nextPage = await this._activatePageBackward(pageNum);
-        if (nextPage !== -1) {
-          await this._activateMorePagesBackwardFirst(nextPage);
-        }
-        this._unloadNextPages();
-        this._windForward();
-      }
-      this._loading = false;
-    } catch (e) {
-      logger.error('AnnotationListWidget#loadPreviousPages failed', e);
-    } finally {
-      this._loading = false;
+      this._scrollHelper.scrollToTags(tags);
     }
   }
 
@@ -181,100 +105,128 @@ export default class AnnotationListWidget {
     if (targetPage >= 0) {
       await this.goToPage(targetPage);
 
-      this.scrollToAnnotation(annoId);
+      this._scrollHelper.scrollToAnnotation(annoId);
       this.clearAnnotationHighlights();
       this.highlightAnnotation(annoId, 'SELECTED');
     } else {
-      logger.debug('AnnotationListWidget#scrollToAnnotation page not found for canvasId', canvasId);
+      logger.debug('AnnotationListWidget#goToAnnotation page not found for canvasId', canvasId);
     }
   }
 
-  /**
-   * The page element must have already been loaded for this function to work.
-   *
-   * @param {number} pageNum
-   */
-  scrollToPage(pageNum, alignToTop) {
-    const pageHeaderElem = this._nav.getPageElement(pageNum).find('.page-header');
+  async _onNavSetPage(pageNum) {
+    logger.debug('AnnotationListWidget#_onNavSetPage pageNum:', pageNum);
+    const canvas = this._nav.getCanvas(pageNum);
+    const oldCanvasId = this._annoWin.getCurrentCanvasId();
+    const newCanvasId = canvas['@id'];
 
-    this._unbindScrollEvent();
-
-    return new Promise((resolve, reject) => {
-      this.options.rootElem.scrollTo(pageHeaderElem, {
-        onAfter: () => {
-          this._bindScrollEvent();
-          resolve();
-        }
+    if (!this._nav.isLoaded(pageNum)) {
+      this._unloadAllPages();
+      await this._loadPage(pageNum).catch(reason => {
+        throw 'AnnotationListWidget#_onNavSetPage _loadPage(' + pageNum + ') failed: ' + reason;
       });
-    });
+    }
+
+    await this.loadPreviousPage();
+    await this.loadNextPage();
+    await this._scrollHelper.scrollToPage(pageNum);
+
+    if (oldCanvasId !== newCanvasId) { // if the focused annotation belongs to a different canvas
+      // Load new canvas in the image window
+      this._annoWin.getImageWindowProxy().setCurrentCanvasId(newCanvasId, {
+        eventOriginatorType: 'AnnotationWindow'
+      });
+    }
   }
 
-  scrollToTags(targetTags) {
-    logger.debug('AnnotationListWidget#scrollToTags targetTags:', targetTags);
-    let targetElem = null;
-
-    this.options.rootElem.find('.annowin_group_header').each((index, value) => {
-      const headerElem = jQuery(value);
-      const tags = headerElem.data('tags');
-
-      if (targetTags.length === 1) {
-        if (tags[0] === targetTags[0]) {
-          targetElem = headerElem;
-          return false;
-        }
-      } else if (tags[0] === targetTags[0] && tags[1] === targetTags[1]) {
-        targetElem = headerElem;
-        return false;
+  // Load next page if there is one
+  async loadNextPage() {
+    logger.debug('AnnotationListWidget#loadNextPage loading:', this._loading);
+    try {
+      if (this._loading) {
+        return;
       }
-    });
-    console.log('targetElem:', targetElem[0].outerHTML);
-    if (targetElem) {
-      this.options.rootElem.scrollTo(targetElem.next(), {
-        offset: { top: -this._groupHeaderHeight }
-      });
-    } else {
-      logger.warning('AnnotationListWidget#scrollToTags Header element not found for', targetTags);
-    }
-  }
-
-  scrollToElem(annoElem, yOffsetIn) {
-    console.log('yOffsetIn:', yOffsetIn);
-    const yOffset = this._calcOffset(annoElem, yOffsetIn);
-
-    this._unbindScrollEvent();
-
-    return new Promise((resolve, reject) => {
-      this.options.rootElem.scrollTo(annoElem, {
-        offset: {
-          top: yOffset
-        },
-        onAfter: () => {
-          this._bindScrollEvent();
-          resolve();
-        }
-      });
-    });
-  }
-
-  // Note to avoid confusion: yOffsetIn will typically have a negative value if defined
-  _calcOffset(annoElem, yOffsetIn) {
-    if (yOffsetIn === undefined) {
-      return -this._groupHeaderHeight;
-    }
-    const minOffset = annoElem.height() - this.options.rootElem.height();
-    console.log('minOffset:', minOffset);
-    const yOffset = yOffsetIn < minOffset ? minOffset : yOffsetIn;
-    console.log('yOffset:', yOffset);
-    return yOffset;
-  }
-
-  scrollToAnnotation(annotationId, yOffset) {
-    logger.debug('AnnotationListWidget#scrollToAnnotation annotationId:', annotationId, 'yOffset:', yOffset);
-    for (let annoElem of this.getAnnotationElems()) {
-      const $annoElem = jQuery(annoElem);
-      if ($annoElem.data('annotationId') === annotationId) {
-        return this.scrollToElem($annoElem, yOffset);
+      this._loading = true;
+      const nextPage = this._nav.getActiveRange().endPage + 1;
+      if (nextPage < this._nav.getNumPages()) {
+        await this._loadPage(nextPage);
+        this._scrollHelper.scrollDown(30);
       }
+    } catch (e) {
+      logger.error('AnnotationListWidget#loadNextPages failed', e);
+    } finally {
+      this._loading = false;
+    }
+  }
+
+  // Load previous page if there is one
+  async loadPreviousPage() {
+    logger.debug('AnnotationListWidget#loadPreviousPage loading:', this._loading);
+    try {
+      if (this._loading) {
+        return;
+      }
+      this._loading = true;
+      const nextPage = this._nav.getActiveRange().startPage - 1;
+      if (nextPage >= 0) {
+        await this._loadPage(nextPage);
+        this._scrollHelper.scrollUp(30);
+      }
+    } catch (e) {
+      logger.error('AnnotationListWidget#loadNextPages failed', e);
+    } finally {
+      this._loading = false;
+    }
+  }
+
+  // Load next pages until minimum content height is reached
+  async LoadNextPages() {
+    logger.debug('AnnotationListWidget#loadNextPages loading:', this._loading);
+    try {
+      if (this._loading) {
+        return;
+      }
+      this._loading = true;
+      const minHeight = this._rootElem.height() * this._minContentRelativeHeight;
+      const numPages = this._nav.getNumPages();
+      let scrollHeight = this._rootElem[0].scrollHeight;
+
+      for (let nextPage = this._nav.getActiveRange().endPage + 1;
+        nextPage < numPages && scrollHeight < minHeight;
+        scrollHeight = this._rootElem[0].scrollHeight, ++nextPage)
+      {
+        logger.debug('AnnotationListWidget#loadNextPages nextPage:', nextPage, 'numPages:', numPages, 'scrollHeight:', scrollHeight, 'minHeight:', minHeight);
+        await this._loadPage(nextPage);
+      }
+    } catch (e) {
+      logger.error('AnnotationListWidget#loadNextPages failed', e);
+    } finally {
+      this._loading = false;
+    }
+  }
+
+  // Load next pages until minimum content height is reached
+  async loadPreviousPages() {
+    logger.debug('AnnotationListWidget#loadPreviousPages', this._loading);
+    try {
+      if (this._loading) {
+        return;
+      }
+      this._loading = true;
+      const minHeight = this._rootElem.height() * this._minContentRelativeHeight;
+      const numPages = this._nav.getNumPages();
+      let scrollHeight = this._rootElem[0].scrollHeight;
+
+      for (let nextPage = this._nav.getActiveRange().startPage - 1;
+        nextPage >= 0 && scrollHeight < minHeight;
+        scrollHeight = this._rootElem[0].scrollHeight, --nextPage)
+      {
+        logger.debug('AnnotationListWidget#_loadPreviousPages nextPage:', nextPage, 'scrollHeight:', scrollHeight, 'minHeight:', minHeight);
+        await this._loadPage(nextPage);
+      }
+    } catch (e) {
+      logger.error('AnnotationListWidget#loadPreviousPages failed', e);
+    } finally {
+      this._loading = false;
     }
   }
 
@@ -325,93 +277,26 @@ export default class AnnotationListWidget {
   _createPageElements() {
     logger.debug('AnnotationListWidget#_createPageElements');
     const nav = this._nav;
-    const pageRenderer = this.options.annotationPageRenderer;
+    const pageRenderer = this._annoPageRenderer;
 
-    for (let pageNum = 0; pageNum < this.options.canvases.length; ++pageNum) {
+    for (let pageNum = 0; pageNum < this._canvases.length; ++pageNum) {
       let canvas = nav.getCanvas(pageNum);
       let pageElem = pageRenderer.createPageElement({
         pageNum: pageNum,
         canvasId: canvas['@id'],
         canvasLabel: canvas.label,
-        layerId: this.options.layerId
+        layerId: this._layerId
       });
 
-      this.options.rootElem.append(pageElem);
+      this._rootElem.append(pageElem);
       pageElem.hide();
       nav.setPageElement(pageNum, pageElem);
     }
   }
 
-  async _activatePageForward(pageNum) {
-    await this._loadPage(pageNum);
-    let nextPage = pageNum;
-
-    if (pageNum < this._nav.getNumPages() - 1) {
-      ++nextPage;
-      await this._loadPage(nextPage);
-    }
-    return nextPage;
-  }
-
-  async _activatePageBackward(pageNum) {
-    await this._loadPage(pageNum);
-    let nextPage = pageNum;
-
-    if (pageNum > 0) {
-      --nextPage;
-      await this._loadPage(nextPage);
-    }
-    return nextPage;
-  }
-
-  async _activateMorePagesForwardFirst(pageNum) {
-    logger.debug('AnnotationListWidget#_activateMorePagesForwardFirst', pageNum);
-    const numCanvases = this.options.canvases.length;
-    const nextPage = await this._activateMorePagesForward(pageNum, numCanvases);
-    await this._activateMorePagesBackward(pageNum, numCanvases);
-
-    return nextPage;
-  }
-
-  async _activateMorePagesBackwardFirst(pageNum, numPages) {
-    logger.debug('AnnotationListWidget#_activateMorePagesBackwardFirst', pageNum, numPages);
-    const numCanvases = this.options.canvases.length;
-    const nextPage = await this._activateMorePagesBackward(pageNum, numCanvases);
-
-    await this._activateMorePagesForward(pageNum, numCanvases);
-
-    return nextPage;
-  }
-
-  _windBack() {
-    const rootElem = this.options.rootElem;
-    const scrollTop = rootElem.scrollTop();
-    const diff = rootElem[0].scrollHeight - rootElem.scrollTop() - rootElem.height();
-
-    if (diff === 0) {
-      logger.debug('Winding back');
-      this._unbindScrollEvent();
-      this.options.rootElem.scrollTop(scrollTop - 5);
-      this._bindScrollEvent();
-    }
-  }
-
-   _windForward() {
-    logger.debug('_windForward');
-    const rootElem = this.options.rootElem;
-    const scrollTop = rootElem.scrollTop();
-
-    if (scrollTop === 0) {
-      logger.debug('Winding forward');
-      this._unbindScrollEvent();
-      this.options.rootElem.scrollTop(scrollTop + 5);
-      this._bindScrollEvent();
-    }
-  }
-
   async _activateMorePagesForward(pageNum, numPages) {
     logger.debug('AnnotationListWidget#_activateMorePagesForward', pageNum, numPages);
-    const rootElem = this.options.rootElem;
+    const rootElem = this._rootElem;
     let nextPage = pageNum;
 
     while (nextPage < numPages) {
@@ -427,7 +312,7 @@ export default class AnnotationListWidget {
 
   async _activateMorePagesBackward(pageNum) {
     logger.debug('AnnotationListWidget#_activateMorePagesBackward', pageNum);
-    const rootElem = this.options.rootElem;
+    const rootElem = this._rootElem;
     let nextPage = pageNum;
 
     while (nextPage >= 0) {
@@ -447,12 +332,45 @@ export default class AnnotationListWidget {
     this._nav.unload(pageNum);
   }
 
+  async _loadPage(pageNum) {
+    logger.debug('AnnotationListWidget#_loadPage pageNum:', pageNum);
+
+    if (this._nav.isLoaded(pageNum)) {
+      logger.debug('AnnotationListWidget#_loadPage alread loaded; page:', pageNum);
+      return;
+    }
+    getModalAlert().show('Loading');
+
+    const annotations = await this._getAnnotationsForPage(pageNum);
+    const toc = await this._getTocForPage(pageNum);
+    const element = this._nav.getPageElement(pageNum);
+
+    this._nav.load(pageNum, annotations, toc);
+
+    this._annoPageRenderer.render(element, {
+      annotations: annotations,
+      annotationToc: toc,
+      isEditor: this._isEditor,
+      pageNum: pageNum
+    });
+
+    element.show();
+    getModalAlert().hide();
+  }
+
+  _unloadAllPages() {
+    for (let elem of this._nav.getPageElements()) {
+      elem.hide();
+    }
+    this._nav.unloadAll();
+  }
+
   _unloadNextPages() {
     logger.debug('AnnotationListWidget#_unloadNextPages');
     const nav = this._nav;
-    const rootElem = this.options.rootElem;
+    const rootElem = this._rootElem;
     const rootElemHeight = rootElem.height();
-    const maxHeight = this.options.maxContentRelativeHeight * rootElemHeight;
+    const maxHeight = this._maxContentRelativeHeight * rootElemHeight;
 
     for (let nextPage = nav.getActiveRange().endPage;
          nextPage > nav.getPage() + 1 && rootElem[0].scrollHeight - rootElemHeight > maxHeight;
@@ -465,9 +383,9 @@ export default class AnnotationListWidget {
 
   _unloadPreviousPages() {
     logger.debug('AnnotationListWidget#_unloadPreviousPages');
-    const rootElem = this.options.rootElem;
+    const rootElem = this._rootElem;
     const rootElemHeight = rootElem.height();
-    const maxHeight = this.options.maxContentRelativeHeight * rootElemHeight;
+    const maxHeight = this._maxContentRelativeHeight * rootElemHeight;
 
     for (let nextPage = 0;
          nextPage < this._currentPageNum - 1 && rootElem[0].scrollHeight - rootElemHeight > maxHeight;
@@ -478,57 +396,29 @@ export default class AnnotationListWidget {
     }
   }
 
-  _unloadAllPages() {
-    for (let elem of this._nav.getPageElements()) {
-      elem.hide();
-    }
-    this._nav.unloadAll();
+  async _getTocForPage(pageNum) {
+    const canvas = this._nav.getCanvas(pageNum);
+    const tocCache = getApp().getAnnotationTocCache();
+    return tocCache ? await tocCache.getToc(canvas['@id']) : null;
   }
 
-  async _loadPage(pageNum) {
-    logger.debug('AnnotationListWidget#_loadPage pageNum:', pageNum);
-    const nav = this._nav;
-
-    if (nav.isLoaded(pageNum)) {
-      return;
-    }
-
-    getModalAlert().show('Loading');
-
-    const canvasId = nav.getCanvas(pageNum)['@id'];
-    let annotations = await this.options.annotationExplorer.getAnnotations({
+  async _getAnnotationsForPage(pageNum) {
+    const canvasId = this._nav.getCanvas(pageNum)['@id'];
+    const annotations = await this._annoExplorer.getAnnotations({
       canvasId: canvasId
     });
-    annotations = annotations.filter(anno => anno.layerId === this.options.layerId);
-    const tocCache = getApp().getAnnotationTocCache();
-    const toc = tocCache ? await tocCache.getToc(canvasId) : null;
-    const element = nav.getPageElement(pageNum);
-
-    nav.load(pageNum, annotations, toc);
-
-    this.options.annotationPageRenderer.render(element, {
-      annotations: annotations,
-      annotationToc: toc,
-      isEditor: this.options.isEditor,
-      pageNum: pageNum
-    });
-    element.show();
-    getModalAlert().hide();
-  }
-
-  _lessPagesFrom(pageNum) {
-    const numCanvases = this.options.canvases.length;
+    return annotations.filter(anno => anno.layerId === this._layerId);
   }
 
   clearHighlights() {
-    this.options.rootElem.find('.annowin_anno').each((index, value) => {
+    this._rootElem.find('.annowin_anno').each((index, value) => {
       jQuery(value).removeClass('annowin_targeted')
         .removeClass('ym_anno_selected ym_anno_targeting ym_anno_targeted');
     });
   }
 
   getAnnotationElems() {
-    return this.options.rootElem.find('.annowin_anno').toArray();
+    return this._rootElem.find('.annowin_anno').toArray();
   }
 
   /**
@@ -538,9 +428,11 @@ export default class AnnotationListWidget {
    * ["chapter1", "scene2", "p1"].
    */
   getTocSiblingElems(annotation, annotations, layerId, toc) {
+    logger.debug('AnnotationListWidget#getTocSiblingElems annotation:', annotation, 'annotations:', annotations, 'layerId:', layerId, 'toc:', toc);
     const result = [];
     let siblings = annoUtil.findTocSiblings(annotation, annotations, layerId, toc);
     siblings = siblings.filter(anno => this._getParagraphTag(anno) === this._getParagraphTag(annotation));
+    console.log('siblings:', siblings);
 
     for (let annoElem of this.getAnnotationElems()) {
       const $annoElem = jQuery(annoElem);
@@ -567,7 +459,7 @@ export default class AnnotationListWidget {
 
   async _focusNextAnnotation() {
     const nav = this._nav;
-    const current = jQuery(this.options.rootElem.find('.annowin_anno:focus'));
+    const current = jQuery(this._rootElem.find('.annowin_anno:focus'));
     let next = current.next();
     while (next.size() > 0 && !next.hasClass('annowin_anno')) {
       next = next.next();
@@ -578,7 +470,7 @@ export default class AnnotationListWidget {
       const nextPage = nav.getPage() + 1;
       if (nextPage < nav.getNumPages()) {
         if (!nav.isLoaded(nextPage)) {
-          await this.loadNextPages();
+          await this.loadNextPage();
         }
         const nextPageElem = nav.getPageElement(nextPage);
         next = nextPageElem.find('.annowin_anno').first();
@@ -592,7 +484,7 @@ export default class AnnotationListWidget {
 
   async _focusPrevAnnotation() {
     const nav = this._nav;
-    const current = jQuery(this.options.rootElem.find('.annowin_anno:focus'));
+    const current = jQuery(this._rootElem.find('.annowin_anno:focus'));
     let prev = current.prev();
 
     while (prev.size() > 0 && !prev.hasClass('annowin_anno')) {
@@ -604,7 +496,7 @@ export default class AnnotationListWidget {
       const prevPage = nav.getPage() - 1;
       if (prevPage >= 0) {
         if (!nav.isLoaded(prevPage)) {
-          await this.loadPreviousPages();
+          await this.loadPreviousPage();
         }
         const prevPageElem = nav.getPageElement(prevPage);
         prev = prevPageElem.find('.annowin_anno').last();
@@ -616,35 +508,19 @@ export default class AnnotationListWidget {
     }
   }
 
-  _bindScrollEvent() {
-    const _this = this;
-
-    this.options.rootElem.scroll(async function(event) {
-      const elem = jQuery(this);
-      const scrollTop = elem.scrollTop();
-      const currentPos = scrollTop + elem.height();
-      const contentHeight = this.scrollHeight;
-
-      //logger.debug('contentHeight:', contentHeight, 'scrollTop:', scrollTop, 'scroll bottom:', currentPos);
-
-      if (scrollTop < 20) {
-        await _this.loadPreviousPages();
-      }
-      if (contentHeight - currentPos < 20) {
-        await _this.loadNextPages();
-      }
-    });
+  scrollToElem(annoElem, yOffset) {
+    this._scrollHelper.scrollToElem(annoElem, yOffset);
   }
 
-  _unbindScrollEvent() {
-    this.options.rootElem.off('scroll');
+  scrollToAnnotation(annoId, yOffset) {
+    this._scrollHelper.scrollToAnnotation(annoId, yOffset);
   }
 
   _bindEvents() {
     const _this = this;
-    this._bindScrollEvent();
+    this._scrollHelper.bindScrollEvent();
 
-    this.options.rootElem.keydown(function(event) {
+    this._rootElem.keydown(function(event) {
       event.preventDefault();
       switch (event.key) {
         case 'ArrowDown':
@@ -658,7 +534,7 @@ export default class AnnotationListWidget {
   }
 
   _unbindEvents() {
-    this._unbindScrollEvent();
-    this.options.rootElem.off('keydown');
+    this._scrollHelper.unbindScrollEvent();
+    this._rootElem.off('keydown');
   }
 }

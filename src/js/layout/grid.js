@@ -107,7 +107,7 @@ export default class {
     }
   }
 
-  addAnnotationWindow(options) {
+  async addAnnotationWindow(options) {
     logger.debug('Grid#addAnnotationWindow options:', options);
     const windowId = Mirador.genUUID(); // annotation window ID
     const imageWindowId = options.imageWindowId || null;
@@ -132,13 +132,14 @@ export default class {
       initialTocTags: options.tocTags || [],
       annotationId: options.annotationId || null
     });
-    return annoWin.init().then(window => {
-      this._annotationWindows[windowId] = annoWin;
-      this._resizeWindows();
-      return window;
-    }).catch(reason => {
+
+    await annoWin.init().catch(reason => {
       logger.error('Grid#addAnnotationWindow annoWin.init failed:', reason);
     });
+
+    this._annotationWindows[windowId] = annoWin;
+    this._resizeWindows();
+    return annoWin;
   }
 
   getAnnotationWindows() {
@@ -146,7 +147,10 @@ export default class {
   }
 
   getAnnotationWindowByLayer(layerId) {
+    logger.debug('Grid#getAnnotationWindowByLayer layerId:', layerId, 'windows:', this._annotationWindows);
     for (let annoWindow of Object.values(this._annotationWindows)) {
+      console.log('ggg current:', annoWindow.getCurrentLayerId());
+      console.log('ggg default:', layerId);
       if (annoWindow.getCurrentLayerId() === layerId) {
         return annoWindow;
       }

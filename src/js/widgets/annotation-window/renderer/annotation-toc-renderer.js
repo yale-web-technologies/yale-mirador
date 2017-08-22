@@ -35,6 +35,7 @@ export default class AnnotationTocRenderer {
   }
 
   appendHeader(node) {
+    //logger.debug('AnnotationTocRenderer#appendHeader node:', node);
     const layerId = this.options.layerId;
 
     // We are distinguishing between leaf and non-leaf nodes to ensure
@@ -64,7 +65,7 @@ export default class AnnotationTocRenderer {
   }
 
   appendUnattachedAnnotations() {
-    logger.debug('AnnotationTocRenderer#appendUnattachedAnnotations');
+    //logger.debug('AnnotationTocRenderer#appendUnattachedAnnotations');
     const renderer = this.options.annotationRenderer;
 
     if (this.options.toc.numUnassigned() > 0) {
@@ -97,6 +98,9 @@ export default class AnnotationTocRenderer {
     const headerElem = jQuery(headerHtml)
       .addClass('header-level-' + node.tags.length);
 
+    if (!(node.tags instanceof Array && node.tags.length > 0)) {
+      logger.error('AnnotationTocRenderer#createHeaderElem invalid tags for node:', node);
+    }
     headerElem.data('tags', node.tags);
     return headerElem;
   }

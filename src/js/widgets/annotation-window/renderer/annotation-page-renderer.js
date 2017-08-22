@@ -1,14 +1,27 @@
+import AnnotationRenderer from './annotation-renderer';
 import AnnotationTocRenderer from './annotation-toc-renderer';
 import getLogger from '../../../util/logger';
+import getStateStore from '../../../state-store';
 
 const logger = getLogger();
 
 export default class AnnotationPageRenderer {
   constructor(options) {
-    this.options = Object.assign({
-      annotationWindow: null,
-      annotationRenderer: null
-    }, options);
+    this._annoWin = options.annotationWindow;
+    this._annoRenderer = options.annotationRenderer;
+    this._annoExplorer = options.annotationExplorer;
+    this._state = options.state;
+
+    if (!this._state) {
+      this._state = getStateStore();
+    }
+
+    if (!this._annoRenderer) {
+      this._annoRenderer = new AnnotationRenderer({
+        annotationWindow: this._annoWin,
+        state: this._state
+      });
+    }
   }
 
   /**
@@ -86,7 +99,7 @@ export default class AnnotationPageRenderer {
       try {
         if (annotation.layerId === layerId) {
           ++count;
-          const annoElem = this.options.annotationRenderer
+          const annoElem = this._annoRenderer
             .createAnnoElem(annotation, {
               pageElem: pageElem,
               canvasId: canvasId,
@@ -109,7 +122,7 @@ export default class AnnotationPageRenderer {
       canvasId: pageElem.data('canvasId'),
       layerId: pageElem.data('layerId'),
       toc: options.annotationToc,
-      annotationRenderer: this.options.annotationRenderer
+      annotationRenderer: this._annoRenderer
     });
     return renderer.render();
   }
@@ -127,7 +140,7 @@ export default class AnnotationPageRenderer {
 
     logger.debug('AnnotationPageRenderer#_saveAnnotationsOrder canvasId:', canvasId, 'layerId:', layerId, 'annoIds:', annoIds);
 
-    this.options.annotationExplorer.updateAnnotationListOrder(canvasId, layerId, annoIds)
+    this._annoExplorer.updateAnnotationListOrder(canvasId, layerId, annoIds)
     .catch(reason => {
       _this.tempMenuRow.hide();
       const msg = 'AnnotationPageRenderer#_saveAnnotationsOrder updateAnnotationListOrder failed: ' + reason;
