@@ -81,8 +81,7 @@ export default class AnnotationRenderer {
   bindAnnotationItemEvents(annoElem, annotation, options) {
     const _this = this;
     const annoWin = this.options.annotationWindow;
-    const listWidget = annoWin.options.annotationListWidget;
-    const nav = listWidget.getNav();
+    const nav = annoWin.getAnnoListNav();
 
     annoElem.focus(function(event) {
       annoWin.clearAnnotationHighlights();

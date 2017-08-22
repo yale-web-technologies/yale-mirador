@@ -43,12 +43,13 @@ export default class MiradorProxy {
     eventEmitter.publish.apply(eventEmitter, args);
   }
 
-  subscribe(eventName, callback) {
-    logger.debug('MiradorProxy#subscribe', eventName, callback);
-    this._mirador.eventEmitter.subscribe(eventName, callback);
+  subscribe(eventName, handler) {
+    logger.debug('MiradorProxy#subscribe', eventName, handler);
+    this._mirador.eventEmitter.subscribe(eventName, handler);
   }
 
-  unsubscribe(eventName) {
-    this._mirador.eventEmitter.unsubscribe(eventName);
+  unsubscribe(eventName, handler) {
+    logger.debug('MiradorProxy#unsubscribe', eventName, handler);
+    this._mirador.eventEmitter.unsubscribe(eventName, handler);
   }
 }
