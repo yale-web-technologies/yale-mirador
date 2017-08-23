@@ -32,6 +32,16 @@ class MiradorProxyManager {
     return this._miradorProxiesMap[miradorId] || null;
   }
 
+  getMiradorProxyByWindowId(windowId) {
+    for (let miradorProxy of Object.values(this._miradorProxiesMap)) {
+      let window = miradorProxy.getWindowById(windowId);
+      if (window) {
+        return miradorProxy;
+      }
+    }
+    return null;
+  }
+
   /**
    * @returns {WindowProxy[]} a list of window proxies for all windows in all Mirador instances
    */

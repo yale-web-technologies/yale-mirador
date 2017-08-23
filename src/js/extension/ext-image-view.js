@@ -142,8 +142,9 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
     });
 
     this.eventEmitter.subscribe('YM_DISPLAY_ON', event => {
+      logger.debug('ExtImageView:SUB:YM_DISPLAY_ON');
       if (this.hud.annoState.current === 'off') {
-        _this.hud.annoState.displayOn(_this.element.find('.mirador-osd-annotations-layer'));
+        this.hud.annoState.displayOn(this.element.find('.mirador-osd-annotations-layer'));
       }
     });
   };

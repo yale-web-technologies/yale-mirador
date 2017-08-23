@@ -21,12 +21,14 @@ export default class MiradorConfigBuilder {
       tagHierarchy: null
     }, options);
     logger.debug('MiradorConfigBuilder#constructor options:', options);
+
+    this._state = getStateStore();
   }
 
   buildConfig() {
     const config = jQuery.extend(true, {}, this.options.defaultSettings);
-    const annotationsOverlay = getStateStore().getTransient('annotationsOverlay');
-    const tocSpec = getStateStore().getTransient('tocSpec');
+    const annotationsOverlay = this._state.getTransient('annotationsOverlay');
+    const tocSpec = this._state.getTransient('tocSpec');
 
     jQuery.extend(config, {
       id: this.options.miradorId,
@@ -67,7 +69,10 @@ export default class MiradorConfigBuilder {
     if (!this.options.isEditor) {
       windowSettings.canvasControls.annotations.annotationCreation = false;
     }
-    windowSettings.canvasControls.annotations.annotationState = 'on';
+
+    if (this._state.getTransient('displayModeOnStart')) {
+      windowSettings.canvasControls.annotations.annotationState = 'on';
+    }
 
     if (annotationsOverlay) {
       if (annotationsOverlay.hoverColor) {

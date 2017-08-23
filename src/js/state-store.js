@@ -9,6 +9,7 @@ const registeredKeys = new Set([
   'copyrighted',
   'copyrightedImageServiceUrl',
   'disableAuthz',
+  'displayModeOnStart',
   'fixAnnoCellHeight',
   'hideTagsInAnnotation',
   'hiddenLayers',

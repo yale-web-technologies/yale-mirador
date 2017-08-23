@@ -142,6 +142,7 @@ class PageController {
     });
     const windowsConfig = parser.getWindowsConfig();
     if (windowsConfig) {
+      this._miradorProxy.publish('YM_DISPLAY_ON');
       jQuery.publish('YM_ADD_WINDOWS', windowsConfig);
     }
   }
@@ -151,7 +152,6 @@ class PageController {
       return;
     } else {
       this._urlOptionsProcessed = true;
-      this._miradorProxy.publish('YM_DISPLAY_ON');
       this._createAnnotationWindows(imageWindowId, options);
     }
   }

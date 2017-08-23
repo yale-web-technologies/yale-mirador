@@ -105,6 +105,7 @@ class App {
     state.setTransient('hiddenLayers', settings.hiddenLayers);
 
     if (settings.ui) {
+      state.setTransient('displayModeOnStart', settings.ui.displayModeOnStart);
       state.setBoolean('fixAnnoCellHeight', settings.ui.fixAnnoCellHeight);
       state.setString('textDirection', settings.ui.textDirection);
       state.setTransient('annotationsOverlay', settings.ui.annotationsOverlay);
