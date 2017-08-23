@@ -27,10 +27,6 @@ export default class {
     const isEditor = session.isEditor();
     const hiddenLayers = this.appState.getTransient('hiddenLayers') || [];
 
-    console.log('YYY hiddenLayers:', this.appState.getTransient('hiddenLayers'));
-    console.log('YYY hiddenLayers:', hiddenLayers);
-    console.log('YYY isEditor:', isEditor);
-
     if (!isEditor && hiddenLayers.length > 0) {
       console.log('LAYERS', layers);
       layers = layers.filter(layer => !hiddenLayers.includes(layer['@id']));
