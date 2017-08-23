@@ -132,9 +132,7 @@ export default class AnnotationListWidget {
 
     if (oldCanvasId !== newCanvasId) { // if the focused annotation belongs to a different canvas
       // Load new canvas in the image window
-      this._annoWin.getImageWindowProxy().setCurrentCanvasId(newCanvasId, {
-        eventOriginatorType: 'AnnotationWindow'
-      });
+      this._annoWin.getImageWindowProxy().setCurrentCanvasId(newCanvasId);
     }
   }
 

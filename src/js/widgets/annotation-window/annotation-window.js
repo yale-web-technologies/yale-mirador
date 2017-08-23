@@ -47,20 +47,18 @@ export default class AnnotationWindow {
     if (!this._id) {
       this._id = Mirador.genUUID();
     }
-    this.miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
-    this.canvasWindow = this.miradorProxy.getWindowProxyById(this._imageWindowId);
+    this._miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
+    this._imageWindow = this._miradorProxy.getWindowProxyById(this._imageWindowId);
 
-    //const toc = this._explorer.getAnnotationToc();
-    const canvasId = this.canvasWindow.getCurrentCanvasId();
-
+    const canvasId = this._imageWindow.getCurrentCanvasId();
     const toc = this._tocSpec ? await getApp().getAnnotationTocCache().getToc(canvasId) : null;
 
-    this.element = jQuery(template({}));
-    this._appendTo.append(this.element);
-    this.listElem = this.element.find('.annowin_list');
+    this._rootElem = jQuery(template({}));
+    this._appendTo.append(this._rootElem);
+    this._listElem = this._rootElem.find('.annowin_list');
 
     if (this._annotationId) { // annotation ID was given in the URL
-      const matched = this.canvasWindow.getAnnotationsList().filter(anno => {
+      const matched = this._imageWindow.getAnnotationsList().filter(anno => {
         if (!anno || typeof anno !== 'object') {
           logger.error('AnnotationWindow#init Invalid annotation', anno);
           return false;
@@ -77,7 +75,7 @@ export default class AnnotationWindow {
     }
 
     if (this._initialLayerId) { // layerIDs were given in the URL
-      annosToShow = this.canvasWindow.getAnnotationsList();
+      annosToShow = this._imageWindow.getAnnotationsList();
       annosToShow = annosToShow.filter(anno => anno.layerId == this._initialLayerId);
 
       if (this._initialTocTags.length > 0) {
@@ -98,33 +96,27 @@ export default class AnnotationWindow {
 
     this.initLayerSelector();
     this.addCreateWindowButton();
-    this.placeholder = this.element.find('.placeholder');
+    this.placeholder = this._rootElem.find('.placeholder');
     this.placeholder.text('Loading...').show();
 
     this._setupAnnotationListWidget();
 
-    return this.reload()
-    .catch(reason => {
+    await this.reload().catch(reason => {
       throw 'AnnotationWindow#init reload failed - ' + reason;
-    })
-    .then(() => {
-      logger.debug('AnnotationWindow#init annosToShow:', annosToShow);
-      const listWidget = this._listWidget;
-      //if ((this._annotationId || this._initialTocTags) && annosToShow.length > 0) {
-      if (this._annotationId) {
-        listWidget.highlightAnnotations([targetAnno], 'SELECTED');
-        listWidget.goToAnnotation(this._annotationId, canvasId);
-      } else if (this._initialTocTags.length > 0) {
-        //listWidget.goToPageByTags(this._initialTocTags);
-      } else {
-        listWidget.goToPage(0);
-      }
-      this.bindEvents();
-      return this;
-    })
-    .catch(reason => {
-      throw 'AnnotationWindow#init promise failed - ' + reason;
     });
+
+    logger.debug('AnnotationWindow#init annosToShow:', annosToShow);
+
+    if (this._annotationId) {
+      this._listWidget.highlightAnnotations([targetAnno], 'SELECTED');
+      this._listWidget.goToAnnotation(this._annotationId, canvasId);
+    } else if (this._initialTocTags.length > 0) {
+      //listWidget.goToPageByTags(this._initialTocTags);
+    } else {
+      this._listWidget.goToPage(0);
+    }
+    this.bindEvents();
+    return this;
   }
 
   getImageWindowId() {
@@ -143,7 +135,7 @@ export default class AnnotationWindow {
 
       this._listWidget =  new AnnotationListWidget({
         annotationWindow: this,
-        rootElem: this.listElem,
+        rootElem: this._listElem,
         canvases: canvases,
         tocTags: this._initialTocTags,
         annotationExplorer: this._explorer,
@@ -169,7 +161,7 @@ export default class AnnotationWindow {
       this.menuTagSelector.destroy();
     }
     this.menuTagSelector = new MenuTagSelector({
-      parent: this.element.find('.menu_tag_selector_container'),
+      parent: this._rootElem.find('.menu_tag_selector_container'),
       tocSpec: getStateStore().getTransient('tocSpec'),
       annotationExplorer: this._explorer,
       initialTags: this._initialTocTags,
@@ -184,7 +176,7 @@ export default class AnnotationWindow {
   initLayerSelector() {
     this._setCurrentLayerId(this._initialLayerId);
     this.layerSelector = new LayerSelector({
-      parent: this.element.find('.layer_selector_container'),
+      parent: this._rootElem.find('.layer_selector_container'),
       annotationExplorer: this._explorer,
       initialLayerId: this._initialLayerId,
       changeCallback: (value, text) => {
@@ -196,13 +188,13 @@ export default class AnnotationWindow {
   }
 
   addCreateWindowButton() {
-    const parent = this.element.find('.annowin_layer_row');
+    const parent = this._rootElem.find('.annowin_layer_row');
     const button = jQuery('<div/>')
       .addClass('ym_create_window_button')
       .append(jQuery('<i class="fa fa-plus fa-lg fa-fw"></i>'));
     parent.append(button);
     button.click(event => {
-      this.miradorProxy.publish('YM_DISPLAY_ON');
+      this._miradorProxy.publish('YM_DISPLAY_ON');
       jQuery.publish('YM_ADD_WINDOW', {
         miradorId: this._miradorId,
         imageWindowId: this._imageWindowId
@@ -227,20 +219,20 @@ export default class AnnotationWindow {
     this.placeholder.hide();
 
     if (state.getBoolean('fixAnnoCellHeight')) {
-      this.element.addClass('fixed_height_cells');
+      this._rootElem.addClass('fixed_height_cells');
     } else {
-      this.element.removeClass('fixed_height_cells');
+      this._rootElem.removeClass('fixed_height_cells');
     }
 
     var canvas = this.getCurrentCanvas();
-    this.element.find('.title').text(canvas.label);
+    this._rootElem.find('.title').text(canvas.label);
 
     /* We're not showing toc selector in annotation window. Annotation ToC is now in sidebar menu
     if (state.getTransient('tagHierarchy')) {
       this.initMenuTagSelector();
-      this.element.find('.annowin_menu_tag_row').show();
+      this._rootElem.find('.annowin_menu_tag_row').show();
     } else {
-      this.element.find('.annowin_menu_tag_row').hide();
+      this._rootElem.find('.annowin_menu_tag_row').hide();
     }
     */
 
@@ -286,7 +278,7 @@ export default class AnnotationWindow {
   async updateList() {
     const listWidget = this._listWidget;
     const state = getStateStore();
-    const canvasId = this.canvasWindow.getCurrentCanvasId();
+    const canvasId = this._imageWindow.getCurrentCanvasId();
     logger.debug('AnnotationWindow#updateList canvasId:', canvasId);
     /*
     if (this._explorer.getAnnotationToc()) {
@@ -318,12 +310,12 @@ export default class AnnotationWindow {
   }
 
   getCurrentCanvasId() {
-    return this.canvasWindow.getCurrentCanvasId();
+    return this._imageWindow.getCurrentCanvasId();
   }
 
   getCurrentCanvas() {
     const id = this.getCurrentCanvasId();
-    const canvases = this.canvasWindow.getManifest().getCanvases();
+    const canvases = this._imageWindow.getManifest().getCanvases();
     const current = canvases.filter(canvas => {
       return canvas['@id'] === id;
     });
@@ -353,7 +345,7 @@ export default class AnnotationWindow {
 
   hasOpenEditor() {
     var hasOne = false;
-    this.listElem.find('.annowin_anno').each(function(index, value) {
+    this._listElem.find('.annowin_anno').each(function(index, value) {
       if (jQuery(value).data('editing') === true) {
         hasOne = true;
         return false; // breaking out of jQuery.each
@@ -400,7 +392,7 @@ export default class AnnotationWindow {
       }
       listWidget.clearHighlights();
 
-      const annotations = this.canvasWindow.getAnnotationsList();
+      const annotations = this._imageWindow.getAnnotationsList();
       const layerId = this.getCurrentLayerId();
       const tocSpec = getStateStore().getTransient('tocSpec');
 
@@ -447,9 +439,9 @@ export default class AnnotationWindow {
 
     this._subscribe(jQuery, 'YM_ANNO_HEIGHT_FIXED', (event, fixedHeight) => {
       if (fixedHeight) {
-        this.element.addClass('fixed_height_cells');
+        this._rootElem.addClass('fixed_height_cells');
       } else {
-        this.element.removeClass('fixed_height_cells');
+        this._rootElem.removeClass('fixed_height_cells');
       }
     });
 
@@ -458,9 +450,9 @@ export default class AnnotationWindow {
       this._listWidget.goToPageByTags(tags);
     });
 
-    this._subscribe(this.miradorProxy, 'YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED', async (event, windowId, annoId) => {
+    this._subscribe(this._miradorProxy, 'YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED', async (event, windowId, annoId) => {
       logger.debug('AnnotationWindow:SUB:YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED windowId:', windowId, 'annoId:', annoId, 'annoWin:', this.id);
-      const windowProxy = this.miradorProxy.getWindowProxyById(windowId);
+      const windowProxy = this._miradorProxy.getWindowProxyById(windowId);
       const canvasId = windowProxy.getCurrentCanvasId();
       const toc = await this._annotationTocCache.getToc(canvasId);
       const annotation = toc.annotations.filter(anno => anno['@id'] === annoId)[0];
@@ -476,7 +468,7 @@ export default class AnnotationWindow {
 
     if (context === jQuery) {
       saved = this._jQuerySubscribed;
-    } else if (context === this.miradorProxy) {
+    } else if (context === this._miradorProxy) {
       saved = this._miradorSubscribed;
     } else {
       const msg = 'AnnotationWindow#_subscribe invalid context ';
@@ -491,7 +483,7 @@ export default class AnnotationWindow {
   }
 
   _unsubscribeAll() {
-    for (let context of [jQuery, this.miradorProxy]) {
+    for (let context of [jQuery, this._miradorProxy]) {
       let saved = context === jQuery ? this._jQuerySubscribed : this._miradorSubscribed;
 
       for (let [eventId, handlers] of Object.entries(saved)) {

@@ -1,4 +1,7 @@
+import getLogger from '../util/logger';
 import getStateStore from '../state-store';
+
+const logger = getLogger();
 
 export default class AnnotationTableOfContents {
   constructor(options) {
@@ -54,6 +57,7 @@ export default class AnnotationTableOfContents {
   }
 
   scrollToTags(tags) {
+    logger.debug('AnnotationTableOfContents#scrollToTags tags:', tags);
     const klass = '.' + tags[0];
     const targetElem = this.element.find(klass);
 
@@ -86,7 +90,14 @@ export default class AnnotationTableOfContents {
 
     item.click(function(event) {
       const imageWindowId = _this.options.windowId;
+      _this._savedScrollTop = _this.element.scrollTop();
+      event.preventDefault();
+      jQuery(this).focus();
       jQuery.publish('YM_ANNOTATION_TOC_TAGS_SELECTED', [imageWindowId, canvasIds[0], [tag]]);
+      setTimeout(() => {
+        // In case reload of the image view messes with the scroll of the side panel
+        _this.element.scrollTo(_this._savedScrollTop);
+      }, 0);
     });
     return item;
   }
@@ -105,7 +116,7 @@ const emptyTemplate = Handlebars.compile([
 ].join(''));
 
 const itemTemplate = Handlebars.compile([
-  '<div class="ym-annotation-toc-item {{tag}}">',
+  '<div class="ym-annotation-toc-item {{tag}}" tabindex="-1">',
   '<a href="#">{{{content}}}</a>',
   '</div>'
 ].join(''));

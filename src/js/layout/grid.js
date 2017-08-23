@@ -149,8 +149,6 @@ export default class {
   getAnnotationWindowByLayer(layerId) {
     logger.debug('Grid#getAnnotationWindowByLayer layerId:', layerId, 'windows:', this._annotationWindows);
     for (let annoWindow of Object.values(this._annotationWindows)) {
-      console.log('ggg current:', annoWindow.getCurrentLayerId());
-      console.log('ggg default:', layerId);
       if (annoWindow.getCurrentLayerId() === layerId) {
         return annoWindow;
       }

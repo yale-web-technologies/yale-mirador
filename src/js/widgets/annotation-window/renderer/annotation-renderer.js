@@ -99,6 +99,7 @@ export default class AnnotationRenderer {
     annoElem.find('.annotate').click(function (event) {
       event.stopPropagation();
 
+      const imageWindow = annoWin.getImageWindowProxy();
       const dialogElement = jQuery('#ym_annotation_dialog');
       const editor = new AnnotationEditor({
         parent: dialogElement,
@@ -109,9 +110,9 @@ export default class AnnotationRenderer {
         saveCallback: function(annotation) {
           try {
             dialogElement.dialog('close');
-            annoWin.canvasWindow.getAnnotationsList().push(annotation);
+            imageWindow.getAnnotationsList().push(annotation);
             annoWin.miradorProxy.publish('ANNOTATIONS_LIST_UPDATED',
-              { windowId: annoWin.canvasWindow.id, annotationsList: annoWin.canvasWindow.annotationsList });
+              { windowId: imageWindow.getWindowId(), annotationsList: imageWindow.getAnnotationsList() });
           } catch(e) {
             logger.error('AnnotationRenderer saving from "annotate" failed:', e);
           }
@@ -167,7 +168,7 @@ export default class AnnotationRenderer {
       event.stopPropagation();
 
       if (window.confirm('Do you really want to delete the annotation?')) {
-        annoWin.miradorProxy.publish('annotationDeleted.' + annoWin.canvasWindow.id, [annotation['@id']]);
+        annoWin.miradorProxy.publish('annotationDeleted.' + annoWin.getImageWindowProxy().getWindowId(), [annotation['@id']]);
       }
     });
 

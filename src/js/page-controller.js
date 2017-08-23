@@ -2,6 +2,7 @@ import {Anno, annoUtil} from './import';
 import getApp from './app';
 import getLogger from './util/logger';
 import getMiradorProxyManager from './mirador-proxy/mirador-proxy-manager';
+import LayoutConfigParser from './layout/layout-config-parser';
 import MiradorWrapper from './mirador-wrapper';
 import session from './session';
 
@@ -124,6 +125,37 @@ class PageController {
     return annos[0];
   }
 
+ /**
+   * Optionally create annotations windows after checking parameters.
+   * It will examine the parameters and determine how many annotations
+   * to create and how to configure them.
+   */
+  _createAnnotationWindows(imageWindowId, options) {
+    const toc = getApp().getAnnotationExplorer().getAnnotationToc();
+    const parser = new LayoutConfigParser({
+      miradorId: options.miradorId,
+      imageWindowId: imageWindowId,
+      layerIds: options.layerIds,
+      toc: toc,
+      tocTags: options.tocTags,
+      annotationId: options.annotationId
+    });
+    const windowsConfig = parser.getWindowsConfig();
+    if (windowsConfig) {
+      jQuery.publish('YM_ADD_WINDOWS', windowsConfig);
+    }
+  }
+
+  _processUrlOptions(imageWindowId, options) {
+    if (this._urlOptionsProcessed) { // run this function only once
+      return;
+    } else {
+      this._urlOptionsProcessed = true;
+      this._miradorProxy.publish('YM_DISPLAY_ON');
+      this._createAnnotationWindows(imageWindowId, options);
+    }
+  }
+
   _bindEvents(options) {
     logger.debug('PageController#_bindEvents options:', options);
     const _this = this;
@@ -132,7 +164,16 @@ class PageController {
       _this.options.grid.resize();
     });
 
-   this._miradorProxy.subscribe('YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED', async (event, windowId, annoId) => {
+    this._miradorProxy.subscribe('ANNOTATIONS_LIST_UPDATED', (event, params) => {
+      logger.debug('PageController:SUB:ANNOTATIONS_LIST_UPDATED params:', params);
+      if (this._miradorProxy.shouldIgnoreEvent('ANNOTATIONS_LIST_UPDATED')) {
+        this._miradorProxy.unmarkEventToBeIgnored('ANNOTATIONS_LIST_UPDATED');
+        return;
+      }
+      this._processUrlOptions(params.windowId, options);
+    });
+
+    this._miradorProxy.subscribe('YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED', async (event, windowId, annoId) => {
       logger.debug('PageController:SUB:YM_IMAGE_WINDOW_TOOLTIP_ANNO_CLICKED windowId: ' + windowId  + ', annoId: ' + annoId);
       const windowProxy = this._miradorProxy.getWindowProxyById(windowId);
       const canvasId = windowProxy.getCurrentCanvasId();
@@ -173,9 +214,8 @@ class PageController {
         }
       } else { // need to load the canvas that the annotation is targeting
         imageView._annotationToBeFocused = params.annotation;
-        windowProxy.setCurrentCanvasId(params.canvasId, {
-          eventOriginatorType: 'AnnotationWindow',
-        });
+        this._miradorProxy.markEventToBeIgnored('ANNOTATION_LIST_UPDATED');
+        windowProxy.setCurrentCanvasId(params.canvasId);
       }
     });
 
