@@ -11,6 +11,7 @@ const registeredKeys = new Set([
   'disableAuthz',
   'fixAnnoCellHeight',
   'hideTagsInAnnotation',
+  'hiddenLayers',
   'lastSelectedLayer',
   'layerIndexMap',
   'projectId',

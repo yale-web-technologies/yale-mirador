@@ -102,6 +102,8 @@ class App {
     state.setTransient('copyrighted', settings.copyrighted);
     state.setTransient('copyrightedImageServiceUrl', settings.copyrightedImageServiceUrl);
 
+    state.setTransient('hiddenLayers', settings.hiddenLayers);
+
     if (settings.ui) {
       state.setBoolean('fixAnnoCellHeight', settings.ui.fixAnnoCellHeight);
       state.setString('textDirection', settings.ui.textDirection);

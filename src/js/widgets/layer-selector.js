@@ -1,6 +1,7 @@
 import getLogger from '../util/logger';
 import getStateStore from '../state-store';
 import Selector from './selector';
+import session from '../session';
 
 export default class {
   /**
@@ -23,6 +24,18 @@ export default class {
    */
   init(layers) {
     this.logger.debug('LayerSelector#init layers:', layers, 'initialLayerId:', this.initialLayerId);
+    const isEditor = session.isEditor();
+    const hiddenLayers = this.appState.getTransient('hiddenLayers') || [];
+
+    console.log('YYY hiddenLayers:', this.appState.getTransient('hiddenLayers'));
+    console.log('YYY hiddenLayers:', hiddenLayers);
+    console.log('YYY isEditor:', isEditor);
+
+    if (!isEditor && hiddenLayers.length > 0) {
+      console.log('LAYERS', layers);
+      layers = layers.filter(layer => !hiddenLayers.includes(layer['@id']));
+    }
+
     this._isLoaded = false;
     this.selector = new Selector({
       appendTo: this.parent
