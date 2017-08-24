@@ -46,15 +46,10 @@ describe('AnnotationWindow', function() {
 
   it('something', function() {
     const canvasWindowId = 'window1';
-    const listWidget = new AnnotationListWidget({
-      canvasWindowId: canvasWindowId,
-      state: getStateStore()
-    });
     const annoWin = new AnnotationWindow({
       miradorId: 'mirador1',
       canvasWindowId: canvasWindowId,
       appendTo: jQuery('#parent'),
-      annotationListWidget: listWidget,
       explorer: mockAnnotationExplorer,
       initialLayerId: null,
       initialTocTags: null,
