@@ -8,6 +8,10 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 
   const logger = getLogger();
 
+  $.ImageView.prototype.enableAnnotationLayer = function() {
+    this.annotationState = 'on';
+  };
+
   $.ImageView.prototype.zoomToAnnotation = function(annotation) {
     logger.debug('ImageView(ext)#zoomToAnnotation annotation:', annotation);
     const viewport = this.osd.viewport;

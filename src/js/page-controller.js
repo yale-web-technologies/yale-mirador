@@ -225,7 +225,15 @@ class PageController {
       const layerId = this._tocSpec.defaultLayer;
       let annoWindow = grid.getAnnotationWindowByLayer(layerId);
 
-      await this._miradorWrapper.zoomToTags(windowId, canvasId, tags);
+      try {
+        this._miradorProxy.getWindowProxyById(windowId).getImageView().enableAnnotationLayer();
+      } catch(e) {
+        logger.error('PageController#SUB:YM_ANNOTATION_TOC_TAGS_SELECTED failed to enable annotation layer');
+      }
+
+      await this._miradorWrapper.zoomToTags(windowId, canvasId, tags).catch(reason => {
+        logger.error('PageController:SUB:YM_ANNOTATION_TOC_TAGS_SELECTED zoomToTags failed:', reason);
+      });
 
       if (!annoWindow) {
         annoWindow =  await grid.addAnnotationWindow({

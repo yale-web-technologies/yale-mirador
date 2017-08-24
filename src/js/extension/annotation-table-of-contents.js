@@ -1,5 +1,4 @@
 import getLogger from '../util/logger';
-import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import getStateStore from '../state-store';
 
 const logger = getLogger();
@@ -90,9 +89,6 @@ export default class AnnotationTableOfContents {
 
     item.click(function(event) {
       const imageWindowId = _this.options.windowId;
-      const miradorProxy = getMiradorProxyManager().getMiradorProxyByWindowId(_this.options.windowId);
-
-      miradorProxy.publish('YM_DISPLAY_ON');
       _this._savedScrollTop = _this.element.scrollTop();
       event.preventDefault();
       jQuery(this).focus();

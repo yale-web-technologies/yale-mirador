@@ -84,6 +84,7 @@ export default class MiradorWrapper {
       }
 
       if (canvasId === windowProxy.getCurrentCanvasId()) {
+        this._miradorProxy.publish('YM_DISPLAY_ON');
         zoomToAnnotation();
         resolve();
       } else {
