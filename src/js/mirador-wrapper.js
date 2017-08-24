@@ -98,16 +98,17 @@ export default class MiradorWrapper {
     logger.debug('MiradorWrapper#_bindEvents options:', options);
     const miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
 
-    miradorProxy.subscribe('YM_CLICKED_OPEN_ANNO_WINDOW', (event, canvasWindowId) => {
-      logger.debug('MiradorWrapper received YM_CLICKED_OPEN_ANNO_WINDOW from ', canvasWindowId);
+    miradorProxy.subscribe('YM_CLICKED_OPEN_ANNO_WINDOW', (event, imageWindowId) => {
+      logger.debug('MiradorWrappe:SUB:YM_CLICKED_OPEN_ANNO_WINDOW imageWindowId:', imageWindowId);
       miradorProxy.publish('YM_DISPLAY_ON');
       this.options.grid.addAnnotationWindow({
         miradorId: this._miradorId,
-        imageWindowId: canvasWindowId
+        imageWindowId: imageWindowId
       });
     });
 
     jQuery.subscribe('ANNOWIN_ANNOTATION_FOCUSED', (event, params) => {
+      logger.debug('MiradorWrapper:SUB:ANNOWIN_ANNOTATION_FOCUSED, params:', params);
       const miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
       const windowProxy = miradorProxy.getWindowProxyById(params.imageWindowId);
       const tocPanel = windowProxy.getSidePanelTabContentElement('ym-annotation-toc');

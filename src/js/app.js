@@ -12,7 +12,7 @@ import getPageController from './page-controller';
 import getStateStore from './state-store';
 import Grid from './layout/grid';
 //import MainMenu from './widgets/main-menu'; //deprecated
-//import './util/jquery-tiny-pubsub-trace'; // import this only for debugging!
+import './util/jquery-tiny-pubsub-trace'; // import this only for debugging!
 
 const logger = getLogger();
 let instance = null;
@@ -32,7 +32,6 @@ export default function getApp() {
 class App {
   constructor(options) {
     this._setupLogger();
-    logger.debug('App#constructor');
     this.options = jQuery.extend({
       rootElement: null,
       dataElement: null

@@ -65,7 +65,6 @@ export default class ScrollHelper {
   }
 
   scrollToElem(annoElem, yOffsetIn) {
-    console.log('yOffsetIn:', yOffsetIn);
     const yOffset = this._calcOffset(annoElem, yOffsetIn);
 
     this.unbindScrollEvent();
@@ -89,9 +88,7 @@ export default class ScrollHelper {
       return -this._groupHeaderHeight;
     }
     const minOffset = annoElem.height() - this._rootElem.height();
-    console.log('minOffset:', minOffset);
     const yOffset = yOffsetIn < minOffset ? minOffset : yOffsetIn;
-    console.log('yOffset:', yOffset);
     return yOffset;
   }
 

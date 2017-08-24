@@ -166,6 +166,7 @@ class PageController {
 
     this._miradorProxy.subscribe('ANNOTATIONS_LIST_UPDATED', (event, params) => {
       logger.debug('PageController:SUB:ANNOTATIONS_LIST_UPDATED params:', params);
+
       if (this._miradorProxy.shouldIgnoreEvent('ANNOTATIONS_LIST_UPDATED')) {
         this._miradorProxy.unmarkEventToBeIgnored('ANNOTATIONS_LIST_UPDATED');
         return;
@@ -214,7 +215,6 @@ class PageController {
         }
       } else { // need to load the canvas that the annotation is targeting
         imageView._annotationToBeFocused = params.annotation;
-        this._miradorProxy.markEventToBeIgnored('ANNOTATION_LIST_UPDATED');
         windowProxy.setCurrentCanvasId(params.canvasId);
       }
     });

@@ -16,17 +16,17 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
     logger.debug('ImageView(ext)#zoomToAnnotation annotation:', annotation);
     const viewport = this.osd.viewport;
     const currentZoom = viewport.getZoom();
-    logger.debug('zoomToAnnotation zoom: ' + currentZoom);
+    //logger.debug('zoomToAnnotation zoom: ' + currentZoom);
     const shapes = this.annotationsLayer.drawTool.getShapesForAnnotation(annotation);
     const shapeBounds = $.yaleExt.getCombinedBounds(shapes); // in image coordinates
     const shapeWH = viewport.imageToViewportCoordinates(shapeBounds.width, shapeBounds.height);
     const viewportBounds = viewport.getBounds();
     const widthRatio = shapeWH.x / viewportBounds.width;
-    logger.debug('w ratio: ' + widthRatio);
+    //logger.debug('w ratio: ' + widthRatio);
     const heightRatio = shapeWH.y / viewportBounds.height;
-    logger.debug('h ratio: ' + heightRatio);
+    //logger.debug('h ratio: ' + heightRatio);
     const zoomFactor = 1.0 / Math.max(widthRatio, heightRatio) * 0.75;
-    logger.debug('zoomFactor: ' + zoomFactor);
+    //logger.debug('zoomFactor: ' + zoomFactor);
 
     if (typeof zoomFactor === 'number' && !isNaN(zoomFactor)) {
       viewport.zoomBy(zoomFactor);
@@ -110,7 +110,8 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
     _listenForActions.call(this);
 
     this.eventEmitter.subscribe('ANNOTATIONS_LIST_UPDATED', event => {
-      logger.debug('ImageView in window ' + this.windowId + ' received annotationRendered; annotationToBeFocused:', this._annotationToBeFocused);
+      logger.debug('ImageView(ext):SUB:ANNOTATIONS_LIST_UPDATED window:', this.windowId, 'annotationToBeFocused:', this._annotationToBeFocused);
+
       if (this._annotationToBeFocused) {
         // setTimeout in order to give the OsdRegionDrawTool time to create
         // annotation shapes in the overlay after window.getAnnotations() is done

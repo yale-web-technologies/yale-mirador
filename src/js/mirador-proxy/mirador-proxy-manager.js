@@ -28,7 +28,7 @@ class MiradorProxyManager {
   }
 
   getMiradorProxy(miradorId) {
-    logger.debug('MiradorProxyManager#getMiradorProxy miradorId:', miradorId, 'proxies:', this._miradorProxiesMap);
+    //logger.debug('MiradorProxyManager#getMiradorProxy miradorId:', miradorId, 'proxies:', this._miradorProxiesMap);
     return this._miradorProxiesMap[miradorId] || null;
   }
 

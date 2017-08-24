@@ -43,13 +43,13 @@ class StateStore {
 
   // For values that are not persisted
   setTransient(key, value) {
-    logger.debug('StateStore#setTransient', key, value);
+    //logger.debug('StateStore#setTransient', key, value);
     this._checkKey(key);
     this._settings[key] = value;
   }
 
   getString(key) {
-    logger.debug('StateStore#getString', key);
+    //logger.debug('StateStore#getString', key);
     this._checkKey(key);
     let value = this._settings[key];
     if (!value) {
@@ -60,7 +60,7 @@ class StateStore {
   }
 
   setString(key, value) {
-    logger.debug('StateStore#setString', key, value, this._localStorageAvailable);
+    //logger.debug('StateStore#setString', key, value, this._localStorageAvailable);
     this._checkKey(key);
     this._settings[key] = value;
     if (this._localStorageAvailable) {

@@ -34,7 +34,7 @@ export default class MiradorProxy {
   }
 
   getWindowById(windowId) {
-    logger.debug('MiradorProxy#getWindowById windowId:', windowId);
+    //logger.debug('MiradorProxy#getWindowById windowId:', windowId);
     return this.getWorkspaceProxy().getWindowById(windowId);
   }
 

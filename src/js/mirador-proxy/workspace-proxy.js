@@ -19,7 +19,7 @@ export default class WorkspaceProxy {
   getWindowById(windowId) {
     const _this = this;
     const windows = this.workspace.windows.filter(window => {
-      _this.logger.debug('WorkspaceProxy#getWindowById current window:', window);
+      //_this.logger.debug('WorkspaceProxy#getWindowById current window:', window);
       return window.id === windowId;
     });
     var numWindows = windows.length;
