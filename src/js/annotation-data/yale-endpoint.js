@@ -31,10 +31,8 @@ class YaleEndpoint {
   search(options) {
     logger.debug('YaleEndpoint#search options:', options);
     const canvasId = options.uri;
-    const progressPane = getModalAlert();
     const errorPane = getErrorDialog();
 
-    progressPane.show('Loading annotations...');
     this._explorer.getAnnotations({ canvasId: canvasId })
     .catch(reason => {
       const msg = 'ERROR YaleEndpoint#search getAnnotations - ' + reason;
@@ -42,7 +40,6 @@ class YaleEndpoint {
     })
     .then(annotations => {
       logger.debug('YaleEndpoint#search annotations:', annotations);
-      progressPane.hide();
       this.annotationsList = annotations;
       try {
         this.dfd.resolve(true);
@@ -52,7 +49,6 @@ class YaleEndpoint {
     })
     .catch(function(reason) {
       logger.error('YaleEndpoint#search failed - ', reason);
-      progressPane.hide();
       errorPane.show('annotations');
     });
   }

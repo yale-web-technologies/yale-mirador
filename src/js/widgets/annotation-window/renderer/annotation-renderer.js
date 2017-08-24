@@ -14,6 +14,7 @@ export default class AnnotationRenderer {
 
     this.layerIndexMap = this.options.state.getTransient('layerIndexMap');
     this.hideTags = this.options.state.getTransient('hideTagsInAnnotation');
+    this._miradorProxy = this.options.annotationWindow.getMiradorProxy();
   }
 
   /**
@@ -83,17 +84,10 @@ export default class AnnotationRenderer {
     const annoWin = this.options.annotationWindow;
     const nav = annoWin.getAnnoListNav();
 
-    annoElem.focus(function(event) {
-      annoWin.clearAnnotationHighlights();
-      nav.setPageByCanvasId(annoElem.data('canvasId'));
+    annoElem.data('annotation', annotation);
 
-      jQuery.publish('ANNOWIN_ANNOTATION_FOCUSED', [{
-        annotationWindowId: annoWin.getId(),
-        annotation: annotation,
-        canvasId: jQuery(this).data('canvasId'),
-        imageWindowId: annoWin.getImageWindowId(),
-        offset: annoElem.position().top
-      }]);
+    annoElem.click(function(event) {
+      annoWin.select(jQuery(this));
     });
 
     annoElem.find('.annotate').click(function (event) {
@@ -107,17 +101,17 @@ export default class AnnotationRenderer {
         mode: 'create',
         targetAnnotation: annotation,
         endpoint: annoWin.endpoint,
-        saveCallback: function(annotation) {
+        saveCallback: annotation => {
           try {
             dialogElement.dialog('close');
             imageWindow.getAnnotationsList().push(annotation);
-            annoWin.miradorProxy.publish('ANNOTATIONS_LIST_UPDATED',
+            _this._miradorProxy.publish('ANNOTATIONS_LIST_UPDATED',
               { windowId: imageWindow.getWindowId(), annotationsList: imageWindow.getAnnotationsList() });
           } catch(e) {
             logger.error('AnnotationRenderer saving from "annotate" failed:', e);
           }
         },
-        cancelCallback: function() {
+        cancelCallback: () => {
           dialogElement.dialog('close');
         }
       });
@@ -168,7 +162,7 @@ export default class AnnotationRenderer {
       event.stopPropagation();
 
       if (window.confirm('Do you really want to delete the annotation?')) {
-        annoWin.miradorProxy.publish('annotationDeleted.' + annoWin.getImageWindowProxy().getWindowId(), [annotation['@id']]);
+        _this._miradorProxy.publish('annotationDeleted.' + annoWin.getImageWindowProxy().getWindowId(), [annotation['@id']]);
       }
     });
 

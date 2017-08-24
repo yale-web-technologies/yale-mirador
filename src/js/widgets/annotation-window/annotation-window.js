@@ -119,6 +119,10 @@ export default class AnnotationWindow {
     return this;
   }
 
+  getMiradorProxy() {
+    return this._miradorProxy;
+  }
+
   getImageWindowId() {
     return this._imageWindowId;
   }
@@ -327,6 +331,10 @@ export default class AnnotationWindow {
     }
   }
 
+  select(annoElem) {
+    this._listWidget.select(annoElem);
+  }
+
   scrollToAnnotation(annoId) {
     this._listWidget.scrollToAnnotation(annoId);
   }
@@ -382,7 +390,7 @@ export default class AnnotationWindow {
     logger.debug('AnnotationWindow#bindEvents');
 
     this._subscribe(jQuery, 'ANNOWIN_ANNOTATION_FOCUSED', async (event, params) => {
-      logger.debug('Annotation window ' + this._id + ' received ANNOWIN_ANNOTATION_FOCUSED params:', params, 'layer:', this.getCurrentLayerId());
+      logger.debug('AnnotationWindow:SUB:ANNOWIN_ANNOTATION_FOCUSED annotation window id:', this._id,  'params:', params, 'layer:', this.getCurrentLayerId());
       const $anno = Anno(params.annotation);
       const listWidget = this._listWidget;
 
@@ -434,14 +442,6 @@ export default class AnnotationWindow {
       if (targeted.length > 0) {
         listWidget.highlightAnnotations(targeted, 'TARGET');
         return;
-      }
-    });
-
-    this._subscribe(jQuery, 'YM_ANNO_HEIGHT_FIXED', (event, fixedHeight) => {
-      if (fixedHeight) {
-        this._rootElem.addClass('fixed_height_cells');
-      } else {
-        this._rootElem.removeClass('fixed_height_cells');
       }
     });
 

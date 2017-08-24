@@ -228,6 +228,21 @@ export default class AnnotationListWidget {
     }
   }
 
+  select(annoElem) {
+    this.clearAnnotationHighlights();
+    this._nav.setPageByCanvasId(annoElem.data('canvasId'));
+
+    annoElem.focus();
+
+    jQuery.publish('ANNOWIN_ANNOTATION_FOCUSED', [{
+      annotationWindowId: this._annoWin.getId(),
+      annotation: annoElem.data('annotation'),
+      canvasId: annoElem.data('canvasId'),
+      imageWindowId: this._annoWin.getImageWindowId(),
+      offset: annoElem.position().top
+    }]);
+  }
+
   clearAnnotationHighlights() {
     for (let elem of this.getAnnotationElems()) {
       jQuery(elem).removeClass('ym_anno_selected');
@@ -463,7 +478,7 @@ export default class AnnotationListWidget {
       next = next.next();
     }
     if (next.size() > 0) {
-      next.focus();
+      this.select(next);
     } else {
       const nextPage = nav.getPage() + 1;
       if (nextPage < nav.getNumPages()) {
@@ -473,7 +488,7 @@ export default class AnnotationListWidget {
         const nextPageElem = nav.getPageElement(nextPage);
         next = nextPageElem.find('.annowin_anno').first();
         if (next) {
-          next.focus();
+          this.select(next);
           nav.setPage(nextPage);
         }
       }
@@ -489,7 +504,7 @@ export default class AnnotationListWidget {
       prev = prev.prev();
     }
     if (prev.size() > 0) {
-      prev.focus();
+      this.select(prev);
     } else {
       const prevPage = nav.getPage() - 1;
       if (prevPage >= 0) {
@@ -499,7 +514,7 @@ export default class AnnotationListWidget {
         const prevPageElem = nav.getPageElement(prevPage);
         prev = prevPageElem.find('.annowin_anno').last();
         if (prev) {
-          prev.focus();
+          this.select(prev);
           nav.setPage(prevPage);
         }
       }

@@ -16,6 +16,7 @@ class ModalAlert {
   constructor(elem) {
     this.elem = elem;
     elem.modal({
+      autofocus: false,
       closable: false,
       allowMultiple: true,
       duration: 0,
