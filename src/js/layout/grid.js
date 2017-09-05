@@ -1,6 +1,7 @@
 import getApp from '../app';
 import getLogger from '../util/logger';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
+import getModalAlert from '../widgets/modal-alert'
 import getStateStore from '../state-store';
 import AnnotationWindow from '../widgets/annotation-window/annotation-window';
 
@@ -109,6 +110,8 @@ export default class {
 
   async addAnnotationWindow(options) {
     logger.debug('Grid#addAnnotationWindow options:', options);
+    await getModalAlert().show('Opening an annotation window...');
+
     const windowId = Mirador.genUUID(); // annotation window ID
     const imageWindowId = options.imageWindowId || null;
     const itemConfig = {
@@ -117,6 +120,7 @@ export default class {
       componentName: 'Annotations',
       componentState: { windowId: windowId }
     };
+
     this._layout.root.contentItems[0].addChild(itemConfig);
 
     const annoExplorer = getApp().getAnnotationExplorer();
@@ -139,6 +143,8 @@ export default class {
 
     this._annotationWindows[windowId] = annoWin;
     this._resizeWindows();
+
+    getModalAlert().hide();
     return annoWin;
   }
 

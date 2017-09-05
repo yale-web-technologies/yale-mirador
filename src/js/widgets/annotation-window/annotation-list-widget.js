@@ -352,7 +352,7 @@ export default class AnnotationListWidget {
       logger.debug('AnnotationListWidget#_loadPage alread loaded; page:', pageNum);
       return;
     }
-    getModalAlert().show('Loading');
+    getModalAlert().show('Loading annotations...');
 
     const annotations = await this._getAnnotationsForPage(pageNum);
     const toc = await this._getTocForPage(pageNum);

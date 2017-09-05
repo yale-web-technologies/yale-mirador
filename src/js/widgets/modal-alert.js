@@ -1,38 +1,45 @@
 export default function getModalAlert() {
   if (!instance) {
-    const id = 'ym_modal_alert';
-    let elem = jQuery('#' + id);
-    if (elem.length === 0) {
-      elem = jQuery('<div/>').attr('id', id)
-        .addClass('ui modal ym_modal')
-        .appendTo(jQuery('body'));
-    }
-    instance = new ModalAlert(elem);
+    instance = new ModalAlert();
   }
   return instance;
 };
 
 class ModalAlert {
-  constructor(elem) {
-    this.elem = elem;
-    elem.modal({
-      autofocus: false,
-      closable: false,
-      allowMultiple: true,
-      duration: 0,
-      dimmerSettings: {
-        opacity: 0.5
-      }
-    });
+  constructor() {
+    this.dimmer = this.addDimmer();
+    this.panel = this.addPanel();
+  }
+
+  addDimmer() {
+    return jQuery('<div/>')
+      .addClass('ym-dimmer')
+      .appendTo(jQuery('body'));
+  }
+
+  addPanel() {
+    return jQuery('<div/>')
+      .attr('id', 'ym-modal-alert')
+      .addClass('ym-message-panel')
+      .appendTo(jQuery('body'));
   }
 
   show(text) {
-    this.elem.text(text);
-    this.elem.modal('show');
+    this.dimmer.show();
+    this.panel.text(text);
+    this.panel.show();
+    return new Promise((resolve, reject) => {
+      // Somehow the panel fails to show itself most of the times if we don't add some wait here
+      // TODO: identify the cause
+      setTimeout(() => {
+        resolve();
+      }, 50);
+    });
   }
 
   hide() {
-    this.elem.modal('hide');
+    this.panel.hide();
+    this.dimmer.hide();
   }
 }
 

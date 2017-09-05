@@ -1,5 +1,6 @@
 import getApp from './app';
 import getLogger from './util/logger';
+import getModalAlert from './widgets/modal-alert';
 import getMiradorProxyManager from './mirador-proxy/mirador-proxy-manager';
 import MiradorConfigBuilder from './config/mirador-config-builder';
 import {openAnnotationSelector} from './util/annotation-explorer';
@@ -98,13 +99,16 @@ export default class MiradorWrapper {
     logger.debug('MiradorWrapper#_bindEvents options:', options);
     const miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
 
-    miradorProxy.subscribe('YM_CLICKED_OPEN_ANNO_WINDOW', (event, imageWindowId) => {
+    miradorProxy.subscribe('YM_CLICKED_OPEN_ANNO_WINDOW', async (event, imageWindowId) => {
       logger.debug('MiradorWrappe:SUB:YM_CLICKED_OPEN_ANNO_WINDOW imageWindowId:', imageWindowId);
+
+      await getModalAlert().show('Opening an annotation window...');
       miradorProxy.publish('YM_DISPLAY_ON');
-      this.options.grid.addAnnotationWindow({
+      const annoWin = await this.options.grid.addAnnotationWindow({
         miradorId: this._miradorId,
         imageWindowId: imageWindowId
       });
+      getModalAlert().hide();
     });
 
     jQuery.subscribe('ANNOWIN_ANNOTATION_FOCUSED', (event, params) => {

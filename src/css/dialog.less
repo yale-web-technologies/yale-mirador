@@ -4,8 +4,31 @@
   background-color: @gray;
   padding: 20px;
   font-size: 20px;
-  
+
   .ym_link {
     color: @light-blue;
   }
+}
+
+.ym-dimmer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 17000;
+  background-color: rgba(0, 0, 0, .8);
+}
+
+.ym-message-panel {
+  position: relative;
+  min-width: 500px;
+  margin: auto;
+  padding: 20px;
+  border: solid 1px rgba(255,255,255,.5);
+  z-index: 17001;
+  color: @off-white;
+  background-color: @black;
+  font-size: 28px;
+  line-height: 32px;
 }
