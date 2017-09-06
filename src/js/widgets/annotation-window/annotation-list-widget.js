@@ -444,8 +444,6 @@ export default class AnnotationListWidget {
     logger.debug('AnnotationListWidget#getTocSiblingElems annotation:', annotation, 'annotations:', annotations, 'layerId:', layerId, 'toc:', toc);
     const result = [];
     let siblings = annoUtil.findTocSiblings(annotation, annotations, layerId, toc);
-    siblings = siblings.filter(anno => this._getParagraphTag(anno) === this._getParagraphTag(annotation));
-    console.log('siblings:', siblings);
 
     for (let annoElem of this.getAnnotationElems()) {
       const $annoElem = jQuery(annoElem);
@@ -460,17 +458,7 @@ export default class AnnotationListWidget {
     return result;
   }
 
-  _getParagraphTag(annotation) {
-    const tags = Anno(annotation).tags;
-    for (let tag of tags) {
-      if (tag.match(/^p\d+$/)) {
-        return tag;
-      }
-    }
-    return null;
-  }
-
-  async _focusNextAnnotation() {
+   async _focusNextAnnotation() {
     const nav = this._nav;
     const current = jQuery(this._rootElem.find('.annowin_anno:focus'));
     let next = current.next();

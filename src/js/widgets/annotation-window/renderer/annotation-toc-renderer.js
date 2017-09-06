@@ -24,11 +24,13 @@ export default class AnnotationTocRenderer {
   render() {
     logger.debug('AnnotationTocRenderer#render');
 
-    this.options.toc.walk(node => {
+    this.options.toc.walk((node, level) => {
       if (node.isRoot) {
         return; // do nothing with root node
       }
-      this.appendHeader(node);
+      if (level < 2 && !node.isDummy) {
+        this.appendHeader(node);
+      }
       this.appendAnnotations(node);
     });
     this.appendUnattachedAnnotations();
@@ -114,6 +116,11 @@ const headerTemplate = Handlebars.compile([
 function nodeHasAnnotationsToShow(node, layerId) {
   for (let anno of node.annotations) {
     if (anno.layerId === layerId) {
+      return true;
+    }
+  }
+  for (let childNode of Object.values(node.childNodes)) {
+    if (nodeHasAnnotationsToShow(childNode, layerId)) {
       return true;
     }
   }
