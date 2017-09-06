@@ -137,7 +137,7 @@ export default class AnnotationRenderer {
         endpoint: annoWin.endpoint,
         annotation: annotation,
         saveCallback: function(annotation, content) {
-          if (annoWin.currentLayerId === annotation.layerId) {
+          if (annoWin.getCurrentLayerId() === annotation.layerId) {
             const normalView = annoElem.find('.normal_view');
             const contentElem = normalView.find('.content');
             contentElem.html(content);
