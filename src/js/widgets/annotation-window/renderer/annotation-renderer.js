@@ -54,7 +54,12 @@ export default class AnnotationRenderer {
     annoElem.data('canvasId', options.canvasId);
     annoElem.data('annoOrderButtonsRow', annoOrderButtonsRow);
 
-    annoElem.find('.ui.dropdown').dropdown({ direction: 'downward' });
+    const ddElem = annoElem.find('.ui.dropdown');
+
+    ddElem.dropdown({ direction: 'downward' });
+    ddElem.click(function(event) {
+      event.stopPropagation(); // prevent _FOCUSED event from being published by clicking on the dropdown
+    });
 
     menuBar.addClass('layer_' + layerIndex % 10);
     if (annotation.on['@type'] == 'oa:Annotation') { // annotation of annotation
@@ -91,8 +96,6 @@ export default class AnnotationRenderer {
     });
 
     annoElem.find('.annotate').click(function (event) {
-      event.stopPropagation();
-
       const imageWindow = annoWin.getImageWindowProxy();
       const dialogElement = jQuery('#ym_annotation_dialog');
       const editor = new AnnotationEditor({
@@ -127,8 +130,6 @@ export default class AnnotationRenderer {
     });
 
     annoElem.find('.edit').click(function(event) {
-      event.stopPropagation();
-
       const editor = new AnnotationEditor({
         parent: annoElem,
         windowId: annoWin.getImageWindowId(),
@@ -159,8 +160,6 @@ export default class AnnotationRenderer {
     });
 
     annoElem.find('.delete').click(function(event) {
-      event.stopPropagation();
-
       if (window.confirm('Do you really want to delete the annotation?')) {
         _this._miradorProxy.publish('annotationDeleted.' + annoWin.getImageWindowProxy().getWindowId(), [annotation['@id']]);
       }
