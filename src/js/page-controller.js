@@ -157,9 +157,9 @@ class PageController {
       return;
     } else {
       this._urlOptionsProcessed = true;
-      this._miradorProxy.publish('YM_DISPLAY_ON');
 
       if (options.annotationId) {
+        this._miradorProxy.publish('YM_DISPLAY_ON');
         const handler = event => {
           logger.debug('PageController#_processUrlOptions annotationsRendered');
           this._zoomToAnnotation(options.annotationId, imageWindowId);
