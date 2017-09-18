@@ -67,6 +67,9 @@ class PageController {
     }
   }
 
+  /**
+   * Show annotation in annotation window
+   */
   async _showAnnotation(windowId, annoId) {
     logger.debug('PageController#showAnnotation windowId:', windowId, 'annoId:' + annoId, 'defaultLayer:', this._tocSpec.defaultLayer);
     const grid = this.options.grid;
@@ -141,6 +144,7 @@ class PageController {
       annotationId: options.annotationId
     });
     const windowsConfig = parser.getWindowsConfig();
+    logger.debug('PageController#_createAnnotationWindows windowsConfig:', windowsConfig);
     if (windowsConfig) {
       this._miradorProxy.publish('YM_DISPLAY_ON');
       jQuery.publish('YM_ADD_WINDOWS', windowsConfig);
@@ -148,11 +152,59 @@ class PageController {
   }
 
   _processUrlOptions(imageWindowId, options) {
+    logger.debug('PageController#_processUrlOptions imageWindowId:', imageWindowId, 'options:', options, '_urlOptionsProcessed:', this._urlOptionsProcessed);
     if (this._urlOptionsProcessed) { // run this function only once
       return;
     } else {
       this._urlOptionsProcessed = true;
+      this._miradorProxy.publish('YM_DISPLAY_ON');
+
+
+      if (options.annotationId) {
+        const handler = event => {
+          logger.debug('PageController#_processUrlOptions annotationsRendered');
+          this._zoomToAnnotation(options.annotationId, imageWindowId);
+          this._miradorProxy.unsubscribe('annotationsRendered.' + imageWindowId, handler);
+        }
+        this._miradorProxy.subscribe('annotationsRendered.' + imageWindowId, handler);
+      }
       this._createAnnotationWindows(imageWindowId, options);
+    }
+  }
+
+  _findCanvasAnnotationsFromTargets(sourceAnnotation, allAnnotations, canvasId) {
+    const annoMap = {};
+    for (let anno of allAnnotations) {
+      annoMap[anno['@id']] = anno;
+    }
+    return annoUtil.findTransitiveTargetAnnotations(sourceAnnotation, annoMap)
+    .filter(anno => {
+      for (let target of Anno(anno).targets) {
+        if (target.full === canvasId) {
+          return true;
+        }
+      }
+    });
+  }
+
+  _zoomToAnnotation(annotationId, imageWindowId) {
+    const imageWindowProxy = this._miradorProxy.getWindowProxyById(imageWindowId);
+    const imageView = imageWindowProxy.getImageView();
+    const canvasId = imageWindowProxy.getCurrentCanvasId();
+    const allAnnotations = imageWindowProxy.getAnnotationsList();
+    let annos = allAnnotations.filter(anno => anno['@id'] === annotationId);
+
+    if (annos.length > 0) {
+      if (annos.length > 1) {
+        logger.error('PageController#_zoomToAnnotation', annos.length, 'duplicate annos:', annos, 'imageWindowId:', imageWindowId);
+      }
+      annos = this._findCanvasAnnotationsFromTargets(annos[0], allAnnotations, canvasId)
+      logger.debug('PageController#_zoomToAnnotation canvas annos:', annos);
+      imageView.zoomToAnnotation(annos[0]);
+      imageView.panToAnnotation(annos[0]);
+      imageView.annotationsLayer.drawTool.updateHighlights(annos[0]);
+    } else {
+      logger.error('PageController#_zoomToAnnotation annotation not found: annotationId:', annotationId, 'imageWindowId:', imageWindowId);
     }
   }
 
