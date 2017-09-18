@@ -159,7 +159,6 @@ class PageController {
       this._urlOptionsProcessed = true;
       this._miradorProxy.publish('YM_DISPLAY_ON');
 
-
       if (options.annotationId) {
         const handler = event => {
           logger.debug('PageController#_processUrlOptions annotationsRendered');

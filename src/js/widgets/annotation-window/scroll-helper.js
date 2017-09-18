@@ -1,3 +1,4 @@
+import domHelper from './dom-helper';
 import getLogger from '../../util/logger';
 
 const logger = getLogger();
@@ -32,7 +33,8 @@ export default class ScrollHelper {
   }
 
   scrollToTags(targetTags) {
-    logger.debug('AnnotationListWidget#scrollToTags targetTags:', targetTags);
+    logger.debug('ScrollHelper#scrollToTags targetTags:', targetTags);
+    let targetHeaderElem = null;
     let targetElem = null;
 
     this._rootElem.find('.annowin_group_header').each((index, value) => {
@@ -46,22 +48,35 @@ export default class ScrollHelper {
 
       if (targetTags.length === 1) {
         if (tags[0] === targetTags[0]) {
-          targetElem = headerElem;
+          targetHeaderElem = headerElem;
           return false;
         }
       } else if (tags[0] === targetTags[0] && tags[1] === targetTags[1]) {
-        targetElem = headerElem;
+        targetHeaderElem = headerElem;
         return false;
       }
     });
 
-    if (targetElem) {
-      this._rootElem.scrollTo(targetElem.next(), {
-        offset: { top: -this._groupHeaderHeight }
-      });
+    logger.debug('ScrollHelper#scrollToTags targetHeaderElem:', targetHeaderElem);
+
+    if (targetHeaderElem) {
+      targetElem = this._getNextAnnoElem(targetHeaderElem);
+      if (targetElem) {
+        this._rootElem.scrollTo(targetElem, {
+          offset: { top: -this._groupHeaderHeight }
+        });
+      }
     } else {
-      logger.warning('AnnotationListWidget#scrollToTags Header element not found for', targetTags);
+      logger.warning('ScrollHelper#scrollToTags Header element not found for', targetTags);
     }
+  }
+
+  _getNextAnnoElem(elem) {
+    let currentElem = elem;
+    while (currentElem.size() > 0 && !domHelper.isAnnotationCell(currentElem)) {
+      currentElem = currentElem.next();
+    }
+    return currentElem.size() > 0 ? currentElem : null;
   }
 
   scrollToElem(annoElem, yOffsetIn) {

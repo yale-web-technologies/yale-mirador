@@ -1,5 +1,6 @@
 import {Anno, annoUtil} from '../../import';
 import AnnotationListWidget from './annotation-list-widget';
+import domHelper from './dom-helper';
 import fatalError from '../../util/fatal-error';
 import getApp from '../../app';
 import getLogger from '../../util/logger';
@@ -42,7 +43,7 @@ export default class AnnotationWindow {
     const proxyMgr = getMiradorProxyManager();
     let annosToShow = [];
     let fullTagsTargets = null;
-    let targetAnno = null;
+    let targetAnno = null; // annotation cell to focus on
 
     if (!this._id) {
       this._id = Mirador.genUUID();
@@ -55,18 +56,11 @@ export default class AnnotationWindow {
 
     this._rootElem = jQuery(template({}));
     this._appendTo.append(this._rootElem);
-    this._listElem = this._rootElem.find('.annowin_list');
+    this._listElem = domHelper.findAnnoListElem(this._rootElem);
 
-    if (this._annotationId) { // annotation ID was given in the URL
-      const matched = this._imageWindow.getAnnotationsList().filter(anno => {
-        if (!anno || typeof anno !== 'object') {
-          logger.error('AnnotationWindow#init Invalid annotation', anno);
-          return false;
-        }
-        return anno['@id'] === this._annotationId;
-      });
-      targetAnno = matched[0];
-      if (matched.length > 0) {
+    if (this._annotationId) { // need to focus on a specific annotation
+      targetAnno = annoUtil.findAnnotationFromListById(this._annotationId, this._imageWindow.getAnnotationsList())[0];
+      if (targetAnno) {
         this._initialLayerId = targetAnno.layerId;
         if (toc) {
           this._initialTocTags = toc.getTagsFromAnnotationId(this._annotationId);
@@ -111,7 +105,7 @@ export default class AnnotationWindow {
       this._listWidget.highlightAnnotations([targetAnno], 'SELECTED');
       this._listWidget.goToAnnotation(this._annotationId, canvasId);
     } else if (this._initialTocTags.length > 0) {
-      //listWidget.goToPageByTags(this._initialTocTags);
+      this._listWidget.goToPageByTags(this._initialTocTags);
     } else {
       this._listWidget.goToPage(0);
     }
