@@ -9,7 +9,7 @@
 
   // Add strings or patterns to  array and
   // event names
-  var excludePatterns = [];
+  var excludePatterns = ['updateTooltips'];
 
   var scaffoldMap = {};
 

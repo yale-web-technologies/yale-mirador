@@ -105,7 +105,7 @@ export default class AnnotationPageRenderer {
               canvasId: canvasId,
               isEditor: options.isEditor
             });
-          annoElem.append(annoElem);
+          pageElem.append(annoElem);
         }
       } catch (e) {
         logger.error('ERROR AnnotationPageRenderer#_renderDefault', e);

@@ -14,26 +14,29 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 
   $.ImageView.prototype.zoomToAnnotation = function(annotation) {
     logger.debug('ImageView(ext)#zoomToAnnotation annotation:', annotation);
-    const viewport = this.osd.viewport;
-    const currentZoom = viewport.getZoom();
-    //logger.debug('zoomToAnnotation zoom: ' + currentZoom);
-    const shapes = this.annotationsLayer.drawTool.getShapesForAnnotation(annotation);
-    const shapeBounds = $.yaleExt.getCombinedBounds(shapes); // in image coordinates
-    const shapeWH = viewport.imageToViewportCoordinates(shapeBounds.width, shapeBounds.height);
-    const viewportBounds = viewport.getBounds();
-    const widthRatio = shapeWH.x / viewportBounds.width;
-    //logger.debug('w ratio: ' + widthRatio);
-    const heightRatio = shapeWH.y / viewportBounds.height;
-    //logger.debug('h ratio: ' + heightRatio);
-    const zoomFactor = 1.0 / Math.max(widthRatio, heightRatio) * 0.75;
-    //logger.debug('zoomFactor: ' + zoomFactor);
+    let currentZoom, shapes, shapeBounds, zoomFactor;
 
-    if (typeof zoomFactor === 'number' && !isNaN(zoomFactor)) {
-      viewport.zoomBy(zoomFactor);
-    } else {
-      const msg = 'ImageView(ext)#zoomToAnnotation invalid zoomFactor ' + zoomFactor;
-      logger.error(msg, annotation);
-      throw msg;
+    try {
+      const viewport = this.osd.viewport;
+      currentZoom = viewport.getZoom();
+      shapes = this.annotationsLayer.drawTool.getShapesForAnnotation(annotation);
+      shapeBounds = $.yaleExt.getCombinedBounds(shapes); // in image coordinates
+      const shapeWH = viewport.imageToViewportCoordinates(shapeBounds.width, shapeBounds.height);
+      const viewportBounds = viewport.getBounds();
+      const widthRatio = shapeWH.x / viewportBounds.width;
+      const heightRatio = shapeWH.y / viewportBounds.height;
+      zoomFactor = 1.0 / Math.max(widthRatio, heightRatio) * 0.75;
+
+      if (typeof zoomFactor === 'number' && !isNaN(zoomFactor)) {
+        viewport.zoomBy(zoomFactor);
+      } else {
+        const msg = 'ImageView(ext)#zoomToAnnotation invalid zoomFactor ' + zoomFactor;
+        logger.error(msg, annotation);
+        throw msg;
+      }
+    } catch (e) {
+      logger.error('ImageView(ext)#zoomToAnnotation failed for annotation', annotation, '-', e);
+      logger.error('oldZoom:', currentZoom, 'shapes:', shapes, 'shapeBounds:', shapeBounds, 'zoomFactor:', zoomFactor);
     }
   };
 

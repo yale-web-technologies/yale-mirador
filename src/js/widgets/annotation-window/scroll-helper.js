@@ -7,6 +7,7 @@ export default class ScrollHelper {
   constructor(options) {
     this._listWidget = options.listWidget;
     this._groupHeaderHeight = options.groupHeaderHeight;
+    this._continousPages = options.continuousPages;
 
     this._rootElem = this._listWidget.getRootElement();
     this._nav = this._listWidget.getNav();
@@ -154,25 +155,29 @@ export default class ScrollHelper {
   bindScrollEvent() {
     const _this = this;
 
-    this._rootElem.scroll(async function(event) {
-      const listWidget = _this._listWidget;
-      const elem = jQuery(this);
-      const scrollTop = elem.scrollTop();
-      const currentPos = scrollTop + elem.height();
-      const contentHeight = this.scrollHeight;
+    if (this._continousPages) {
+      this._rootElem.scroll(async function(event) {
+        const listWidget = _this._listWidget;
+        const elem = jQuery(this);
+        const scrollTop = elem.scrollTop();
+        const currentPos = scrollTop + elem.height();
+        const contentHeight = this.scrollHeight;
 
-      //logger.debug('contentHeight:', contentHeight, 'scrollTop:', scrollTop, 'scroll bottom:', currentPos);
+        //logger.debug('contentHeight:', contentHeight, 'scrollTop:', scrollTop, 'scroll bottom:', currentPos);
 
-      if (scrollTop < 20) {
-        await listWidget.loadPreviousPage();
-      }
-      if (contentHeight - currentPos < 20) {
-        await listWidget.loadNextPage();
-      }
-    });
+        if (scrollTop < 20) {
+          await listWidget.loadPreviousPage();
+        }
+        if (contentHeight - currentPos < 20) {
+          await listWidget.loadNextPage();
+        }
+      });
+    }
   }
 
   unbindScrollEvent() {
-    this._rootElem.off('scroll');
+    if (this._continousPages) {
+      this._rootElem.off('scroll');
+    }
   }
 }

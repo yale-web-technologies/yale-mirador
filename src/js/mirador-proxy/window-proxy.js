@@ -31,7 +31,7 @@ export default class WindowProxy {
   }
 
   setCurrentCanvasId(canvasId, options) {
-    logger.debug('WindowProxy#setCurrentCanvasId canvasId:', canvasId, 'options', options);
+    //logger.debug('WindowProxy#setCurrentCanvasId canvasId:', canvasId, 'options', options);
     this.window.setCurrentCanvasID(canvasId, options);
   }
 

@@ -71,7 +71,8 @@ class PageController {
    * Show annotation in annotation window
    */
   async _showAnnotation(windowId, annoId) {
-    logger.debug('PageController#showAnnotation windowId:', windowId, 'annoId:' + annoId, 'defaultLayer:', this._tocSpec.defaultLayer);
+    logger.debug('PageController#showAnnotation windowId:', windowId, 'annoId:' + annoId,
+      'defaultLayer:', this._tocSpec ? this._tocSpec.defaultLayer : null);
     const grid = this.options.grid;
     const windowProxy = this._miradorProxy.getWindowProxyById(windowId);
     const canvasId = windowProxy.getCurrentCanvasId();
@@ -158,8 +159,13 @@ class PageController {
     } else {
       this._urlOptionsProcessed = true;
 
-      if (options.annotationId) {
+      if (this.options.state.getTransient('showAnnotationsOverlayByDefault') ||
+        optoins.annotationId)
+      {
         this._miradorProxy.publish('YM_DISPLAY_ON');
+      }
+
+      if (options.annotationId) {
         const handler = event => {
           logger.debug('PageController#_processUrlOptions annotationsRendered');
           this._zoomToAnnotation(options.annotationId, imageWindowId);

@@ -21,6 +21,7 @@ export default class AnnotationListWidget {
     this._canvases = options.canvases;
     this._state = options.state;
     this._isEditor = options.isEditor;
+    this._continousPages = options.continuousPages;
 
     this._minContentRelativeHeight = 1.5;
     this._maxContentRelativeHeight = 5;
@@ -52,7 +53,8 @@ export default class AnnotationListWidget {
     this._scrollHelper = new ScrollHelper({
       listWidget: this,
       listNavigator: this._nav,
-      groupHeaderHeight: 19
+      groupHeaderHeight: 19,
+      continuousPages: this._continousPages
     });
     this._unbindEvents();
     this._bindEvents();
@@ -126,9 +128,11 @@ export default class AnnotationListWidget {
       });
     }
 
-    await this.loadPreviousPage();
-    await this.loadNextPage();
-    await this._scrollHelper.scrollToPage(pageNum);
+    if (this._continousPages) {
+      await this.loadPreviousPage();
+      await this.loadNextPage();
+      await this._scrollHelper.scrollToPage(pageNum);
+    }
 
     if (oldCanvasId !== newCanvasId) { // if the focused annotation belongs to a different canvas
       // Load new canvas in the image window

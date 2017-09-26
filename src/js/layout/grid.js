@@ -134,7 +134,8 @@ export default class {
       canvasWindowId: imageWindowId,
       initialLayerId: options.layerId || this._pickLayer(),
       initialTocTags: options.tocTags || [],
-      annotationId: options.annotationId || null
+      annotationId: options.annotationId || null,
+      continuousPages: getStateStore().getTransient('continuousPages')
     });
 
     await annoWin.init().catch(reason => {

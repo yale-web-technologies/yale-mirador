@@ -9,5 +9,16 @@ export default {
    */
   isAnnotationCell: elem => {
     return elem.hasClass('annowin_anno');
+  },
+
+  findAnnoElemByAnnoId: (annoId, $rootElem) => {
+    let $foundElem = null;
+    $rootElem.find('.annowin_anno').each((index, elem) => {
+      if (jQuery(elem).data('annotationId') === annoId) {
+        $foundElem = jQuery(elem);
+        return false;
+      }
+    });
+    return $foundElem;
   }
 };

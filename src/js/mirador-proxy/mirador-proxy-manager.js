@@ -12,7 +12,7 @@ class MiradorProxyManager {
   }
 
   addMirador(miradorId, mirador) {
-    logger.debug('MiradorProxyManager#addMirador', mirador);
+    //logger.debug('MiradorProxyManager#addMirador', mirador);
     let miradorProxy = this._miradorProxiesMap[miradorId];
     if (miradorProxy) {
       throw 'MiradorProxyManager#addMirador duplicate ID ' + miradorId;
@@ -55,13 +55,13 @@ class MiradorProxyManager {
   }
 
   getWindowProxyById(windowId) {
-    logger.debug('MiradorProxyManager#getWindowProxyById windowId:', windowId);
+    //logger.debug('MiradorProxyManager#getWindowProxyById windowId:', windowId);
     const window = this.getWindowById(windowId);
     return window ? new WindowProxy(window) : null;
   }
 
   getWindowById(windowId) {
-    logger.debug('MiradorProxyManager#getWindowById windowId:', windowId);
+    //logger.debug('MiradorProxyManager#getWindowById windowId:', windowId);
     let window = null;
 
     for (let miradorProxy of Object.values(this._miradorProxiesMap)) {
@@ -90,7 +90,7 @@ class MiradorProxyManager {
 
   // Subscribe to the same event from all Mirador instances
   subscribe(eventName, callback) {
-    logger.debug('MiradorProxyManager#subscribe ', eventName, callback);
+    //logger.debug('MiradorProxyManager#subscribe ', eventName, callback);
     for (let miradorProxy of Object.values(this._miradorProxiesMap)) {
       miradorProxy.subscribe(eventName, callback);
     }
