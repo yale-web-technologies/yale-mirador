@@ -63,7 +63,7 @@ export default class MiradorConfigBuilder {
 
     if (tocSpec) {
       windowSettings.sidePanelOptions.annotationTocTabAvailable = true;
-      windowSettings.sidePanelOptions.toc = false;
+      windowSettings.sidePanelOptions.tocTabAvailable = false;
     }
 
     if (!this.options.isEditor) {

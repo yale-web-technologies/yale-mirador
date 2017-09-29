@@ -27,10 +27,19 @@ export default class AnnotationWindow {
     this._annotationId = options.annotationId;
     this._continuousPages = options.continuousPages || false;
 
+    this._miradorProxy = getMiradorProxyManager().getMiradorProxy(this._miradorId);
     this._tocSpec = getStateStore().getTransient('tocSpec');
+    this._annotationTocCache = getApp().getAnnotationTocCache();
+
+    if (!this._id) { this._id = Mirador.genUUID(); }
+    this._imageWindow = this._miradorProxy.getWindowProxyById(this._imageWindowId);
+
+    this._rootElem = jQuery(template({}));
+    this._appendTo.append(this._rootElem);
+    this._listElem = domHelper.findAnnoListElem(this._rootElem);
+
     this._jQuerySubscribed = {};
     this._miradorSubscribed = {};
-    this._annotationTocCache = getApp().getAnnotationTocCache();
   }
 
   getId() {
@@ -38,38 +47,33 @@ export default class AnnotationWindow {
   }
 
   /**
+   * Initializations that require async operations
+   *
    * @returns {Promise}
    */
   async init() {
-    const proxyMgr = getMiradorProxyManager();
-    let annosToShow = [];
-    let fullTagsTargets = null;
+    //let annosToShow = [];
+    //let fullTagsTargets = null;
     let targetAnno = null; // annotation cell to focus on
 
-    if (!this._id) {
-      this._id = Mirador.genUUID();
-    }
-    this._miradorProxy = proxyMgr.getMiradorProxy(this._miradorId);
-    this._imageWindow = this._miradorProxy.getWindowProxyById(this._imageWindowId);
-
     const canvasId = this._imageWindow.getCurrentCanvasId();
+    const annotationList = this._imageWindow.getAnnotationsList();
     const toc = this._tocSpec ? await getApp().getAnnotationTocCache().getToc(canvasId) : null;
 
-    this._rootElem = jQuery(template({}));
-    this._appendTo.append(this._rootElem);
-    this._listElem = domHelper.findAnnoListElem(this._rootElem);
+    ({targetAnno, layerId: this._initialLayerId, tocTags: this._initialTocTags} = this._processDataParams({
+      annotationId: this._annotationId,
+      annotationList: annotationList,
+      layerId: this._initialLayerId,
+      toc: toc
+    }));
 
-    if (this._annotationId) { // need to focus on a specific annotation
-      targetAnno = annoUtil.findAnnotationFromListById(this._annotationId, this._imageWindow.getAnnotationsList())[0];
-      if (targetAnno) {
-        this._initialLayerId = targetAnno.layerId;
-        if (toc) {
-          this._initialTocTags = toc.getTagsFromAnnotationId(this._annotationId);
-        }
-      }
+    /*
+    if (this._initialLayerId) {
+      targetAnno = this._processLayerId(this._initialLayerId, annotationList);
     }
-
-    if (this._initialLayerId) { // layerIDs were given in the URL
+    */
+/*
+    if (this._initialLayerId) {
       annosToShow = this._imageWindow.getAnnotationsList();
       annosToShow = annosToShow.filter(anno => anno.layerId == this._initialLayerId);
 
@@ -87,22 +91,28 @@ export default class AnnotationWindow {
     if (!targetAnno) {
       targetAnno = annosToShow[0];
     }
+    */
     logger.debug('AnnotationWindow#init targetAnno:', targetAnno);
 
+    console.log('HHH 1');
+
     this.initLayerSelector();
+    console.log('HHH 2');
     this.addCreateWindowButton();
     this.placeholder = this._rootElem.find('.placeholder');
     this.placeholder.text('Loading...').show();
+    console.log('HHH 3');
 
     this._setupAnnotationListWidget();
+    console.log('HHH 4');
 
     await this.reload().catch(reason => {
       throw 'AnnotationWindow#init reload failed - ' + reason;
     });
-
-    logger.debug('AnnotationWindow#init annosToShow:', annosToShow);
+    console.log('HHH 5');
 
     if (this._annotationId) {
+      console.log('dada');
       this._listWidget.highlightAnnotations([targetAnno], 'SELECTED');
       this._listWidget.goToAnnotation(this._annotationId, canvasId);
     } else if (this._initialTocTags.length > 0) {
@@ -110,8 +120,90 @@ export default class AnnotationWindow {
     } else {
       this._listWidget.goToPageByCanvas(canvasId);
     }
+    console.log('HHH 6');
     this.bindEvents();
     return this;
+  }
+
+  /**
+   * Process initialization parameters concerning which data to display how.
+   * params: {
+   *   annotationId: string,
+   *   annotationList: Array.<object>,
+   *   layerId: string,
+   *   toc: jossugi.AnnotationToc
+   * }
+   * @param {object} params
+   * @return {{targetAnno: object, layerId: string, tocTags: string[]}}
+   */
+  _processDataParams(params) {
+    logger.debug('AnnotationWindow#_processDataParams params:', params);
+    let targetAnno = null; // annotation that should be visible and focused on
+    let layerId = params.layerId;
+    let tocTags = [];
+
+    if (params.annotationId) { // annotationId is given the highest priority in determining targetAnno
+      targetAnno = annoUtil.findAnnotationFromListById(params.annotationId,
+        params.annotationList);
+
+      if (targetAnno) {
+        layerId = targetAnno.layerId;
+        if (params.toc) {
+          tocTags = toc.getTagsFromAnnotationId(params.annotationId);
+        }
+      }
+    }
+
+    /*
+    if (params.layerId && !targetAnno && params.toc && tocTags.length > 0) {
+      targetAnno = this._getTargetAnnoWithToc(filteredAnnos,
+        layerId, params.toc, tocTags);
+      }
+    }
+    */
+    return {targetAnno: targetAnno, layerId: layerId, tocTags: tocTags};
+  }
+
+  _getTargetAnnoWithToc(annotationList, layerId, toc, tocTags) {
+    const annosToShow = annotationList.filter(anno => anno.layerId == layerId)
+      .filter(anno => toc.matchHierarchy(anno, tocTags.slice(0,1)));
+    const fullTagsTargets = annosToShow.filter(anno => toc.matchHierarchy(anno, tocTags));
+
+    if (fullTagsTargets.length > 0 && !targetAnno) {
+      targetAnno = fullTagsTargets[0];
+    }
+  }
+
+  /**
+   * Process init option "annotationId"
+   * @param {{annotationId: string, annotationList: Array.<object>, layerId: string, toc: object}} params
+   * @return {{targetAnno: object, layerId: string, tocTags: string[]}}
+   */
+  _processAnnotationId(params) {
+    const targetAnno = annoUtil.findAnnotationFromListById(params.annotationId,
+      params.annotationList)[0];
+    let layerId = params.layerId;
+    let tocTags = [];
+
+    if (targetAnno) {
+      layerId = targetAnno.layerId;
+      if (params.toc) {
+        tocTags = toc.getTagsFromAnnotationId(params.annotationId);
+      }
+    }
+    return {targetAnno: targetAnno, layerId: layerId, tocTags: tocTags};
+  }
+
+  _processLayerId(layerId, annotationList, toc, tocTags) {
+    let annosToShow = annotationList.filter(anno => anno.layerId == this._initialLayerId);
+
+    if (toc && tocTags.length > 0) {
+      annosToShow = annosToShow.filter(anno => toc.matchHierarchy(anno, tocTags.slice(0,1)));
+      const fullTagsTargets = annosToShow.filter(anno => toc.matchHierarchy(anno, tocTags));
+      if (fullTagsTargets.length > 0 && !targetAnno) {
+        targetAnno = fullTagsTargets[0];
+      }
+    }
   }
 
   getMiradorProxy() {

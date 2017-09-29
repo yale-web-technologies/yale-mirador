@@ -160,7 +160,7 @@ class PageController {
       this._urlOptionsProcessed = true;
 
       if (this.options.state.getTransient('showAnnotationsOverlayByDefault') ||
-        optoins.annotationId)
+        options.annotationId)
       {
         this._miradorProxy.publish('YM_DISPLAY_ON');
       }
@@ -178,6 +178,7 @@ class PageController {
   }
 
   _findCanvasAnnotationsFromTargets(sourceAnnotation, allAnnotations, canvasId) {
+    logger.debug('PageController#_findCanvasAnnotationsFromTargets sourceAnnotation:', sourceAnnotation, 'allAnnotations:', allAnnotations, 'canvasId:', canvasId);
     const annoMap = {};
     for (let anno of allAnnotations) {
       annoMap[anno['@id']] = anno;
@@ -203,7 +204,6 @@ class PageController {
       if (annos.length > 1) {
         logger.error('PageController#_zoomToAnnotation', annos.length, 'duplicate annos:', annos, 'imageWindowId:', imageWindowId);
       }
-      annos = this._findCanvasAnnotationsFromTargets(annos[0], allAnnotations, canvasId)
       logger.debug('PageController#_zoomToAnnotation canvas annos:', annos);
       imageView.zoomToAnnotation(annos[0]);
       imageView.panToAnnotation(annos[0]);
@@ -239,28 +239,33 @@ class PageController {
       const annoTocMenu = tocPanel.data('AnnotationTableOfContent');
 
       this._showAnnotation(windowId, annoId);
-      const toc = await this._annotationTocCache.getToc(canvasId);
-      const annotation = toc.annotations.filter(anno => anno['@id'] === annoId)[0];
 
-      if (annotation && annoTocMenu) {
-        annoTocMenu.scrollToTags(annotation.tocTags);
+      if (annoTocMenu) {
+        const toc = await this._annotationTocCache.getToc(canvasId);
+        const annotation = toc.annotations.filter(anno => anno['@id'] === annoId)[0];
+
+        if (annotation) {
+          annoTocMenu.scrollToTags(annotation.tocTags);
+        }
       }
     });
 
     jQuery.subscribe('ANNOWIN_ANNOTATION_FOCUSED', (event, params) => {
       logger.debug('PageController has received event ANNOWIN_ANNOTATION_FOCUSED with options', params);
       const windowProxy = this._miradorProxy.getWindowProxyById(params.imageWindowId);
+      const canvasId = windowProxy.getCurrentCanvasId();
       const imageView = windowProxy.getImageView();
+      const annotations = windowProxy.getAnnotationsList();
       const annoMap = {};
 
       if (params.canvasId === windowProxy.getCurrentCanvasId()) { // the clicked annotation belong to the current canvas
-        for (let anno of windowProxy.getAnnotationsList()) {
+        for (let anno of annotations) {
           annoMap[anno['@id']] = anno;
         }
         let anno = params.annotation;
 
         if (!annoUtil.hasTargetOnCanvas(anno)) {
-          let annos = annoUtil.findTargetAnnotationsOnCanvas(anno, annoMap);
+          let annos = this._findCanvasAnnotationsFromTargets(anno, annotations, canvasId)
           anno = annos[0];
         }
         if (anno) {
