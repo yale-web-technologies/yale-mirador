@@ -38,13 +38,24 @@ module.exports = function(config) {
           test: /\.js$/,
           include: [
             path.resolve(__dirname, 'src/js'),
+          ],
+          use: [{
+            loader: 'istanbul-instrumenter-loader'
+          }, {
+            loader: 'babel-loader',
+            options: { presets: ['es2015', 'es2017'] }
+          }]
+        }, {
+          test: /\.js$/,
+          include: [
             path.resolve(__dirname, 'test')
           ],
           use: [{
             loader: 'babel-loader',
             options: { presets: ['es2015', 'es2017'] }
           }]
-        }, {
+        },
+        {
           test: /\.less$/,
           use: ExtractTextPlugin.extract({
             fallbackLoader: 'style-loader',
@@ -67,6 +78,7 @@ module.exports = function(config) {
       require('karma-mocha'),
       require('karma-sinon'),
       require('karma-coverage'),
+      require('karma-coverage-istanbul-reporter'),
       require('karma-phantomjs-launcher')
     ],
 
@@ -80,7 +92,13 @@ module.exports = function(config) {
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress', 'coverage'],
+    reporters: ['progress', 'coverage-istanbul'],
+
+    coverageIstanbulReporter: {
+      reports: ['html'],
+      dir: path.join(__dirname, 'coverage'),
+      fixWebpackSourcePaths: true
+    },
 
     // web server port
     port: 9876,
