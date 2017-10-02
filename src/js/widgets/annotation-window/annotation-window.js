@@ -52,8 +52,6 @@ export default class AnnotationWindow {
    * @returns {Promise}
    */
   async init() {
-    //let annosToShow = [];
-    //let fullTagsTargets = null;
     let targetAnno = null; // annotation cell to focus on
 
     const canvasId = this._imageWindow.getCurrentCanvasId();
@@ -67,49 +65,17 @@ export default class AnnotationWindow {
       toc: toc
     }));
 
-    /*
-    if (this._initialLayerId) {
-      targetAnno = this._processLayerId(this._initialLayerId, annotationList);
-    }
-    */
-/*
-    if (this._initialLayerId) {
-      annosToShow = this._imageWindow.getAnnotationsList();
-      annosToShow = annosToShow.filter(anno => anno.layerId == this._initialLayerId);
-
-      if (this._initialTocTags.length > 0) {
-        if (toc) {
-          annosToShow = annosToShow.filter(anno => toc.matchHierarchy(anno, this._initialTocTags.slice(0,1)));
-          fullTagsTargets = annosToShow.filter(anno => toc.matchHierarchy(anno, this._initialTocTags));
-          if (fullTagsTargets.length > 0 && !targetAnno) {
-            targetAnno = fullTagsTargets[0];
-          }
-        }
-      }
-    }
-
-    if (!targetAnno) {
-      targetAnno = annosToShow[0];
-    }
-    */
     logger.debug('AnnotationWindow#init targetAnno:', targetAnno);
 
-    console.log('HHH 1');
-
     this.initLayerSelector();
-    console.log('HHH 2');
     this.addCreateWindowButton();
     this.placeholder = this._rootElem.find('.placeholder');
     this.placeholder.text('Loading...').show();
-    console.log('HHH 3');
-
     this._setupAnnotationListWidget();
-    console.log('HHH 4');
 
     await this.reload().catch(reason => {
       throw 'AnnotationWindow#init reload failed - ' + reason;
     });
-    console.log('HHH 5');
 
     if (this._annotationId) {
       console.log('dada');
@@ -120,7 +86,6 @@ export default class AnnotationWindow {
     } else {
       this._listWidget.goToPageByCanvas(canvasId);
     }
-    console.log('HHH 6');
     this.bindEvents();
     return this;
   }
@@ -154,13 +119,6 @@ export default class AnnotationWindow {
       }
     }
 
-    /*
-    if (params.layerId && !targetAnno && params.toc && tocTags.length > 0) {
-      targetAnno = this._getTargetAnnoWithToc(filteredAnnos,
-        layerId, params.toc, tocTags);
-      }
-    }
-    */
     return {targetAnno: targetAnno, layerId: layerId, tocTags: tocTags};
   }
 
