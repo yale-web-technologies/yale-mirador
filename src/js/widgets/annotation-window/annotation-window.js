@@ -40,6 +40,7 @@ export default class AnnotationWindow {
 
     this._jQuerySubscribed = {};
     this._miradorSubscribed = {};
+    this._setDirty(false);
   }
 
   getId() {
@@ -261,20 +262,34 @@ export default class AnnotationWindow {
     this._currentLayerId = layerId;
   }
 
+  show() {
+    this._rootElem.show();
+  }
+
+  hide() {
+    this._rootElem.hide();
+  }
+
+  _isDirty() {
+    return this._dirty;
+  }
+
+  /**
+   * @param {boolean} value
+   */
+  _setDirty(value) {
+    this._dirty = value;
+  }
+
   reload() {
     logger.debug('AnnotationWindow#reload');
+    this.hide();
     const _this = this;
     const state = getStateStore();
 
     this.placeholder.hide();
 
-    if (state.getBoolean('fixAnnoCellHeight')) {
-      this._rootElem.addClass('fixed_height_cells');
-    } else {
-      this._rootElem.removeClass('fixed_height_cells');
-    }
-
-    var canvas = this.getCurrentCanvas();
+    const canvas = this.getCurrentCanvas();
     this._rootElem.find('.title').text(canvas.label);
 
     /* We're not showing toc selector in annotation window. Annotation ToC is now in sidebar menu
@@ -321,8 +336,17 @@ export default class AnnotationWindow {
       await this.updateList().catch(reason => {
         throw 'AnnotationWindow#updateList failed: ' + reason;
       });
+      this.show();
       return this;
     });
+  }
+
+  reloadIfDirty() {
+    logger.debug('AnnotationWindow#reloadIfDirty dirty:', this._dirty);
+    if (this._isDirty()) {
+      this._setDirty(false);
+      this.reload();
+    }
   }
 
   async updateList() {
@@ -438,8 +462,15 @@ export default class AnnotationWindow {
     this._subscribe(this._miradorProxy, 'ANNOTATIONS_LIST_UPDATED', (event, params) => {
       logger.debug('AnnotationWindow:SUB:ANNOTATIONS_LIST_UPDATED, params:', params);
       if (params.windowId === this.getImageWindowId()) {
+        /*
         const windowProxy = this._miradorProxy.getWindowProxyById(params.windowId);
         this._listWidget.goToPageByCanvas(windowProxy.getCurrentCanvasId());
+        */
+        if (this.hasOpenEditor()) {
+          this._setDirty(true);
+        } else {
+          this.reload();
+        }
       }
     });
 

@@ -103,12 +103,10 @@ export default class AnnotationSource {
       annotations = await this._getRemoteAnnotations(canvasId);
 
       if (cache) {
-        //this._detachEndpoint(annotations);
         await cache.setAnnotationsPerCanvas(canvasId, annotations);
-        this._attachEndpoint(annotations);
       }
     }
-    //this._attachEndpoint(annotations);
+    this._attachEndpoint(annotations);
 
     if (layerId) {
       annotations = annotations.filter((anno) => anno.layerId === layerId);

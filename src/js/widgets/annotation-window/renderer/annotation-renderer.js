@@ -112,10 +112,12 @@ export default class AnnotationRenderer {
               { windowId: imageWindow.getWindowId(), annotationsList: imageWindow.getAnnotationsList() });
           } catch(e) {
             logger.error('AnnotationRenderer saving from "annotate" failed:', e);
+            annoWin.reloadIfDirty();
           }
         },
         cancelCallback: () => {
           dialogElement.dialog('close');
+          annoWind.reloadIfDirty();
         }
       });
 
@@ -147,10 +149,12 @@ export default class AnnotationRenderer {
           } else {
             annoElem.remove();
           }
+          annoWin.reloadIfDirty();
         },
         cancelCallback: function() {
           annoElem.find('.normal_view').show();
           annoElem.data('editing', false);
+          annoWin.reloadIfDirty();
         }
       });
 
