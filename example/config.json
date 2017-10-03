@@ -1,31 +1,39 @@
 {
-  "isEditor": false,
+  "isEditor": true,
+
+  "manifestUrl": "https://s3.amazonaws.com/lifeofthebuddha.yale.edu/manifests/confucius-311.json",
+  "__manifestUrl": "https://s3.amazonaws.com/lifeofthebuddha.yale.edu/manifests/LOTB.json",
   "__manifestUrl": "http://media.nga.gov/public/manifests/nga_highlights.json",
-  "__manifestUrl": "https://s3.amazonaws.com/tempmanifests/ten_thousand_rooms/KZJY.json",
-  "manifestUrl": "https://s3.amazonaws.com/tempmanifests/life_of_the_buddha/LOTB.json",
-  "__manifestUrl": "https://s3.amazonaws.com/tempmanifests/life_of_the_buddha/LOTB-test.json",
+
   "apiSettings": {
     "buildPath": "/dist/mirador/",
-    "endpointUrl": "http://mirador-annotations-lotb-stg.herokuapp.com",
-    "__endpointUrl": "http://localhost:3100",
-    "disableAuthz": true,
+
+    "endpointUrl": "http://localhost:5000",
+    "__endpointUrl": "http://mirador-annotations-lotb-stg.herokuapp.com",
+
+    "disableAuthz": false,
     "copyrighted": false,
     "copyrightedImageServiceUrl": "http://images.tenthousandrooms.yale.edu/loris/tenkr:original/copyrighted.jpg",
+
     "ui": {
-      "fixAnnoCellHeight": false,
       "textDirection": "horizontal-lr",
+
       "annotationsOverlay": {
-        "hideUnfocused": true,
-        "hoverColor": "yellow",
+        "showByDefault": true,
+        "hideUnfocused": false,
+        "hoverColor": "red",
         "hoverWidthFactor": 2
       },
-      "tooltipStyles": {
+      "annotationWindow": {
+        "continuousPages": false
+      },
+      "__tooltipStyles": {
         "color": "#fff",
         "backgroundColor": "rgba(0, 0, 0, 0.2)",
         "border": "solid 1px rgba(187, 187, 187, 0.5)"
       },
-      "hideTagsInAnnotation": true,
-      "i18nOverrides": {
+      "hideTagsInAnnotation": false,
+      "__i18nOverrides": {
         "en": {
           "nextCanvas": "Next Panel",
           "previousCanvas": "Previous Panel",
@@ -40,7 +48,8 @@
         }
       }
     },
-    "tocSpec": {
+    "__tocSpec": {
+      "__defaultLayer": "http://mirador-annotations-lotb.herokuapp.com/layers/English",
       "defaultLayer": "http://mirador-annotations-lotb-stg.herokuapp.com/layers/English",
       "generator": [
         {"tag": { "prefix": "chapter" }, "label": { "prefix": "Chapter "}, "max": 28,
@@ -75,7 +84,8 @@
           "Chapter 28. The First Turning of the Wheel<br/>ཉེར་བརྒྱད་པ་ཆོས་འཁོར་ཐོག་མ་བསྐོར་བ་ནི།"
          ]
         },
-        {"tag": { "prefix": "scene" },   "label": { "prefix": "Scene " },  "max": 20}
+        {"tag": { "prefix": "scene" },   "label": { "prefix": "Scene " },  "max": 20},
+        {"tag": { "prefix": "p" },   "label": { "prefix": "Paragraph " },  "max": 20}
       ],
       "canvasMap": {
         "chapter1": ["http://manifests.ydc2.yale.edu/LOTB/canvas/panel_01"],
