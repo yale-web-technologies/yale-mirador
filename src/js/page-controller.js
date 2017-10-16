@@ -199,6 +199,7 @@ class PageController {
     const canvasId = imageWindowProxy.getCurrentCanvasId();
     const allAnnotations = imageWindowProxy.getAnnotationsList();
     let annos = allAnnotations.filter(anno => anno['@id'] === annotationId);
+    annos = this._findCanvasAnnotationsFromTargets(annos[0], allAnnotations, canvasId);
 
     if (annos.length > 0) {
       if (annos.length > 1) {
@@ -288,9 +289,20 @@ class PageController {
       let annoWindow = grid.getAnnotationWindowByLayer(layerId);
 
       try {
-        this._miradorProxy.getWindowProxyById(windowId).getImageView().enableAnnotationLayer();
+        this._miradorProxy.publish('YM_DISPLAY_ON');
+        // Give some time for displayOn to run
+        await new Promise((resolve, reject) => {
+          setTimeout(() => {
+            resolve();
+          }, 0);
+        });
       } catch(e) {
         logger.error('PageController#SUB:YM_ANNOTATION_TOC_TAGS_SELECTED failed to enable annotation layer');
+      }
+
+      const annotationWindows = this.options.grid.getAnnotationWindows();
+      for (let annoWin of Object.values(annotationWindows)) {
+        annoWin.ignoreEvent('ANNOTATIONS_LIST_UPDATED', 2000);
       }
 
       await this._miradorWrapper.zoomToTags(windowId, canvasId, tags).catch(reason => {

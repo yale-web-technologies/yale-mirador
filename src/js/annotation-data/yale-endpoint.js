@@ -4,7 +4,6 @@ import getErrorDialog from '../widgets/error-dialog';
 import getLogger from '../util/logger';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 import getPageController from '../page-controller';
-import getModalAlert from '../widgets/modal-alert';
 import session from '../session';
 import util from '../util/util';
 

@@ -3,7 +3,6 @@ import AnnotationPageRenderer from './renderer/annotation-page-renderer';
 import {Anno, AnnotationToc, annoUtil} from '../../import';
 import getApp from '../../app';
 import getLogger from '../../util/logger';
-import getModalAlert from '../../widgets/modal-alert';
 import getStateStore from '../../state-store';
 import ScrollHelper from './scroll-helper';
 
@@ -356,7 +355,6 @@ export default class AnnotationListWidget {
       logger.debug('AnnotationListWidget#_loadPage alread loaded; page:', pageNum);
       return;
     }
-    getModalAlert().show('Loading annotations...');
 
     const annotations = await this._getAnnotationsForPage(pageNum);
     const toc = await this._getTocForPage(pageNum);
@@ -372,7 +370,6 @@ export default class AnnotationListWidget {
     });
 
     element.show();
-    getModalAlert().hide();
   }
 
   _unloadAllPages() {

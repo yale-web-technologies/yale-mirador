@@ -3,6 +3,7 @@ import getAnnotationCache from './annotation-cache';
 import getApp from '../app';
 import {getEndpoint} from './yale-endpoint';
 import getLogger from '../util/logger';
+import getModalAlert from '../widgets/modal-alert';
 import getPageController from '../page-controller';
 import getStateStore from '../state-store';
 
@@ -94,6 +95,8 @@ export default class AnnotationSource {
     const cache = await getAnnotationCache();
     let annotations = null;
 
+    await getModalAlert().show('Retrieving annotations...');
+
     if (cache) {
       annotations = await cache.getAnnotationsPerCanvas(canvasId);
       logger.debug('AnnotationSource#getAnnotations from cache:', annotations);
@@ -111,6 +114,8 @@ export default class AnnotationSource {
     if (layerId) {
       annotations = annotations.filter((anno) => anno.layerId === layerId);
     }
+
+    getModalAlert().hide();
 
     return annotations;
   }

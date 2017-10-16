@@ -60,13 +60,14 @@ export default class MiradorWrapper {
     return miradorProxy;
   }
 
-
   async zoomToTags(windowId, canvasId, tags) {
+    logger.debug('MiradorWrapper#zoomToTags windowId:', windowId, 'canvasId:', canvasId, 'tags:', tags);
     const tocCache = getApp().getAnnotationTocCache();
     const toc = await tocCache.getToc(canvasId);
     const windowProxy = this._miradorProxy.getWindowProxyById(windowId);
     const imageView = windowProxy.getImageView();
     const tocNode = toc.getNodeFromTags(tags);
+    logger.debug('tocNode:', tocNode);
     const annotation = tocNode.canvasAnnotations[0];
 
     const zoomToAnnotation = function(event) {
@@ -85,7 +86,6 @@ export default class MiradorWrapper {
       }
 
       if (canvasId === windowProxy.getCurrentCanvasId()) {
-        this._miradorProxy.publish('YM_DISPLAY_ON');
         zoomToAnnotation();
         resolve();
       } else {

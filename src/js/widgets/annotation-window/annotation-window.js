@@ -22,7 +22,7 @@ export default class AnnotationWindow {
     this._appendTo = options.appendTo;
     this._listWidget = options.annotationListWidget;
     this._explorer = options.explorer;
-    this._initialLayerId = options.initialLayerId;
+    this._initialLayerId = options.initialLayerId || null;
     this._initialTocTags = options.initialTocTags || [];
     this._annotationId = options.annotationId;
     this._continuousPages = options.continuousPages || false;
@@ -41,6 +41,8 @@ export default class AnnotationWindow {
     this._jQuerySubscribed = {};
     this._miradorSubscribed = {};
     this._setDirty(false);
+
+    this._ignoredEvents = {};
   }
 
   getId() {
@@ -53,18 +55,17 @@ export default class AnnotationWindow {
    * @returns {Promise}
    */
   async init() {
-    let targetAnno = null; // annotation cell to focus on
-
     const canvasId = this._imageWindow.getCurrentCanvasId();
     const annotationList = this._imageWindow.getAnnotationsList();
     const toc = this._tocSpec ? await getApp().getAnnotationTocCache().getToc(canvasId) : null;
 
-    ({targetAnno, layerId: this._initialLayerId, tocTags: this._initialTocTags} = this._processDataParams({
+    let { targetAnno, layerId, tocTags } = this._processDataParams({
       annotationId: this._annotationId,
       annotationList: annotationList,
       layerId: this._initialLayerId,
-      toc: toc
-    }));
+      toc: toc,
+      tocTags: this._initialTocTags
+    });
 
     logger.debug('AnnotationWindow#init targetAnno:', targetAnno);
 
@@ -79,16 +80,31 @@ export default class AnnotationWindow {
     });
 
     if (this._annotationId) {
-      console.log('dada');
       this._listWidget.highlightAnnotations([targetAnno], 'SELECTED');
       this._listWidget.goToAnnotation(this._annotationId, canvasId);
     } else if (this._initialTocTags.length > 0) {
-      this._listWidget.goToPageByTags(this._initialTocTags);
+      this._listWidget.goToPageByTags(tocTags);
     } else {
       this._listWidget.goToPageByCanvas(canvasId);
     }
     this.bindEvents();
     return this;
+  }
+
+  ignoreEvent(eventId, duration) {
+    this._ignoredEvents[eventId] =  new Date().valueOf() + duration;
+  }
+
+  _shouldIgnoreEvent(eventId) {
+    const expiration = this._ignoredEvents[eventId];
+    if (typeof expiration === 'number') {
+      if (new Date().valueOf() < expiration) {
+        return true;
+      } else {
+        delete this._ignoredEvents[eventId];
+      }
+    }
+    return false;
   }
 
   /**
@@ -97,7 +113,8 @@ export default class AnnotationWindow {
    *   annotationId: string,
    *   annotationList: Array.<object>,
    *   layerId: string,
-   *   toc: jossugi.AnnotationToc
+   *   toc: jossugi.AnnotationToc,
+   *   tocTags: Array.<string>
    * }
    * @param {object} params
    * @return {{targetAnno: object, layerId: string, tocTags: string[]}}
@@ -106,7 +123,7 @@ export default class AnnotationWindow {
     logger.debug('AnnotationWindow#_processDataParams params:', params);
     let targetAnno = null; // annotation that should be visible and focused on
     let layerId = params.layerId;
-    let tocTags = [];
+    let tocTags = params.tocTags;
 
     if (params.annotationId) { // annotationId is given the highest priority in determining targetAnno
       targetAnno = annoUtil.findAnnotationFromListById(params.annotationId,
@@ -115,11 +132,10 @@ export default class AnnotationWindow {
       if (targetAnno) {
         layerId = targetAnno.layerId;
         if (params.toc) {
-          tocTags = toc.getTagsFromAnnotationId(params.annotationId);
+          tocTags = params.toc.getTagsFromAnnotationId(params.annotationId);
         }
       }
     }
-
     return {targetAnno: targetAnno, layerId: layerId, tocTags: tocTags};
   }
 
@@ -461,11 +477,7 @@ export default class AnnotationWindow {
 
     this._subscribe(this._miradorProxy, 'ANNOTATIONS_LIST_UPDATED', (event, params) => {
       logger.debug('AnnotationWindow:SUB:ANNOTATIONS_LIST_UPDATED, params:', params);
-      if (params.windowId === this.getImageWindowId()) {
-        /*
-        const windowProxy = this._miradorProxy.getWindowProxyById(params.windowId);
-        this._listWidget.goToPageByCanvas(windowProxy.getCurrentCanvasId());
-        */
+      if (params.windowId === this.getImageWindowId() && !this._shouldIgnoreEvent('ANNOTATIONS_LIST_UPDATED')) {
         if (this.hasOpenEditor()) {
           this._setDirty(true);
         } else {
