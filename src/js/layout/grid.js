@@ -15,6 +15,7 @@ export default class {
   init(rootElementId) {
     logger.debug('Grid#init');
     this.element = jQuery('#' + rootElementId);
+    this._state = getStateStore();
     this.miradorProxyManager = getMiradorProxyManager();
     this._annotationExplorer = getApp().getAnnotationExplorer();
     this._annotationWindows = {};
@@ -135,7 +136,7 @@ export default class {
       initialLayerId: options.layerId || this._pickLayer(),
       initialTocTags: options.tocTags || [],
       annotationId: options.annotationId || null,
-      continuousPages: getStateStore().getTransient('continuousPages')
+      appState:this._state
     });
 
     await annoWin.init().catch(reason => {

@@ -30,7 +30,8 @@
     }
   }
 
-  .ym_create_window_button {
+  .ym_create_window_button,
+  .ym_toggle_direction_button {
     display: inline-block;
     float: right;
     color: @gray;
@@ -73,20 +74,39 @@
 }
 
 .annowin_list {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  align-items: stretch;
   flex: 1 1 auto;
-  position: relative; /* required to make the div "positioned" so the child elements' positions to be obtained and scroll levels adjusted accordingly. */
-  //position: absolute;
-  //top: @annowin-header-height;
-  //bottom: 17px; // XXX a kludge until someone can figure out why the whole div is not showing unless this bottom value is set.
-  left: 0;
-  right: 0;
-  margin: 0;
-  //overflow-y: visible;
+  //position: relative; // required to make the div "positioned" so the child elements' positions to be obtained and scroll levels adjusted accordingly.
+  //left: 0;
+  //right: 0;
+  //margin: 0;
+  overflow-x: hidden;
   overflow-y: scroll;
-  //min-height: 150%;
+
+  &.row-reverse {
+    flex-flow: row-reverse nowrap;
+    overflow-x: scroll;
+    overflow-y: hidden;
+  }
 
   &:focus {
     outline: none;
+  }
+}
+
+.ym-annotation-page {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  justify-content: flex-start;
+
+  &.row-reverse {
+    flex-flow: row-reverse nowrap;
   }
 }
 
@@ -95,6 +115,10 @@
   padding-left: @annowin-h-padding;
   padding-bottom: 5px;
   padding-top: 5px;
+
+  &.row-reverse {
+    .vertical-rl;
+  }
 }
 
 .annowin_group_header {

@@ -25,7 +25,7 @@ export default class AnnotationWindow {
     this._initialLayerId = options.initialLayerId || null;
     this._initialTocTags = options.initialTocTags || [];
     this._annotationId = options.annotationId;
-    this._continuousPages = options.continuousPages || false;
+    this._state = options.appState;
 
     this._miradorProxy = getMiradorProxyManager().getMiradorProxy(this._miradorId);
     this._tocSpec = getStateStore().getTransient('tocSpec');
@@ -38,10 +38,13 @@ export default class AnnotationWindow {
     this._appendTo.append(this._rootElem);
     this._listElem = domHelper.findAnnoListElem(this._rootElem);
 
+    this._continuousPages =  this._state.getTransient('continuousPages');
+
     this._jQuerySubscribed = {};
     this._miradorSubscribed = {};
     this._setDirty(false);
 
+    this._flexDirection = 'column';
     this._ignoredEvents = {};
   }
 
@@ -71,6 +74,7 @@ export default class AnnotationWindow {
 
     this.initLayerSelector();
     this.addCreateWindowButton();
+    this.addToggleDirectionButton();
     this.placeholder = this._rootElem.find('.placeholder');
     this.placeholder.text('Loading...').show();
     this._setupAnnotationListWidget();
@@ -252,6 +256,33 @@ export default class AnnotationWindow {
         this.updateList();
       }
     });
+  }
+
+  addToggleDirectionButton() {
+    const parent = this._rootElem.find('.annowin_layer_row');
+    const button = jQuery('<div/>')
+      .addClass('ym_toggle_direction_button')
+      .append(jQuery('<i class="fa fa-arrows-h fa-lg fa-fw"></i>'))
+      .append(jQuery('<i class="fa fa-arrows-v fa-lg fa-fw"></i>'));
+    parent.append(button);
+    button.find('.fa-arrows-v').hide();
+    button.click(event => {
+      this._toggleFlexDirection();
+    });
+  }
+
+  _toggleFlexDirection() {
+    if (this._flexDirection === 'column') {
+      this._flexDirection = 'row-reverse';
+      this._listWidget.setFlexDirection('row-reverse');
+      this._rootElem.find('.fa-arrows-h').hide();
+      this._rootElem.find('.fa-arrows-v').show();
+    } else {
+      this._flexDirection = 'column';
+      this._listWidget.setFlexDirection('column');
+      this._rootElem.find('.fa-arrows-h').show();
+      this._rootElem.find('.fa-arrows-v').hide();
+    }
   }
 
   addCreateWindowButton() {

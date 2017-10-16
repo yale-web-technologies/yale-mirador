@@ -518,6 +518,19 @@ export default class AnnotationListWidget {
     this._scrollHelper.scrollToAnnotation(annoId, yOffset);
   }
 
+  setFlexDirection(value) {
+    const isRowReverse = (value === 'row-reverse');
+    this._rootElem.toggleClass('row-reverse', isRowReverse);
+    for (let pageElem of this._nav.getPageElements()) {
+      pageElem.toggleClass('row-reverse', isRowReverse);
+      pageElem.find('.annowin_anno, .page-header').each(function(index, elem) {
+        const annoElem = jQuery(elem);
+        annoElem.toggleClass('row-reverse', isRowReverse);
+        annoElem.find('.content').toggleClass('vertical-rl', isRowReverse);
+      });
+    }
+  }
+
   _bindEvents() {
     const _this = this;
     this._scrollHelper.bindScrollEvent();

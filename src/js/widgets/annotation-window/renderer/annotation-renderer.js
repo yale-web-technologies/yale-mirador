@@ -7,14 +7,12 @@ const logger = getLogger();
 
 export default class AnnotationRenderer {
   constructor(options) {
-    this.options = Object.assign({
-      annotationWindow: null,
-      state: null // global state store
-    }, options);
+    this._annoWin = options.annotationWindow;
+    this._state = options.state;
 
-    this.layerIndexMap = this.options.state.getTransient('layerIndexMap');
-    this.hideTags = this.options.state.getTransient('hideTagsInAnnotation');
-    this._miradorProxy = this.options.annotationWindow.getMiradorProxy();
+    this.layerIndexMap = this._state.getTransient('layerIndexMap');
+    this.hideTags = this._state.getTransient('hideTagsInAnnotation');
+    this._miradorProxy = this._annoWin.getMiradorProxy();
   }
 
   /**
@@ -42,8 +40,11 @@ export default class AnnotationRenderer {
       orderable: options.isEditor
     });
 
-    const layerIndex = this.layerIndexMap[annotation.layerId];
     const annoElem = jQuery(annoHtml);
+    if (this._state.getTransient('textDirection') === 'vertical-rl') {
+      annoElem.addClass('vertical-layout');
+    }
+
     const contentElem = annoElem.find('.content');
     util.setTextDirectionClass(contentElem, style);
 
@@ -61,7 +62,9 @@ export default class AnnotationRenderer {
       event.stopPropagation(); // prevent _FOCUSED event from being published by clicking on the dropdown
     });
 
+    const layerIndex = this.layerIndexMap[annotation.layerId];
     menuBar.addClass('layer_' + layerIndex % 10);
+
     if (annotation.on['@type'] == 'oa:Annotation') { // annotation of annotation
       menuBar.addClass('targeting_anno');
     } else {
@@ -86,7 +89,7 @@ export default class AnnotationRenderer {
 
   bindAnnotationItemEvents(annoElem, annotation, options) {
     const _this = this;
-    const annoWin = this.options.annotationWindow;
+    const annoWin = this._annoWin;
     const nav = annoWin.getAnnoListNav();
 
     annoElem.data('annotation', annotation);
