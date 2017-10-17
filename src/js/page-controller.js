@@ -302,7 +302,7 @@ class PageController {
 
       const annotationWindows = this.options.grid.getAnnotationWindows();
       for (let annoWin of Object.values(annotationWindows)) {
-        annoWin.ignoreEvent('ANNOTATIONS_LIST_UPDATED', 2000);
+        annoWin.ignoreEvent('ANNOTATIONS_LIST_UPDATED', 35000);
       }
 
       await this._miradorWrapper.zoomToTags(windowId, canvasId, tags).catch(reason => {
