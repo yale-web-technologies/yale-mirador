@@ -39,6 +39,8 @@ export default class AnnotationPageRenderer {
     const pageElem = jQuery(html);
     const saveOrderButtonRow = pageElem.find('.annowin_temp_row');
 
+    saveOrderButtonRow.hide();
+
     pageElem.data('canvasId', options.canvasId);
     pageElem.data('layerId', options.layerId);
 
@@ -153,10 +155,10 @@ const pageTemplate = Handlebars.compile([
   '<div class="ym-annotation-page page-{{pageNum}}">',
   '  <div class="page-header">{{text}}',
   '  </div>',
-  '  <div class="annowin_temp_row">',
-  '    <span class="ui small orange button ym_button save">Save new order</span>',
-  '    <span class="ui small orange button ym_button cancel">Cancel</span>',
-  '  </div>',
+  //'  <div class="annowin_temp_row">',
+  //'    <span class="ui small orange button ym_button save">Save new order</span>',
+  //'    <span class="ui small orange button ym_button cancel">Cancel</span>',
+  //'  </div>',
   '</div>'
 ].join(''));
 

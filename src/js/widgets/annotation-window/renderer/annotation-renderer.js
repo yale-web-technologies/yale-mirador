@@ -49,11 +49,13 @@ export default class AnnotationRenderer {
     util.setTextDirectionClass(contentElem, style);
 
     const menuBar = annoElem.find('.menu_bar');
-    const annoOrderButtonsRow = options.pageElem.find('.annowin_temp_row');
+    //const annoOrderButtonsRow = options.pageElem.find('.annowin_temp_row');
 
     annoElem.data('annotationId', annotation['@id']);
     annoElem.data('canvasId', options.canvasId);
-    annoElem.data('annoOrderButtonsRow', annoOrderButtonsRow);
+
+    //annoElem.data('annoOrderButtonsRow', annoOrderButtonsRow);
+    annoElem.data('pageElem', options.pageElem);
 
     const ddElem = annoElem.find('.ui.dropdown');
 
@@ -172,7 +174,7 @@ export default class AnnotationRenderer {
       }
     });
 
-    annoElem.find('.up.icon').click(function(event) {
+    annoElem.find('.order-up').click(function(event) {
       event.stopPropagation();
       const sibling = annoElem.prev();
 
@@ -180,13 +182,14 @@ export default class AnnotationRenderer {
         annoWin.fadeDown(annoElem, function() {
           annoElem.after(sibling);
           annoWin.fadeUp(annoElem, function() {
-            annoElem.data('annoOrderButtonsRow').show();
+            //annoElem.data('annoOrderButtonsRow').show();
+            annoWin.activateSaveOrderpa(annoElem.data('pageElem'));
           });
         });
       }
     });
 
-    annoElem.find('.down.icon').click(function(event) {
+    annoElem.find('.order-down').click(function(event) {
       event.stopPropagation();
       const sibling = annoElem.next();
 
@@ -194,7 +197,8 @@ export default class AnnotationRenderer {
         annoWin.fadeUp(annoElem, function() {
           annoElem.before(sibling);
           annoWin.fadeDown(annoElem, function() {
-            annoElem.data('annoOrderButtonsRow').show();
+            //annoElem.data('annoOrderButtonsRow').show();
+            annoWin.activateSaveOrderpa(annoElem.data('pageElem'));
           });
         });
       }
@@ -209,7 +213,8 @@ const annotationTemplate = Handlebars.compile([
   '      <div class="menu_bar">',
   '        <div class="ui text menu">',
   '          <div class="ui dropdown item">',
-  '            Action<i class="dropdown icon"></i>',
+  //'            Action<i class="dropdown icon"></i>',
+  '            <i class="fa fa-bars fa-fw"></i>',
   '            <div class="menu">',
   '              <div class="annotate item"><i class="fa fa-hand-o-left fa-fw"></i> Annotate</div>',
   '              <div class="edit item"><i class="fa fa-edit fa-fw"></i> {{t "edit"}}</div>',
@@ -218,8 +223,8 @@ const annotationTemplate = Handlebars.compile([
   '          </div>',
   '          {{#if orderable}}',
   '            <div class="right menu">',
-  '              <i class="caret down icon"></i>',
-  '              <i class="caret up icon"></i>',
+  '              <i class="order-down caret down icon"></i>',
+  '              <i class="order-up caret up icon"></i>',
   '            </div>',
   '          {{/if}}',
   '        </div>',

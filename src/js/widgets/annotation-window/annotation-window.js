@@ -73,8 +73,8 @@ export default class AnnotationWindow {
     logger.debug('AnnotationWindow#init targetAnno:', targetAnno);
 
     this.initLayerSelector();
-    this.addCreateWindowButton();
     this.addToggleDirectionButton();
+    this.addCreateWindowButton();
     this.placeholder = this._rootElem.find('.placeholder');
     this.placeholder.text('Loading...').show();
     this._setupAnnotationListWidget();
@@ -259,7 +259,7 @@ export default class AnnotationWindow {
   }
 
   addToggleDirectionButton() {
-    const parent = this._rootElem.find('.annowin_layer_row');
+    const parent = this._rootElem.find('.annowin_layer_row .right');
     const button = jQuery('<div/>')
       .addClass('ym_toggle_direction_button')
       .append(jQuery('<i class="fa fa-arrows-h fa-lg fa-fw"></i>'))
@@ -271,22 +271,38 @@ export default class AnnotationWindow {
     });
   }
 
-  _toggleFlexDirection() {
-    if (this._flexDirection === 'column') {
-      this._flexDirection = 'row-reverse';
-      this._listWidget.setFlexDirection('row-reverse');
+  _processDirection() {
+    if (this._rootElem.hasClass('row-reverse')) {
       this._rootElem.find('.fa-arrows-h').hide();
       this._rootElem.find('.fa-arrows-v').show();
+      this._rootElem.find('.order-down').attr('class', 'order-down caret left icon');
+      this._rootElem.find('.order-up').attr('class', 'order-up caret right icon');
     } else {
-      this._flexDirection = 'column';
-      this._listWidget.setFlexDirection('column');
       this._rootElem.find('.fa-arrows-h').show();
       this._rootElem.find('.fa-arrows-v').hide();
+      this._rootElem.find('.order-down').attr('class', 'order-down caret down icon');
+      this._rootElem.find('.order-up').attr('class', 'order-up caret up icon');
+    }
+  }
+
+  _toggleFlexDirection() {
+    if (this._rootElem.hasClass('row-reverse')) {
+      this._rootElem.toggleClass('row-reverse', false);
+      this._rootElem.find('.fa-arrows-h').show();
+      this._rootElem.find('.fa-arrows-v').hide();
+      this._rootElem.find('.order-down').attr('class', 'order-down caret down icon');
+      this._rootElem.find('.order-up').attr('class', 'order-up caret up icon');
+    } else {
+      this._rootElem.toggleClass('row-reverse', true);
+      this._rootElem.find('.fa-arrows-h').hide();
+      this._rootElem.find('.fa-arrows-v').show();
+      this._rootElem.find('.order-down').attr('class', 'order-down caret left icon');
+      this._rootElem.find('.order-up').attr('class', 'order-up caret right icon');
     }
   }
 
   addCreateWindowButton() {
-    const parent = this._rootElem.find('.annowin_layer_row');
+    const parent = this._rootElem.find('.annowin_layer_row .right');
     const button = jQuery('<div/>')
       .addClass('ym_create_window_button')
       .append(jQuery('<i class="fa fa-plus fa-lg fa-fw"></i>'));
@@ -383,6 +399,7 @@ export default class AnnotationWindow {
       await this.updateList().catch(reason => {
         throw 'AnnotationWindow#updateList failed: ' + reason;
       });
+      this._processDirection();
       this.show();
       return this;
     });
@@ -639,10 +656,15 @@ const template = Handlebars.compile([
   '  <div class="annowin_header">',
   '    <div class="annowin_layer_row">',
   '      <span class="layer_selector_container"></span>',
+  '      <div class="right"></div>',
   '    </div>',
   '    <div class="annowin_menu_tag_row">',
   '      <span class="menu_tag_selector_container"></span>',
   '    </div>',
+  '  <div class="annowin_temp_row">',
+  '    <span class="ui small orange button ym_button save">Save new order</span>',
+  '    <span class="ui small orange button ym_button cancel">Cancel</span>',
+  '  </div>',
   '  </div>',
   '  <div class="placeholder"></div>',
   '  <div class="annowin_list" tabindex="-1">',

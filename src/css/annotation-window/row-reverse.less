@@ -1,0 +1,47 @@
+// When annotation-window has the "row-reverse" class
+
+.ym_annotation_window.row-reverse {
+  .annowin_list {
+    writing-mode: vertical-rl;
+    overflow-x: scroll;
+    overflow-y: hidden;
+
+    .ym-annotation-page {
+      .page-header {
+      }
+
+      .annowin_anno {
+        .menu_bar {
+          .ui.dropdown.item.active {
+            writing-mode: horizontal-tb;
+          }
+
+          .right.menu {
+            margin-bottom: 10px;
+            margin-right: 2px;
+
+            .order-up {
+              margin-top: 5px;
+            }
+          }
+        }
+
+        .normal_view {
+          .content {
+            .vertical-rl;
+
+            p {
+              margin: 10px;
+              &:first-of-type {
+                margin-right: 0;
+              }
+              &:last-of-type {
+                margin-left: 0;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
