@@ -1,6 +1,6 @@
 import {Anno, annoUtil} from '../../import';
 import AnnotationListWidget from './annotation-list-widget';
-import domHelper from './dom-helper';
+import DomHelper from './dom-helper';
 import fatalError from '../../util/fatal-error';
 import getApp from '../../app';
 import getLogger from '../../util/logger';
@@ -34,9 +34,8 @@ export default class AnnotationWindow {
     if (!this._id) { this._id = Mirador.genUUID(); }
     this._imageWindow = this._miradorProxy.getWindowProxyById(this._imageWindowId);
 
-    this._rootElem = jQuery(template({}));
-    this._appendTo.append(this._rootElem);
-    this._listElem = domHelper.findAnnoListElem(this._rootElem);
+    this._dom = new DomHelper(this._appendTo);
+    this._orderConfirm = this._dom.getOrderConfirm();
 
     this._continuousPages =  this._state.getTransient('continuousPages');
 
@@ -73,10 +72,8 @@ export default class AnnotationWindow {
     logger.debug('AnnotationWindow#init targetAnno:', targetAnno);
 
     this.initLayerSelector();
-    this.addToggleDirectionButton();
-    this.addCreateWindowButton();
-    this.placeholder = this._rootElem.find('.placeholder');
-    this.placeholder.text('Loading...').show();
+    this.placeHolder = this._dom.getPlaceHolder();
+    this.placeHolder.text('Loading...').show();
     this._setupAnnotationListWidget();
 
     await this.reload().catch(reason => {
@@ -185,6 +182,10 @@ export default class AnnotationWindow {
     }
   }
 
+  getDomHelper() {
+    return this._dom;
+  }
+
   getMiradorProxy() {
     return this._miradorProxy;
   }
@@ -205,7 +206,6 @@ export default class AnnotationWindow {
 
       this._listWidget =  new AnnotationListWidget({
         annotationWindow: this,
-        rootElem: this._listElem,
         canvases: canvases,
         tocTags: this._initialTocTags,
         annotationExplorer: this._explorer,
@@ -232,7 +232,7 @@ export default class AnnotationWindow {
       this.menuTagSelector.destroy();
     }
     this.menuTagSelector = new MenuTagSelector({
-      parent: this._rootElem.find('.menu_tag_selector_container'),
+      parent: this._dom.getTocTagSelector(),
       tocSpec: getStateStore().getTransient('tocSpec'),
       annotationExplorer: this._explorer,
       initialTags: this._initialTocTags,
@@ -247,7 +247,7 @@ export default class AnnotationWindow {
   initLayerSelector() {
     this._setCurrentLayerId(this._initialLayerId);
     this.layerSelector = new LayerSelector({
-      parent: this._rootElem.find('.layer_selector_container'),
+      parent: this._dom.getLayerSelectorContainer(),
       annotationExplorer: this._explorer,
       initialLayerId: this._initialLayerId,
       changeCallback: (value, text) => {
@@ -258,62 +258,15 @@ export default class AnnotationWindow {
     });
   }
 
-  addToggleDirectionButton() {
-    const parent = this._rootElem.find('.annowin_layer_row .right');
-    const button = jQuery('<div/>')
-      .addClass('ym_toggle_direction_button')
-      .append(jQuery('<i class="fa fa-arrows-h fa-lg fa-fw"></i>'))
-      .append(jQuery('<i class="fa fa-arrows-v fa-lg fa-fw"></i>'));
-    parent.append(button);
-    button.find('.fa-arrows-v').hide();
-    button.click(event => {
-      this._toggleFlexDirection();
-    });
-  }
+  _toggleDirection() {
+    const root = this._dom.getRoot();
 
-  _processDirection() {
-    if (this._rootElem.hasClass('row-reverse')) {
-      this._rootElem.find('.fa-arrows-h').hide();
-      this._rootElem.find('.fa-arrows-v').show();
-      this._rootElem.find('.order-down').attr('class', 'order-down caret left icon');
-      this._rootElem.find('.order-up').attr('class', 'order-up caret right icon');
+    if (root.hasClass('row-reverse')) {
+      root.toggleClass('row-reverse', false);
     } else {
-      this._rootElem.find('.fa-arrows-h').show();
-      this._rootElem.find('.fa-arrows-v').hide();
-      this._rootElem.find('.order-down').attr('class', 'order-down caret down icon');
-      this._rootElem.find('.order-up').attr('class', 'order-up caret up icon');
+      root.toggleClass('row-reverse', true);
     }
-  }
-
-  _toggleFlexDirection() {
-    if (this._rootElem.hasClass('row-reverse')) {
-      this._rootElem.toggleClass('row-reverse', false);
-      this._rootElem.find('.fa-arrows-h').show();
-      this._rootElem.find('.fa-arrows-v').hide();
-      this._rootElem.find('.order-down').attr('class', 'order-down caret down icon');
-      this._rootElem.find('.order-up').attr('class', 'order-up caret up icon');
-    } else {
-      this._rootElem.toggleClass('row-reverse', true);
-      this._rootElem.find('.fa-arrows-h').hide();
-      this._rootElem.find('.fa-arrows-v').show();
-      this._rootElem.find('.order-down').attr('class', 'order-down caret left icon');
-      this._rootElem.find('.order-up').attr('class', 'order-up caret right icon');
-    }
-  }
-
-  addCreateWindowButton() {
-    const parent = this._rootElem.find('.annowin_layer_row .right');
-    const button = jQuery('<div/>')
-      .addClass('ym_create_window_button')
-      .append(jQuery('<i class="fa fa-plus fa-lg fa-fw"></i>'));
-    parent.append(button);
-    button.click(event => {
-      this._miradorProxy.publish('YM_DISPLAY_ON');
-      jQuery.publish('YM_ADD_WINDOW', {
-        miradorId: this._miradorId,
-        imageWindowId: this._imageWindowId
-      });
-    });
+    this._dom.updateDirection();
   }
 
   getCurrentLayerId() {
@@ -326,11 +279,11 @@ export default class AnnotationWindow {
   }
 
   show() {
-    this._rootElem.show();
+    this._dom.getRoot().show();
   }
 
   hide() {
-    this._rootElem.hide();
+    this._dom.getRoot().hide();
   }
 
   _isDirty() {
@@ -350,19 +303,9 @@ export default class AnnotationWindow {
     const _this = this;
     const state = getStateStore();
 
-    this.placeholder.hide();
+    this.placeHolder.hide();
 
     const canvas = this.getCurrentCanvas();
-    this._rootElem.find('.title').text(canvas.label);
-
-    /* We're not showing toc selector in annotation window. Annotation ToC is now in sidebar menu
-    if (state.getTransient('tagHierarchy')) {
-      this.initMenuTagSelector();
-      this._rootElem.find('.annowin_menu_tag_row').show();
-    } else {
-      this._rootElem.find('.annowin_menu_tag_row').hide();
-    }
-    */
 
     const layersPromise = new Promise(function(resolve, reject) {
       _this._explorer.getLayers().then(function(layers) {
@@ -399,7 +342,7 @@ export default class AnnotationWindow {
       await this.updateList().catch(reason => {
         throw 'AnnotationWindow#updateList failed: ' + reason;
       });
-      this._processDirection();
+      this._dom.updateDirection();
       this.show();
       return this;
     });
@@ -441,9 +384,9 @@ export default class AnnotationWindow {
     }
 
     if (count === 0) {
-      this.placeholder.text('No annotations found.').show();
+      this.placeHolder.text('No annotations found.').show();
     } else {
-      this.placeholder.hide();
+      this.placeHolder.hide();
     }
   }
 
@@ -487,13 +430,13 @@ export default class AnnotationWindow {
 
   hasOpenEditor() {
     var hasOne = false;
-    this._listElem.find('.annowin_anno').each(function(index, value) {
-      if (jQuery(value).data('editing') === true) {
-        hasOne = true;
-        return false; // breaking out of jQuery.each
+
+    for (let cell of this._dom.getAllAnnotationCells()) {
+      if (jQuery(cell).data('editing') === true) {
+        return true;
       };
-    });
-    return hasOne;
+    }
+    return false;
   }
 
   fadeUp(elem, onComplete) {
@@ -520,8 +463,55 @@ export default class AnnotationWindow {
     this._listWidget.highlightAnnotationElem(annoElem, flag);
   }
 
+  showSaveOrderConfirmation(pageElem) {
+    this._reorderedPageElem = pageElem;
+    this._dom.getOrderConfirm().show();
+  }
+
+  _saveAnnotationsOrder(pageElem) {
+    const annoElems = pageElem.find('.annowin_anno');
+    const annoIds = [];
+    const canvasId = pageElem.data('canvasId');
+    const layerId = pageElem.data('layerId');
+
+    annoElems.each((index, value) => {
+      var annoId = jQuery(value).data('annotationId');
+      annoIds.push(annoId);
+    });
+
+    logger.debug('AnnotationWindow#_saveAnnotationsOrder canvasId:', canvasId, 'layerId:', layerId, 'annoIds:', annoIds);
+
+    return this._explorer.updateAnnotationListOrder(canvasId, layerId, annoIds)
+    .catch(reason => {
+      this._dom.getOrderConfirm().hide();
+      const msg = 'AnnotationWindow#_saveAnnotationsOrder updateAnnotationListOrder failed: ' + reason;
+      throw msg;
+    });
+  }
+
   bindEvents() {
     logger.debug('AnnotationWindow#bindEvents');
+
+    this._dom.getCreateWindowButton().click(event => {
+      this._miradorProxy.publish('YM_DISPLAY_ON');
+      jQuery.publish('YM_ADD_WINDOW', {
+        miradorId: this._miradorId,
+        imageWindowId: this._imageWindowId
+      });
+    });
+
+    this._dom.getToggleDirectionButton().click(event => {
+      this._toggleDirection();
+    });
+
+    this._dom.getSaveOrderButton().click(event => {
+      this._saveAnnotationsOrder(this._reorderedPageElem);
+      this._dom.getOrderConfirm().hide();
+    });
+
+    this._dom.getCancelOrderButton().click(event => {
+      this._dom.getOrderConfirm().hide();
+    });
 
     this._subscribe(this._miradorProxy, 'ANNOTATIONS_LIST_UPDATED', (event, params) => {
       logger.debug('AnnotationWindow:SUB:ANNOTATIONS_LIST_UPDATED, params:', params);
@@ -578,7 +568,7 @@ export default class AnnotationWindow {
 
       if (targeting.length > 0) {
         listWidget.highlightAnnotations(targeting, 'TARGETING');
-        targetElem = domHelper.findAnnoElemByAnnoId(targeting[0]['@id'], this._listElem);
+        targetElem = this._dom.findAnnoElemByAnnoId(targeting[0]['@id']);
         listWidget.scrollToElem(targetElem, -params.offset);
         return;
       }
@@ -589,7 +579,7 @@ export default class AnnotationWindow {
 
       if (targeted.length > 0) {
         listWidget.highlightAnnotations(targeted, 'TARGET');
-        targetElem = domHelper.findAnnoElemByAnnoId(targeted[0]['@id'], this._listElem);
+        targetElem = this._dom.findAnnoElemByAnnoId(targeted[0]['@id']);
         listWidget.scrollToElem(targetElem, -params.offset);
         return;
       }
@@ -650,24 +640,3 @@ export default class AnnotationWindow {
     }
   }
 }
-
-const template = Handlebars.compile([
-  '<div class="ym_annotation_window">',
-  '  <div class="annowin_header">',
-  '    <div class="annowin_layer_row">',
-  '      <span class="layer_selector_container"></span>',
-  '      <div class="right"></div>',
-  '    </div>',
-  '    <div class="annowin_menu_tag_row">',
-  '      <span class="menu_tag_selector_container"></span>',
-  '    </div>',
-  '  <div class="annowin_temp_row">',
-  '    <span class="ui small orange button ym_button save">Save new order</span>',
-  '    <span class="ui small orange button ym_button cancel">Cancel</span>',
-  '  </div>',
-  '  </div>',
-  '  <div class="placeholder"></div>',
-  '  <div class="annowin_list" tabindex="-1">',
-  '  </div>',
-  '</div>'
-].join(''));

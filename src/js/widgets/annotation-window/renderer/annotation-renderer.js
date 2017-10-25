@@ -182,8 +182,7 @@ export default class AnnotationRenderer {
         annoWin.fadeDown(annoElem, function() {
           annoElem.after(sibling);
           annoWin.fadeUp(annoElem, function() {
-            //annoElem.data('annoOrderButtonsRow').show();
-            annoWin.activateSaveOrderpa(annoElem.data('pageElem'));
+            annoWin.showSaveOrderConfirmation(annoElem.data('pageElem'));
           });
         });
       }
@@ -197,8 +196,7 @@ export default class AnnotationRenderer {
         annoWin.fadeUp(annoElem, function() {
           annoElem.before(sibling);
           annoWin.fadeDown(annoElem, function() {
-            //annoElem.data('annoOrderButtonsRow').show();
-            annoWin.activateSaveOrderpa(annoElem.data('pageElem'));
+            annoWin.showSaveOrderConfirmation(annoElem.data('pageElem'));
           });
         });
       }

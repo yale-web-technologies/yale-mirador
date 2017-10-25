@@ -37,9 +37,6 @@ export default class AnnotationPageRenderer {
   createPageElement(options) {
     const html = pageTemplate({pageNum: options.pageNum});
     const pageElem = jQuery(html);
-    const saveOrderButtonRow = pageElem.find('.annowin_temp_row');
-
-    saveOrderButtonRow.hide();
 
     pageElem.data('canvasId', options.canvasId);
     pageElem.data('layerId', options.layerId);
@@ -47,13 +44,6 @@ export default class AnnotationPageRenderer {
     const pageHeader = pageElem.find('.page-header');
     pageHeader.text(options.canvasLabel);
 
-    saveOrderButtonRow.find('.ym_button.save').click(event => {
-      this._saveAnnotationsOrder(pageElem);
-      saveOrderButtonRow.hide();
-    });
-    saveOrderButtonRow.find('.ym_button.cancel').click(event => {
-      saveOrderButtonRow.hide();
-    });
     return pageElem;
   }
 
@@ -128,37 +118,12 @@ export default class AnnotationPageRenderer {
     });
     return renderer.render();
   }
-
-  _saveAnnotationsOrder(pageElem) {
-    const annoElems = pageElem.find('.annowin_anno');
-    const annoIds = [];
-    const canvasId = pageElem.data('canvasId');
-    const layerId = pageElem.data('layerId');
-
-    annoElems.each((index, value) => {
-      var annoId = jQuery(value).data('annotationId');
-      annoIds.push(annoId);
-    });
-
-    logger.debug('AnnotationPageRenderer#_saveAnnotationsOrder canvasId:', canvasId, 'layerId:', layerId, 'annoIds:', annoIds);
-
-    this._annoExplorer.updateAnnotationListOrder(canvasId, layerId, annoIds)
-    .catch(reason => {
-      _this.tempMenuRow.hide();
-      const msg = 'AnnotationPageRenderer#_saveAnnotationsOrder updateAnnotationListOrder failed: ' + reason;
-      throw msg;
-    });
-  }
 }
 
 const pageTemplate = Handlebars.compile([
   '<div class="ym-annotation-page page-{{pageNum}}">',
   '  <div class="page-header">{{text}}',
   '  </div>',
-  //'  <div class="annowin_temp_row">',
-  //'    <span class="ui small orange button ym_button save">Save new order</span>',
-  //'    <span class="ui small orange button ym_button cancel">Cancel</span>',
-  //'  </div>',
   '</div>'
 ].join(''));
 

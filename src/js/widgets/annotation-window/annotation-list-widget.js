@@ -14,13 +14,15 @@ const logger = getLogger();
 export default class AnnotationListWidget {
   constructor(options) {
     this._annoWin = options.annotationWindow; // annotation window to which this widget belongs
-    this._rootElem = options.rootElem; // root HTML element for this list widget
     this._annoPageRenderer = options.annotationPageRenderer;
     this._annoExplorer = options.annotationExplorer;
     this._canvases = options.canvases;
     this._state = options.state;
     this._isEditor = options.isEditor;
     this._continousPages = options.continuousPages;
+
+    this._dom = this._annoWin.getDomHelper();
+    this._rootElem = this._dom.getListContainer(); // root HTML element for this list widget
 
     this._minContentRelativeHeight = 1.5;
     this._maxContentRelativeHeight = 5;
@@ -41,6 +43,10 @@ export default class AnnotationListWidget {
 
   getRootElement() {
     return this._rootElem;
+  }
+
+  getAnnotationElems() {
+    return this._dom.getAllAnnotationCells();
   }
 
   reload(layerId) {
@@ -247,7 +253,7 @@ export default class AnnotationListWidget {
   }
 
   clearAnnotationHighlights() {
-    for (let elem of this.getAnnotationElems()) {
+    for (let elem of this._dom.getAllAnnotationCells()) {
       jQuery(elem).removeClass('ym_anno_selected');
     }
   }
@@ -257,7 +263,7 @@ export default class AnnotationListWidget {
 
     this.clearAnnotationHighlights();
 
-    for (let annoElem of this.getAnnotationElems()) {
+    for (let annoElem of this._dom.getAllAnnotationCells()) {
       const $annoElem = jQuery(annoElem);
       const annoId = $annoElem.data('annotationId');
 
@@ -270,7 +276,7 @@ export default class AnnotationListWidget {
   }
 
   highlightAnnotation(annoId, flag) {
-    for (let annoElem of this.getAnnotationElems()) {
+    for (let annoElem of this._dom.getAllAnnotationCells()) {
       let $annoElem = jQuery(annoElem);
 
       if ($annoElem.data('annotationId') === annoId) {
@@ -425,14 +431,10 @@ export default class AnnotationListWidget {
   }
 
   clearHighlights() {
-    this._rootElem.find('.annowin_anno').each((index, value) => {
-      jQuery(value).removeClass('annowin_targeted')
+    for (let cell of this._dom.getAllAnnotationCells()) {
+      jQuery(cell).removeClass('annowin_targeted')
         .removeClass('ym_anno_selected ym_anno_targeting ym_anno_targeted');
-    });
-  }
-
-  getAnnotationElems() {
-    return this._rootElem.find('.annowin_anno').toArray();
+    }
   }
 
   /**
@@ -446,7 +448,7 @@ export default class AnnotationListWidget {
     const result = [];
     let siblings = annoUtil.findTocSiblings(annotation, annotations, layerId, toc);
 
-    for (let annoElem of this.getAnnotationElems()) {
+    for (let annoElem of this._dom.getAllAnnotationCells()) {
       const $annoElem = jQuery(annoElem);
       const annoId = $annoElem.data('annotationId');
 
