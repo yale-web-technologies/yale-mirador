@@ -23,7 +23,6 @@ let logger = getLogger();
 class PageController {
   init(options) {
     this.options = jQuery.extend({
-      //mainMenu: null,
       grid: null,
       settings: null, // settings retrieved from remote API
       state: null
@@ -40,7 +39,7 @@ class PageController {
     this._miradorProxy = this._miradorWrapper.getMiradorProxy();
     this._miradorId = this._miradorProxy.getId();
 
-    this._tocSpec = this.options.state.getTransient('tocSpec');
+    this._tocSpec = this.options.state.getSetting('annotations', 'tocSpec');
     this._annotationTocCache = getApp().getAnnotationTocCache();
     this._annotationExplorer = getApp().getAnnotationExplorer();
 
@@ -159,7 +158,7 @@ class PageController {
     } else {
       this._urlOptionsProcessed = true;
 
-      if (this.options.state.getTransient('showAnnotationsOverlayByDefault') ||
+      if (this.options.state.getSetting('mirador', 'annotationsOverlay', 'showByDefault') ||
         options.annotationId)
       {
         this._miradorProxy.publish('YM_DISPLAY_ON');

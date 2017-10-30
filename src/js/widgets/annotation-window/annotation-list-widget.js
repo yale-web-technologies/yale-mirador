@@ -19,7 +19,7 @@ export default class AnnotationListWidget {
     this._canvases = options.canvases;
     this._state = options.state;
     this._isEditor = options.isEditor;
-    this._continousPages = options.continuousPages;
+    this._continuousPages = options.continuousPages;
 
     this._dom = this._annoWin.getDomHelper();
     this._rootElem = this._dom.getListContainer(); // root HTML element for this list widget
@@ -38,7 +38,7 @@ export default class AnnotationListWidget {
       });
     }
 
-    this._tocSpec = this._state.getTransient('tocSpec');
+    this._tocSpec = this._state.getSetting('annotations', 'tocSpec');
   }
 
   getRootElement() {
@@ -59,7 +59,7 @@ export default class AnnotationListWidget {
       listWidget: this,
       listNavigator: this._nav,
       groupHeaderHeight: 19,
-      continuousPages: this._continousPages
+      continuousPages: this._continuousPages
     });
     this._unbindEvents();
     this._bindEvents();
@@ -133,7 +133,7 @@ export default class AnnotationListWidget {
       });
     }
 
-    if (this._continousPages) {
+    if (this._continuousPages) {
       await this.loadPreviousPage();
       await this.loadNextPage();
       await this._scrollHelper.scrollToPage(pageNum);
@@ -470,7 +470,7 @@ export default class AnnotationListWidget {
     }
     if (next.size() > 0) {
       this.select(next);
-    } else {
+    } else if (this._continuousPages) {
       const nextPage = nav.getPage() + 1;
       if (nextPage < nav.getNumPages()) {
         if (!nav.isLoaded(nextPage)) {
@@ -496,7 +496,7 @@ export default class AnnotationListWidget {
     }
     if (prev.size() > 0) {
       this.select(prev);
-    } else {
+    } else if (this._continuousPages) {
       const prevPage = nav.getPage() - 1;
       if (prevPage >= 0) {
         if (!nav.isLoaded(prevPage)) {

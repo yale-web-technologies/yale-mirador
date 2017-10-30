@@ -236,13 +236,6 @@ class YaleEndpoint {
       this[prop] = value;
     }
   }
-
-  /*
-  parseAnnotations() {
-    const spec = getPageController().getConfig().extension.tagHierarchy;
-    this._explorer.reloadAnnotationToc(spec, this.annotationsList);
-  }
-  */
 }
 
 export {YaleEndpoint, getEndpoint};

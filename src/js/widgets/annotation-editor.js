@@ -328,30 +328,34 @@ export default class AnnotationEditor {
   }
 
   bindEvents() {
-    var _this = this;
+    this.element.find('.ym_save').click(event => {
+      event.preventDefault();
+      event.stopPropagation();
 
-    this.element.find('.ym_save').click(function(event) {
-      if (_this.validate()) {
-        _this.save();
+      if (this.validate()) {
+        this.save();
       }
     });
 
-    this.element.find('.ym_cancel').click(function(event) {
-      _this.destroy();
-      if (typeof _this.cancelCallback === 'function') {
-        _this.cancelCallback();
+    this.element.find('.ym_cancel').click(event => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      this.destroy();
+      if (typeof this.cancelCallback === 'function') {
+        this.cancelCallback();
       }
     });
 
-    this.element.find('.ym_vertical_inc').click(function(event) {
-      var iframeId = _this.getEditor().id + '_ifr';
+    this.element.find('.ym_vertical_inc').click(event => {
+      var iframeId = this.getEditor().id + '_ifr';
       var element = tinyMCE.DOM.get(iframeId);
       var height = parseInt(tinyMCE.DOM.getStyle(element, 'height'), 10);
       tinyMCE.DOM.setStyle(element, 'height', (height + 75) + 'px');
     });
 
-    this.element.find('.ym_vertical_dec').click(function(event) {
-      var iframeId = _this.getEditor().id + '_ifr';
+    this.element.find('.ym_vertical_dec').click(event => {
+      var iframeId = this.getEditor().id + '_ifr';
       var element = tinyMCE.DOM.get(iframeId);
       var height = parseInt(tinyMCE.DOM.getStyle(element, 'height'), 10);
       tinyMCE.DOM.setStyle(element, 'height', (height - 75) + 'px');

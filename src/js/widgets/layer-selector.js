@@ -25,10 +25,9 @@ export default class {
   init(layers) {
     this.logger.debug('LayerSelector#init layers:', layers, 'initialLayerId:', this.initialLayerId);
     const isEditor = session.isEditor();
-    const hiddenLayers = this.appState.getTransient('hiddenLayers') || [];
+    const hiddenLayers = this.appState.getSetting('ui', 'annotationWindow', 'hiddenLayers') || [];
 
     if (!isEditor && hiddenLayers.length > 0) {
-      console.log('LAYERS', layers);
       layers = layers.filter(layer => !hiddenLayers.includes(layer['@id']));
     }
 

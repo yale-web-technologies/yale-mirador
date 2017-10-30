@@ -7,8 +7,6 @@ import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
 const logger = getLogger();
 
 export default function getAnnotationCache() {
-  return null; // XXXX
-
   if (!instance) {
     instance = new AnnotationCache();
     return instance.init();

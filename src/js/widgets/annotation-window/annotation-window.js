@@ -28,7 +28,7 @@ export default class AnnotationWindow {
     this._state = options.appState;
 
     this._miradorProxy = getMiradorProxyManager().getMiradorProxy(this._miradorId);
-    this._tocSpec = getStateStore().getTransient('tocSpec');
+    this._tocSpec = getStateStore().getSetting('annotations', 'tocSpec');
     this._annotationTocCache = getApp().getAnnotationTocCache();
 
     if (!this._id) { this._id = Mirador.genUUID(); }
@@ -37,7 +37,7 @@ export default class AnnotationWindow {
     this._dom = new DomHelper(this._appendTo);
     this._orderConfirm = this._dom.getOrderConfirm();
 
-    this._continuousPages =  this._state.getTransient('continuousPages');
+    this._continuousPages =  this._state.getSetting('ui', 'annotationWindow', 'continuousPages');
 
     this._jQuerySubscribed = {};
     this._miradorSubscribed = {};
@@ -233,7 +233,7 @@ export default class AnnotationWindow {
     }
     this.menuTagSelector = new MenuTagSelector({
       parent: this._dom.getTocTagSelector(),
-      tocSpec: getStateStore().getTransient('tocSpec'),
+      tocSpec: getStateStore().getSetting('annotations', 'tocSpec'),
       annotationExplorer: this._explorer,
       initialTags: this._initialTocTags,
       changeCallback: async (value, text) => {
@@ -538,7 +538,7 @@ export default class AnnotationWindow {
 
       const annotations = this._imageWindow.getAnnotationsList();
       const layerId = this.getCurrentLayerId();
-      const tocSpec = getStateStore().getTransient('tocSpec');
+      const tocSpec = getStateStore().getSetting('annotations', 'tocSpec');
 
       if (tocSpec) {
         const toc = await getApp().getAnnotationTocCache().getToc(params.canvasId);

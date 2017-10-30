@@ -12,20 +12,25 @@ const logger = getLogger();
 // Implements inteface between Joosugi annotation explorer and the annotation server
 export default class AnnotationSource {
   constructor(options) {
+    this._prefix = options.prefix;
+    this._state = options.state;
+
+    /*
     this.options = jQuery.extend({
       prefix: null,
       state: getStateStore()
     }, options);
-    this.layers = null;
+    */
+    this._layers = null;
   }
 
   async getLayers() {
     logger.debug('AnnotationSource#getLayers');
     let layers = null;
 
-    if (this.layers) {
-      logger.debug('AnnotationSource#getLayers hit cache', this.layers);
-      layers = this.layers;
+    if (this._layers) {
+      logger.debug('AnnotationSource#getLayers hit cache', this._layers);
+      layers = this._layers;
     } else {
       layers = await this._getRemoteLayers();
       this._updateLayerIndex(layers);
@@ -36,11 +41,11 @@ export default class AnnotationSource {
 
   _getRemoteLayers() {
     return new Promise((resolve, reject) => {
-      const projectId = this.options.state.getTransient('projectId');
-      const disableAuthz = this.options.state.getTransient('disableAuthz');
-      let url = this.options.prefix + '/layers';
+      const projectId = this._state.getSetting('auth', 'groupId');
+      let url = this._prefix + '/layers';
 
-      if (projectId && !disableAuthz) {
+      //if (projectId && !disableAuthz) {
+      if (projectId) {
         url += '?group_id=' + projectId;
       }
       logger.debug('AnnotationSource#_getRemoteLayers url:', url);
@@ -52,7 +57,7 @@ export default class AnnotationSource {
         contentType: 'application/json; charset=utf-8',
         success: (data, textStatus, jqXHR) => {
           logger.debug('AnnotationSource#getLayers layers: ', data);
-          this.layers = data;
+          this._layers = data;
           resolve(data);
         },
         error: (jqXHR, textStatus, errorThrown) => {
@@ -69,14 +74,14 @@ export default class AnnotationSource {
   _updateLayerIndex(layers) {
     logger.debug('AnnotationSource#_updateLayerIndex');
 
-    if (!this.options.state.getTransient('layerIndexMap')) {
+    if (!this._state.getTransient('layerIndexMap')) {
       const map = {};
       let count = 0;
       layers.forEach((layer) => {
         map[layer['@id']] = count;
         ++count;
       });
-      this.options.state.setTransient('layerIndexMap', count > 0 ? map : null);
+      this._state.setTransient('layerIndexMap', count > 0 ? map : null);
     }
     return layers;
   }
@@ -139,7 +144,7 @@ export default class AnnotationSource {
   _getRemoteAnnotations(canvasId) {
     logger.debug('AnnotationSource#_getRemoteAnnotations canvas: ' + canvasId);
     return new Promise((resolve, reject) => {
-      const url = this.options.prefix + '/getAnnotationsViaList?canvas_id=' + encodeURIComponent(canvasId);
+      const url = this._prefix + '/getAnnotationsViaList?canvas_id=' + encodeURIComponent(canvasId);
       logger.debug('AnnotationSource#_getRemoteAnnotations url: ', url);
       const annotations = [];
 
@@ -180,7 +185,7 @@ export default class AnnotationSource {
 
     const annotation = this._toBackendAnnotation(oaAnnotation);
 
-    const url = this.options.prefix + '/annotations';
+    const url = this._prefix + '/annotations';
     const request = {
       layer_id: layerId,
       annotation: annotation
@@ -222,7 +227,7 @@ export default class AnnotationSource {
   async updateAnnotation(oaAnnotation) {
     const cache = await getAnnotationCache();
     const annotation = this._toBackendAnnotation(oaAnnotation);
-    const url = this.options.prefix + '/annotations';
+    const url = this._prefix + '/annotations';
     const data = {
       layer_id: [oaAnnotation.layerId],
       annotation: annotation
@@ -266,7 +271,7 @@ export default class AnnotationSource {
   async deleteAnnotation(annotationId) {
     logger.debug('AnnotationSource#deleteAnnotations annotationId:', annotationId);
     const cache = await getAnnotationCache();
-    const url = this.options.prefix + '/' + annotationId.replace(/^https?:\/\/.*?(\/.*)$/, '$1');
+    const url = this._prefix + '/' + annotationId.replace(/^https?:\/\/.*?(\/.*)$/, '$1');
     //const url = annotationId;
 
     return new Promise((resolve, reject) => {
@@ -296,7 +301,7 @@ export default class AnnotationSource {
 
   async updateAnnotationListOrder(canvasId, layerId, annoIds) {
     const cache = await getAnnotationCache();
-    const url = this.options.prefix + '/resequenceList';
+    const url = this._prefix + '/resequenceList';
     const data = {
       canvas_id: canvasId,
       layer_id: layerId,

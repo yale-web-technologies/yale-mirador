@@ -71,8 +71,8 @@ import getStateStore from '../state-store';
           } else {
             //this.deHighlightShape(shape);
             shape.sendToBack();
-            const settings = getStateStore().getTransient('annotationsOverlay');
-            if (settings && settings.hideUnfocused) {
+            const hide = getStateStore().getSetting('mirador', 'annotationsOverlay', 'hideUnfocused');
+            if (hide) {
               shape.opacity = 0;
             } else {
               shape.opacity = 1;
@@ -88,16 +88,17 @@ import getStateStore from '../state-store';
     this.saveStrokeColor(shape);
     this.saveStrokeWidth(shape);
 
-    const setting = getStateStore().getTransient('annotationsOverlay');
-    if (setting) {
-      if (setting.hoverColor) {
-        shape.strokeColor = setting.hoverColor;
-      }
-      if (setting.hoverWidthFactor) {
-        const defaultWidth = shape.data._ym_defaultStrokeWidth;
-        shape.data.strokeWidth = setting.hoverWidthFactor *
-          (typeof defaultWidth === 'number' ? defaultWidth : shape.data.strokeWidth);
-      }
+    const state = getStateStore();
+    const hoverColor = state.getSetting('mirador', 'annotationsOverlay','hoverColor');
+    const hoverWidthFactor = state.getSetting('mirador', 'annotationsOverlay','hoverWidthFactor');
+
+    if (hoverColor) {
+      shape.strokeColor = setting.hoverColor;
+    }
+    if (hoverWidthFactor) {
+      const defaultWidth = shape.data._ym_defaultStrokeWidth;
+      shape.data.strokeWidth = setting.hoverWidthFactor *
+        (typeof defaultWidth === 'number' ? defaultWidth : shape.data.strokeWidth);
     }
     shape.set({ opacity: 1 });
   },
@@ -113,8 +114,9 @@ import getStateStore from '../state-store';
       shape.data.strokeWidth = shape._ym_defaultStrokeWidth;
     }
 
-    const settings = getStateStore().getTransient('annotationsOverlay');
-    if (settings && settings.hideUnfocused) {
+    const hide = getStateStore().getSetting('mirador', 'annotationsOverlay', 'hideUnfocused');
+
+    if (hide) {
       shape.opacity = 0;
     } else {
       shape.opacity = 1;

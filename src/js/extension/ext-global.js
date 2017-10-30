@@ -28,7 +28,7 @@ import util from '../util/util';
 
     updateTooltipStyles: function() {
       const elem = jQuery('.qtip-default, .qtip-content');
-      const styles = getStateStore().getTransient('tooltipStyles');
+      const styles = getStateStore().getSetting('mirador', 'tooltipStyles');
       if (styles) {
         elem.css('color', styles.color);
         elem.css('background-color', styles.backgroundColor);

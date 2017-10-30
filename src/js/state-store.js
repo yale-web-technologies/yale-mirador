@@ -3,25 +3,9 @@ import getLogger from './util/logger';
 const logger = getLogger();
 
 const registeredKeys = new Set([
-  'annotationBackendUrl',
   'annotationLayers',
-  'annotationsOverlay',
-  'continuousPages',
-  'copyrighted',
-  'copyrightedImageServiceUrl',
-  'disableAuthz',
-  'displayModeOnStart',
-  'fixAnnoCellHeight',
-  'hideTagsInAnnotation',
-  'hiddenLayers',
   'lastSelectedLayer',
-  'layerIndexMap',
-  'projectId',
-  'showAnnotationsOverlayByDefault',
-  'tagHierarchy',
-  'textDirection',
-  'tocSpec',
-  'tooltipStyles'
+  'layerIndexMap'
 ]);
 
 /**
@@ -31,10 +15,27 @@ const registeredKeys = new Set([
  * because we have to assume only the "string" type is supported
  * currently for local storage on all browsers.
  */
-class StateStore {
+export class StateStore {
   constructor() {
     this._settings = {};
+    this._state = {};
     this._localStorageAvailable = storageAvailable('localStorage');
+  }
+
+  init(settings) {
+    this._settings = settings;
+  }
+
+  getSetting(...keys) {
+    let value = this._settings;
+
+    for (let key of keys) {
+      value = value[key];
+      if (value === undefined) {
+        return undefined;
+      }
+    }
+    return value;
   }
 
   // For values that are not persisted
@@ -109,7 +110,7 @@ function storageAvailable(type) {
     storage.setItem(x, x);
     storage.removeItem(x);
     return true;
-  } catch(e) {
+  } catch (e) {
     return false;
   }
 }

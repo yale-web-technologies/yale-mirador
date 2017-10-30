@@ -1,59 +1,76 @@
-{
-  "isEditor": true,
-
-  "manifestUrl": "https://s3.amazonaws.com/lifeofthebuddha.yale.edu/manifests/confucius-311.json",
-  "__manifestUrl": "https://s3.amazonaws.com/lifeofthebuddha.yale.edu/manifests/LOTB.json",
-  "__manifestUrl": "http://media.nga.gov/public/manifests/nga_highlights.json",
-
-  "apiSettings": {
+window.yaleMiradorSettings = {
+  "mirador": {
     "buildPath": "/dist/mirador/",
-
-    "endpointUrl": "http://localhost:5000",
-    "__endpointUrl": "http://mirador-annotations-lotb-stg.herokuapp.com",
-
-    "disableAuthz": false,
-    "copyrighted": false,
-    "copyrightedImageServiceUrl": "http://images.tenthousandrooms.yale.edu/loris/tenkr:original/copyrighted.jpg",
-
-    "ui": {
-      "textDirection": "horizontal-lr",
-
-      "annotationsOverlay": {
-        "showByDefault": true,
-        "hideUnfocused": false,
-        "hoverColor": "red",
-        "hoverWidthFactor": 2
-      },
-      "annotationWindow": {
-        "continuousPages": false
-      },
-      "__tooltipStyles": {
-        "color": "#fff",
-        "backgroundColor": "rgba(0, 0, 0, 0.2)",
-        "border": "solid 1px rgba(187, 187, 187, 0.5)"
-      },
-      "hideTagsInAnnotation": false,
-      "__i18nOverrides": {
-        "en": {
-          "nextCanvas": "Next Panel",
-          "previousCanvas": "Previous Panel",
-          "showBottomPanel": "View Panels",
-          "hideBottomPanel": "Hide Panels"
-        },
-        "ko": {
-          "nextCanvas": "이전 패널",
-          "previousCanvas": "다음 패널",
-          "showBottomPanel": "패널 썸네일 리스트",
-          "hideBottomPanel": "패널 썸네일 리스트 감추기"
-        }
-      }
+    "annotationsOverlay": {
+      "showByDefault": true,
+      "hideUnfocused": false,
+      "hoverColor": "red",
+      "hoverWidthFactor": 2
     },
+    "__tooltipStyles": {
+      "color": "#fff",
+      "backgroundColor": "rgba(0, 0, 0, 0.2)",
+      "border": "solid 1px rgba(187, 187, 187, 0.5)"
+    },
+    "__i18nOverrides": {
+      "en": {
+        "nextCanvas": "Next Panel",
+        "previousCanvas": "Previous Panel",
+        "showBottomPanel": "View Panels",
+        "hideBottomPanel": "Hide Panels"
+      },
+      "ko": {
+        "nextCanvas": "이전 패널",
+        "previousCanvas": "다음 패널",
+        "showBottomPanel": "패널 썸네일 리스트",
+        "hideBottomPanel": "패널 썸네일 리스트 감추기"
+      }
+    }
+  },
+  "auth": {
+    "isEditor": true,
+    "groupId": "286",
+    "images": {
+      "copyrighted": false,
+      "altImageService": "http://images.tenthousandrooms.yale.edu/loris/tenkr:original/copyrighted.jpg"
+    }
+  },
+  "ui": {
+    "rootElementId": "yale-mirador",
+    "annotationWindow": {
+      "continuousPages": false,
+      "textDirection": "on",
+      "hideTags": false,
+      "hiddenLayers": []
+    }
+  },
+  "initialLayout": {
+    "windows": [
+      {
+        "type": "imageWindow",
+        "manifest": "https://s3.amazonaws.com/lifeofthebuddha.yale.edu/manifests/confucius-311.json",
+        "__manifest": "https://s3.amazonaws.com/lifeofthebuddha.yale.edu/manifests/LOTB.json",
+        "__manifest": "http://media.nga.gov/public/manifests/nga_highlights.json",
+        "__canvas": "http://manifest.tenthousandrooms.yale.edu/node/311/canvas/14181",
+        "__tocTags": "chapter4,scene1",
+        "__annotation": "http://annotations.ten-thousand-rooms.yale.edu/annotations/025ce5e7-75ac-437a-9e59-6bce9b4563cd"
+      },
+      {
+        "type": "annotationWindow",
+        "imageWindowIndex": 0,
+        "layer": "http://mirador-annotations-lotb-stg.herokuapp.com/layers/English"
+      }
+    ]
+  },
+  "annotations": {
+    "store": "http://localhost:5000",
+    "__store": "http://mirador-annotations-lotb-stg.herokuapp.com",
     "__tocSpec": {
       "__defaultLayer": "http://mirador-annotations-lotb.herokuapp.com/layers/English",
       "defaultLayer": "http://mirador-annotations-lotb-stg.herokuapp.com/layers/English",
       "generator": [
         {"tag": { "prefix": "chapter" }, "label": { "prefix": "Chapter "}, "max": 28,
-         "descriptions": [
+        "descriptions": [
           "Chapter 1. How the Bodhisattva Becomes the Divine Son Shvetaketu in Tushita<br/>དེ་ལས་དང་པོ་དགའ་ལྡན་དུ་ལྷའི་བུ་དམ་པ་ཏོག་དཀར་པོར་གྱུར་པའི་ཚུལ་ནི།",
           "Chapter 2. The Advent of an Extraordinary Lineage<br/>གཉིས་པ་རིགས་མཆོག་ཏུ་གྱུར་པ་ནི།",
           "Chapter 3. The Bodhisattva Sees the Five Sights<br/>གསུམ་པ་གཟིགས་པ་ལྔ་ལ་གཟིགས་པ་ནི།",
@@ -82,7 +99,7 @@
           "Chapter 26. Living in the Wilderness<br/>ཉེར་དྲུག་པ་ནགས་ཁྲོད་དུ་དལ་བར་བཞུགས་པ་",
           "Chapter 27. Great Brahmā Makes a Request, and [Buddha] Travels to Varanasi<br/>ཉེར་བདུན་པ་ཚངས་པ་ཆེན་པོས་གསོལ་བ་བཏབ་སྟེ་ཝཱ་རཱ་ཎ་སཱིར་གཤེགས་པ་ནི།",
           "Chapter 28. The First Turning of the Wheel<br/>ཉེར་བརྒྱད་པ་ཆོས་འཁོར་ཐོག་མ་བསྐོར་བ་ནི།"
-         ]
+        ]
         },
         {"tag": { "prefix": "scene" },   "label": { "prefix": "Scene " },  "max": 20},
         {"tag": { "prefix": "p" },   "label": { "prefix": "Paragraph " },  "max": 20}
@@ -119,4 +136,4 @@
       }
     }
   }
-}
+};

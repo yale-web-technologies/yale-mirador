@@ -11,7 +11,7 @@ export default class AnnotationRenderer {
     this._state = options.state;
 
     this.layerIndexMap = this._state.getTransient('layerIndexMap');
-    this.hideTags = this._state.getTransient('hideTagsInAnnotation');
+    this.hideTags = this._state.getSetting('ui', 'annotationWindow', 'hideTags');
     this._miradorProxy = this._annoWin.getMiradorProxy();
   }
 
@@ -41,20 +41,14 @@ export default class AnnotationRenderer {
     });
 
     const annoElem = jQuery(annoHtml);
-    if (this._state.getTransient('textDirection') === 'vertical-rl') {
-      annoElem.addClass('vertical-layout');
-    }
 
     const contentElem = annoElem.find('.content');
-    util.setTextDirectionClass(contentElem, style);
+    //util.setTextDirectionClass(contentElem, style);
 
     const menuBar = annoElem.find('.menu_bar');
-    //const annoOrderButtonsRow = options.pageElem.find('.annowin_temp_row');
 
     annoElem.data('annotationId', annotation['@id']);
     annoElem.data('canvasId', options.canvasId);
-
-    //annoElem.data('annoOrderButtonsRow', annoOrderButtonsRow);
     annoElem.data('pageElem', options.pageElem);
 
     const ddElem = annoElem.find('.ui.dropdown');
@@ -137,13 +131,15 @@ export default class AnnotationRenderer {
     });
 
     annoElem.find('.edit').click(function(event) {
+      const dom = _this._annoWin.getDomHelper();
+
       const editor = new AnnotationEditor({
         parent: annoElem,
         windowId: annoWin.getImageWindowId(),
         mode: 'update',
         endpoint: annoWin.endpoint,
         annotation: annotation,
-        saveCallback: function(annotation, content) {
+        saveCallback: (annotation, content) => {
           if (annoWin.getCurrentLayerId() === annotation.layerId) {
             const normalView = annoElem.find('.normal_view');
             const contentElem = normalView.find('.content');
@@ -156,7 +152,7 @@ export default class AnnotationRenderer {
           }
           annoWin.reloadIfDirty();
         },
-        cancelCallback: function() {
+        cancelCallback: (event) => {
           annoElem.find('.normal_view').show();
           annoElem.data('editing', false);
           annoWin.reloadIfDirty();

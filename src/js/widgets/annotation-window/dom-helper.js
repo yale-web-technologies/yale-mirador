@@ -7,6 +7,7 @@ export default class DomHelper {
     this._root = jQuery(windowTemplate({}));
     appendTo.append(this._root);
 
+    this._header = this._findOne(this._root, '.header');
     this._placeHolder = this._findOne(this._root, '.placeholder');
     this._layerSelectorContainer = this._findOne(this._root, '.layer-selector-container');
     this._tocTagSelector = this._findOne(this._root, '.toc-tag-selector-container');
@@ -22,6 +23,10 @@ export default class DomHelper {
 
   getRoot() {
     return this._root;
+  }
+
+  getHeader() {
+    return this._header;
   }
 
   getPlaceHolder() {
@@ -132,7 +137,7 @@ export default class DomHelper {
 
 const windowTemplate = Handlebars.compile([
   '<div class="ym_annotation_window">',
-  '  <div class="annowin_header">',
+  '  <div class="header">',
   '    <div class="annowin_layer_row">',
   '      <span class="layer-selector-container"></span>',
   '      <div class="right"></div>',

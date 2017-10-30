@@ -1,5 +1,10 @@
 import getLogger from '../util/logger';
 
+// NOTE: ConfigFetcher is no longer used as of 10/27/2017.
+// All settings are fed as arguments to App.init().
+// This file has to be deleted after it has been verified that this
+// new scheme works on the Drupal and Rails portals.
+
 export default function getConfigFetcher() {
   if (!instance) {
     instance = new ConfigFetcher();
@@ -24,7 +29,7 @@ class ConfigFetcher {
 
     options.apiUrl = elem.attr('data-settings-url');
     options.roomId = elem.attr('data-room-id');
-    
+
     options.manifestUri = elem.attr('data-manifest-url');
     options.projectId = elem.attr('data-room-id'); // group or project ID
 

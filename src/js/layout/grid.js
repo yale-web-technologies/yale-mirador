@@ -52,9 +52,9 @@ export default class {
     this._layout = new GoldenLayout(config, this.element);
 
     this._layout.registerComponent('Mirador', (container, componentState) => {
-      const id = componentState.miradorId;
-      const template = Handlebars.compile(jQuery('#viewer_template').html());
-      container.getElement().html(template({ id: id }));
+      logger.debug('Registering component container:', container, 'componentState:', componentState);
+      const miradorElem = jQuery('<div/>').attr('id', componentState.miradorId)
+      container.getElement().append(miradorElem);
     });
 
     this._layout.registerComponent('Annotations', (container, componentState) => {
@@ -92,7 +92,7 @@ export default class {
   }
 
   addMiradorWindow(miradorId) {
-    logger.debug('Grid#addMiradorWindow');
+    logger.debug('Grid#addMiradorWindow miradorId:', miradorId);
     const itemConfig = {
       type: 'component',
       componentName: 'Mirador',

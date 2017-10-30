@@ -53,7 +53,8 @@ describe('AnnotationWindow', function() {
       explorer: mockAnnotationExplorer,
       initialLayerId: null,
       initialTocTags: null,
-      annotationId: null
+      annotationId: null,
+      appState: state
     });
     annoWin.init();
   });

@@ -8,36 +8,27 @@ const logger = getLogger();
 
 export default class MiradorConfigBuilder {
   constructor(options) {
-    this.options = Object.assign({
-      buildPath: null,
-      canvasId: null,
-      defaultSettings: null, // Mirador default settings
-      disableAuthz: false,
-      endpointUrl: null,
-      projectId: null,
-      isEditor: false,
-      manifestUri: null,
-      miradorId: null, // ID of Mirador instance
-      tagHierarchy: null
-    }, options);
     logger.debug('MiradorConfigBuilder#constructor options:', options);
-
+    this._options = options;
     this._state = getStateStore();
+
+    const window = this._state.getSetting('initialLayout', 'windows')[0];
+    this._manifestUri = window.manifest;
+    this._canvasId = window.canvas;
   }
 
   buildConfig() {
-    const config = jQuery.extend(true, {}, this.options.defaultSettings);
-    const annotationsOverlay = this._state.getTransient('annotationsOverlay');
-    const tocSpec = this._state.getTransient('tocSpec');
+    const config = jQuery.extend(true, {}, this._options.defaultSettings);
+    const tocSpec = this._state.getSetting('annotations', 'tocSpec');
 
     jQuery.extend(config, {
-      id: this.options.miradorId,
-      buildPath: this.options.buildPath || '/',
+      id: this._options.miradorId,
+      buildPath: this._options.mirador.buildPath || '/',
       i18nPath: '/locales/',
       imagesPath: '/images/',
       logosPath: '/images/logos/',
       mainMenuSettings: { show: false },
-      data: [{ manifestUri: this.options.manifestUri }],
+      data: [{ manifestUri: this._manifestUri }],
       windowObjects: [this.windowObject()],
       autoHideControls: false, // autoHide is bad for touch-only devices
       annotationEndpoint: this.endPointConfig(),
@@ -48,13 +39,7 @@ export default class MiradorConfigBuilder {
           mode: 'create'
         }
       },
-      i18nAdditions: new Locales().getLocalesConfig(this.options),
-      extension: {
-        tagHierarchy: this.options.tagHierarchy || null,
-        projectId: this.options.projectId || null,
-        firebase: this.options.firebase || null,
-        disableAuthz: this.options.disableAuthz || false
-      }
+      i18nAdditions: new Locales().getLocalesConfig(this._options)
     });
 
     const windowSettings = config.windowSettings;
@@ -66,21 +51,22 @@ export default class MiradorConfigBuilder {
       windowSettings.sidePanelOptions.tocTabAvailable = false;
     }
 
-    if (!this.options.isEditor) {
+    if (!this._state.getSetting('auth', 'isEditor')) {
       windowSettings.canvasControls.annotations.annotationCreation = false;
     }
 
-    if (this._state.getTransient('displayModeOnStart')) {
+    if (this._state.getSetting('mirador', 'annotationsOverlay', 'showByDefault')) {
       windowSettings.canvasControls.annotations.annotationState = 'on';
     }
 
-    if (annotationsOverlay) {
-      if (annotationsOverlay.hoverColor) {
-        config.drawingToolsSettings.hoverColor = annotationsOverlay.hoverColor;
-      }
-      if (annotationsOverlay.hoverWidthFactor) {
-        config.drawingToolsSettings.hoverWidthFactor = annotationsOverlay.hoverWidthFactor;
-      }
+    const hoverColor = this._state.getSetting('mirador', 'annotationsOverlay','hoverColor');
+    const hoverWidthFactor = this._state.getSetting('mirador', 'annotationsOverlay','hoverWidthFactor');
+
+    if (hoverColor) {
+      config.drawingToolsSettings.hoverColor = hoverColor;
+    }
+    if (hoverWidthFactor) {
+      config.drawingToolsSettings.hoverWidthFactor = hoverWidthFactor;
     }
 
     logger.debug('MiradorConfigBuilder#buildConfig config:', config);
@@ -89,30 +75,21 @@ export default class MiradorConfigBuilder {
 
   windowObject() {
     const windowObject = {
-      loadedManifest: this.options.manifestUri,
+      loadedManifest: this._manifestUri,
       bottomPanelVisible: false
     };
-    if (this.options.canvasId) { // if instructed to load a specific canvas
-      windowObject.canvasID = this.options.canvasId;
+    if (this._canvasId) { // if instructed to load a specific canvas
+      windowObject.canvasID = this._canvasId;
     }
     return windowObject;
   }
 
   endPointConfig() {
-    if (this.options.endpointUrl === 'firebase') {
-      return {
-        name: 'Yale (Firebase) Annotations',
-        module: 'YaleEndpoint',
-        dataSource: AnnotationSourceFb,
-        options: {}
-      };
-    } else {
-      return {
-        name: 'Yale Annotations',
-        module: 'YaleEndpoint',
-        dataSource: AnnotationSource,
-        options: { prefix: this.options.endpointUrl }
-      };
-    }
+    return {
+      name: 'Yale Annotations',
+      module: 'YaleEndpoint',
+      dataSource: AnnotationSource,
+      options: { prefix: this._options.endpointUrl }
+    };
   }
 }

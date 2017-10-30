@@ -21,6 +21,7 @@ export default class MiradorWrapper {
     }, options);
     this._miradorId = options.miradorOptions.miradorId;
     this._miradorConfig = this._buildMiradorConfig(options.miradorOptions);
+    logger.debug('MiradorWrapper#constructor miradorConfig:', this._miradorConfig);
     this._mirador = Mirador(this._miradorConfig);
     this._miradorProxy = this._addToMiradorProxy(this._miradorId, this._mirador);
     this._bindEvents(options.miradorOptions);

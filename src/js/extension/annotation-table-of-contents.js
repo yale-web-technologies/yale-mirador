@@ -27,7 +27,7 @@ export default class AnnotationTableOfContents {
 
   init () {
     const _this = this;
-    const tocSpec = getStateStore().getTransient('tocSpec');
+    const tocSpec = getStateStore().getSetting('annotations', 'tocSpec');
 
     if (!tocSpec) {
       this.element = jQuery(emptyTemplate()).appendTo(this.options.appendTo);
