@@ -4,12 +4,13 @@
   "description": "Yale Extension of Mirador",
   "main": "index.js",
   "scripts": {
-    "start": "cd example; NODE_PATH=.. node server.js",
+    "start": "webpack-dev-server --open",
+    "__start": "cd example; NODE_PATH=.. node server.js",
     "test": "karma start --singleRun",
     "build": "npm run package:mirador && npm run build:yale-mirador && ./bin/package-lib.sh",
     "package:mirador": "rm -rf dist/mirador && mkdir dist/mirador && cp -r node_modules/mirador-y/dist/mirador/* dist/mirador/",
     "prebuild:yale-mirador": "rm -rf dist/yale-mirador && mkdir -p dist/yale-mirador",
-    "build:yale-mirador": "GIT_DESC=$(git describe --long --always) webpack"
+    "build:yale-mirador": "GIT_DESC=$(git describe --long --always) webpack --progress --colors"
   },
   "repository": {
     "type": "git",
@@ -58,7 +59,8 @@
     "pug": "^2.0.0-rc.2",
     "sinon": "^2.4.1",
     "style-loader": "^0.16.1",
-    "webpack": "^2.7.0"
+    "webpack": "^2.7.0",
+    "webpack-dev-server": "^2.9.3"
   },
   "dependencies": {
     "babel-polyfill": "^6.23.0",

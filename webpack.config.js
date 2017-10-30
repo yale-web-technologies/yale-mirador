@@ -15,12 +15,14 @@ module.exports = {
     'yale-mirador': [
       './node_modules/babel-polyfill/dist/polyfill.js',
       './src/js/app.js',
-      './src/js/bootstrap.js'
+      './src/js/export.js'
+      //'./src/js/bootstrap.js'
     ]
   },
   output: {
     path: path.resolve(__dirname, 'dist/yale-mirador'),
-    filename: '[name].bundle.js'
+    filename: '[name].bundle.js',
+    publicPath: '/public/'
   },
   module: {
     rules: [{
@@ -43,6 +45,15 @@ module.exports = {
         }]
       })
     }]
+  },
+  devtool: 'source-map',
+  devServer: {
+    port: 3000,
+    openPage: '#debug',
+    watchOptions: {
+      poll: 2000,
+      ignored: /node_modules/
+    }
   },
   plugins: [
     new ExtractTextPlugin('yale-mirador.bundle.css'),
