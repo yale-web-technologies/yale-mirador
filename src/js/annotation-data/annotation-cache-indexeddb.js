@@ -6,6 +6,11 @@ const logger = getLogger();
 
 export default class AnnotationCacheIndexeddb {
   constructor() {
+    // Not using indexddb any more. As of 10/26/2017.
+    // It is too unstable on Safari.
+    this._valid = false;
+    return;
+
     this._dbName = 'anno_cache';
     this._valid =  window.indexedDB ? true : false;
     this._expiresInMS = 2 * 60 * 60 * 1000; // milliseconds
