@@ -115,6 +115,7 @@ export default class AnnotationEditor {
           icon: false,
           onselect: function(event) {
             _this._textDirectionClass = this.value();
+            getStateStore().setString('textDirection', this.value());
           },
           values: [
             { text: 'Horizontal LR', value: 'horizontal-lr' },
