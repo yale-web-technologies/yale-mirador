@@ -5,7 +5,8 @@ const logger = getLogger();
 const registeredKeys = new Set([
   'annotationLayers',
   'lastSelectedLayer',
-  'layerIndexMap'
+  'layerIndexMap',
+  'textDirection'
 ]);
 
 /**
