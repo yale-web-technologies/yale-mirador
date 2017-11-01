@@ -8,7 +8,6 @@
   color: @off-white;
   height: 100%;
   margin: 0;
-  //overflow-y: scroll; // to show the menu-tag selector when it gets too big
   padding: 0 0 5px;
   position: absolute;
   width: 100%;
@@ -83,12 +82,9 @@
 }
 
 .list-container {
-  flex: 1 0 auto;
+  flex: 1 1 auto;
+  position: relative; /* required to make the div "positioned" so the child elements' positions to be obtained and scroll levels adjusted accordingly. */
 
-  //position: relative; // required to make the div "positioned" so the child elements' positions to be obtained and scroll levels adjusted accordingly.
-  //left: 0;
-  //right: 0;
-  //margin: 0;
   overflow-x: hidden;
   overflow-y: scroll;
   width: 100%;
