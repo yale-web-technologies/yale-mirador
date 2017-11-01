@@ -56,6 +56,7 @@ export default class AnnotationListWidget {
     this._rootElem.empty();
     this._createPageElements();
     this._scrollHelper = new ScrollHelper({
+      annotationWindow: this._annoWin,
       listWidget: this,
       listNavigator: this._nav,
       groupHeaderHeight: 19,

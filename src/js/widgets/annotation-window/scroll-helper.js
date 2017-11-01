@@ -1,16 +1,17 @@
-import domHelper from './dom-helper';
 import getLogger from '../../util/logger';
 
 const logger = getLogger();
 
 export default class ScrollHelper {
   constructor(options) {
+    this._annoWin = options.annotationWindow;
     this._listWidget = options.listWidget;
     this._groupHeaderHeight = options.groupHeaderHeight;
     this._continousPages = options.continuousPages;
 
     this._rootElem = this._listWidget.getRootElement();
     this._nav = this._listWidget.getNav();
+    this._annoWinDom = this._annoWin.getDomHelper();
   }
 
   /**
@@ -74,7 +75,7 @@ export default class ScrollHelper {
 
   _getNextAnnoElem(elem) {
     let currentElem = elem;
-    while (currentElem.size() > 0 && !domHelper.isAnnotationCell(currentElem)) {
+    while (currentElem.size() > 0 && !this._annoWinDom.isAnnotationCell(currentElem)) {
       currentElem = currentElem.next();
     }
     return currentElem.size() > 0 ? currentElem : null;

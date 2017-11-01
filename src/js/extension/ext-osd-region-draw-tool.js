@@ -93,11 +93,11 @@ import getStateStore from '../state-store';
     const hoverWidthFactor = state.getSetting('mirador', 'annotationsOverlay','hoverWidthFactor');
 
     if (hoverColor) {
-      shape.strokeColor = setting.hoverColor;
+      shape.strokeColor = hoverColor;
     }
     if (hoverWidthFactor) {
       const defaultWidth = shape.data._ym_defaultStrokeWidth;
-      shape.data.strokeWidth = setting.hoverWidthFactor *
+      shape.data.strokeWidth = hoverWidthFactor *
         (typeof defaultWidth === 'number' ? defaultWidth : shape.data.strokeWidth);
     }
     shape.set({ opacity: 1 });
