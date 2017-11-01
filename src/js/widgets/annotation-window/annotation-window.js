@@ -219,7 +219,7 @@ export default class AnnotationWindow {
 
   destroy() {
     logger.debug('AnnotationWindow#destroy');
-    this._unsubscribeAll(); //XXXX
+    this._unsubscribeAll();
   }
 
   getAnnoListNav() {

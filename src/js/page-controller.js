@@ -94,9 +94,7 @@ class PageController {
 
     const targetWindow = grid.getAnnotationWindowByLayer(layerId);
 
-    if (targetWindow) {
-      //await targetWindow.goToAnnotation(annotation['@id'], canvasId); //XXX dealt with by annotation window
-    } else {
+    if (!targetWindow) {
       if (annotation) {
         const annoWindow =  await grid.addAnnotationWindow({
           miradorId: this._miradorId,

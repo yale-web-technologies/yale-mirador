@@ -1,5 +1,4 @@
 import AnnotationSource from '../annotation-data/annotation-source';
-import AnnotationSourceFb from '../annotation-data/annotation-source-fb';
 import getLogger from '../util/logger';
 import getStateStore from '../state-store';
 import Locales from '../config/locales';

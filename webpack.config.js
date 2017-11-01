@@ -16,7 +16,6 @@ module.exports = {
       './node_modules/babel-polyfill/dist/polyfill.js',
       './src/js/app.js',
       './src/js/export.js'
-      //'./src/js/bootstrap.js'
     ]
   },
   output: {
