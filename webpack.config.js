@@ -1,5 +1,5 @@
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
-var path = require('path');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const path = require('path');
 const webpack = require('webpack');
 
 // The extra line added is a kludge to circumvent Drupal stripping comment lines
@@ -45,7 +45,7 @@ module.exports = {
       })
     }]
   },
-  devtool: 'source-map',
+  devtool: 'inline-source-map',
   devServer: {
     port: 3000,
     openPage: '#debug',
