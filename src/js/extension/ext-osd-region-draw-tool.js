@@ -44,6 +44,7 @@ import getStateStore from '../state-store';
     * Highlight annotated area for annotation focused in annotation window.
     */
   $.OsdRegionDrawTool.prototype.updateHighlights = function(annotation) {
+    logger.debug('OsdRegionDrawTool(ext)#updateHighlights annotation:', annotation);
 
     const _this = this;
     jQuery.each(this.annotationsToShapesMap, function(key, shapes) {
@@ -84,7 +85,7 @@ import getStateStore from '../state-store';
   };
 
   $.OsdRegionDrawTool.prototype.highlightShape = function(shape) {
-    logger.debug('highlightShape', shape);
+    //logger.debug('highlightShape', shape);
     this.saveStrokeColor(shape);
     this.saveStrokeWidth(shape);
 
