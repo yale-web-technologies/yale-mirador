@@ -113,9 +113,11 @@ export default class AnnotationListWidget {
     if (targetPage >= 0) {
       await this.goToPage(targetPage);
 
-      this._scrollHelper.scrollToAnnotation(annoId);
-      this.clearAnnotationHighlights();
-      this.highlightAnnotation(annoId, 'SELECTED');
+      setTimeout(() => { // give some time for things to settle before scrolling
+        this._scrollHelper.scrollToAnnotation(annoId);
+        this.clearAnnotationHighlights();
+        this.highlightAnnotation(annoId, 'SELECTED');
+      }, 0);
     } else {
       logger.debug('AnnotationListWidget#goToAnnotation page not found for canvasId', canvasId);
     }
