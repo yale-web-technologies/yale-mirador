@@ -1,6 +1,6 @@
 // Show messages for an irrecoverable error after wiping out everything
 export default function fatalError(error, ...args) {
-  console.log('ERROR:', error);
+  console.error('ERROR:', error);
   const rootElem = jQuery(template());
   if (error === 'FATAL') {
     throw error;

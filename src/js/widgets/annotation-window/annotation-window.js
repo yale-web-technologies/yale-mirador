@@ -34,7 +34,7 @@ export default class AnnotationWindow {
     if (!this._id) { this._id = Mirador.genUUID(); }
     this._imageWindow = this._miradorProxy.getWindowProxyById(this._imageWindowId);
 
-    this._dom = new DomHelper(this._appendTo);
+    this._dom = new DomHelper(this._appendTo, this._state.getSetting('ui', 'annotationWindow', 'enableDirectionToggle'));
     this._orderConfirm = this._dom.getOrderConfirm();
 
     this._continuousPages =  this._state.getSetting('ui', 'annotationWindow', 'continuousPages');

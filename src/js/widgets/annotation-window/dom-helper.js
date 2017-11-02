@@ -3,7 +3,7 @@ import getLogger from '../../util/logger';
 const logger = getLogger();
 
 export default class DomHelper {
-  constructor(appendTo) {
+  constructor(appendTo, enableDirectionToggle) {
     this._root = jQuery(windowTemplate({}));
     appendTo.append(this._root);
 
@@ -14,7 +14,7 @@ export default class DomHelper {
     this._orderConfirm = this._findOne(this._root, '.order-confirm');
     this._saveOrderButton = this._findOne(this._orderConfirm, '.ym_button.save');
     this._cancelOrderButton = this._findOne(this._orderConfirm, '.ym_button.cancel');
-    this._toggleDirectionButton = this._addToggleDirectionButton();
+    this._toggleDirectionButton = enableDirectionToggle ? this._addToggleDirectionButton() : null;
     this._createWindowButton = this._addCreateWindowButton();
     this._listContainer = this._findOne(this._root, '.list-container');
 
