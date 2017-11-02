@@ -3,6 +3,7 @@ import getApp from '../app';
 import getErrorDialog from '../widgets/error-dialog';
 import getLogger from '../util/logger';
 import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
+import getModalAlert from '../widgets/modal-alert';
 import getPageController from '../page-controller';
 import session from '../session';
 import util from '../util/util';
@@ -48,6 +49,7 @@ class YaleEndpoint {
     })
     .catch(function(reason) {
       logger.error('YaleEndpoint#search failed - ', reason);
+      getModalAlert().hide();
       errorPane.show('annotations');
     });
   }
