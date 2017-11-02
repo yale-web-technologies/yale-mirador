@@ -1,13 +1,7 @@
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const path = require('path');
 const webpack = require('webpack');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
-// The extra line added is a kludge to circumvent Drupal stripping comment lines
-function header() {
-  var gitDesc = process.env.GIT_DESC;
-  var text = 'Yale-Mirador ' + gitDesc + ' built ' + new Date();
-  return '// ' + text + '\nwindow._YaleMiradorVersion="' + text + '";\n\n';
-}
 process.traceDeprecation = true;
 
 module.exports = {
@@ -45,22 +39,7 @@ module.exports = {
       })
     }]
   },
-  devtool: 'inline-source-map',
-  devServer: {
-    port: 3000,
-    openPage: '#debug',
-    watchOptions: {
-      poll: 2000,
-      ignored: /node_modules/
-    }
-  },
   plugins: [
     new ExtractTextPlugin('yale-mirador.bundle.css'),
-    new webpack.BannerPlugin({
-      banner: header(),
-      test: /\.js$/,
-      raw: true,
-      entryOnly: true
-    })
   ]
 };
