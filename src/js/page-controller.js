@@ -22,14 +22,12 @@ let logger = getLogger();
  */
 class PageController {
   init(options) {
-    this.options = jQuery.extend({
-      grid: null,
-      settings: null, // settings retrieved from remote API
-      state: null
-    }, options);
-    logger.debug('PageController#constructor options:', options);
+    logger.debug('PageController#init options:', options);
+    this._grid = options.grid;
+    this._settings = options.appSettings;
+    this._state = options.appState;
 
-    const miradorOptions = jQuery.extend(this.options.settings, {
+    const miradorOptions = jQuery.extend(this._settings, {
       miradorId: Mirador.genUUID(),
       defaultSettings: Mirador.DEFAULT_SETTINGS,
       isEditor: session.isEditor()
@@ -39,7 +37,7 @@ class PageController {
     this._miradorProxy = this._miradorWrapper.getMiradorProxy();
     this._miradorId = this._miradorProxy.getId();
 
-    this._tocSpec = this.options.state.getSetting('annotations', 'tocSpec');
+    this._tocSpec = this._state.getSetting('annotations', 'tocSpec');
     this._annotationTocCache = getApp().getAnnotationTocCache();
     this._annotationExplorer = getApp().getAnnotationExplorer();
 
@@ -54,9 +52,9 @@ class PageController {
   _createMirador(miradorOptions) {
     try {
       // Should create a container in the grid first before instantiating Mirador
-      this.options.grid.addMiradorWindow(miradorOptions.miradorId);
+      this._grid.addMiradorWindow(miradorOptions.miradorId);
       return new MiradorWrapper({
-        grid: this.options.grid,
+        grid: this._grid,
         miradorOptions: miradorOptions
       });
     } catch(e) {
@@ -72,7 +70,7 @@ class PageController {
   async _showAnnotation(windowId, annoId) {
     logger.debug('PageController#showAnnotation windowId:', windowId, 'annoId:' + annoId,
       'defaultLayer:', this._tocSpec ? this._tocSpec.defaultLayer : null);
-    const grid = this.options.grid;
+    const grid = this._grid;
     const windowProxy = this._miradorProxy.getWindowProxyById(windowId);
     const canvasId = windowProxy.getCurrentCanvasId();
     const annotations = await this._annotationExplorer.getAnnotations({ canvasId: canvasId });
@@ -156,18 +154,20 @@ class PageController {
     } else {
       this._urlOptionsProcessed = true;
 
-      if (this.options.state.getSetting('mirador', 'annotationsOverlay', 'showByDefault') ||
-        options.annotationId)
-      {
+      const windowSetting = this._state.getSetting('initialLayout', 'windows')[0];
+      const annotationId = windowSetting ? windowSetting.annotation : null;
+
+      if (this._state.getSetting('mirador', 'annotationsOverlay', 'showByDefault') || annotationId) {
         this._miradorProxy.publish('YM_DISPLAY_ON');
       }
 
-      if (options.annotationId) {
+      if (annotationId) {
         const handler = event => {
           logger.debug('PageController#_processUrlOptions annotationsRendered');
           this._zoomToAnnotation(options.annotationId, imageWindowId);
           this._miradorProxy.unsubscribe('annotationsRendered.' + imageWindowId, handler);
         }
+        options.annotationId = annotationId;
         this._miradorProxy.subscribe('annotationsRendered.' + imageWindowId, handler);
       }
       this._createAnnotationWindows(imageWindowId, options);
@@ -216,7 +216,7 @@ class PageController {
     const _this = this;
 
     jQuery(window).resize(function() {
-      _this.options.grid.resize();
+      _this._grid.resize();
     });
 
     this._miradorProxy.subscribe('ANNOTATIONS_LIST_UPDATED', (event, params) => {
@@ -281,7 +281,7 @@ class PageController {
 
     jQuery.subscribe('YM_ANNOTATION_TOC_TAGS_SELECTED', async (evnet, windowId, canvasId, tags) => {
       logger.debug('PageController:SUB:YM_ANNOTATION_TOC_TAGS_SELECTED imageWindow:', windowId, 'canvasId:', canvasId, 'tags:', tags);
-      const grid = this.options.grid;
+      const grid = this._grid;
       const layerId = this._tocSpec.defaultLayer;
       let annoWindow = grid.getAnnotationWindowByLayer(layerId);
 
@@ -297,7 +297,7 @@ class PageController {
         logger.error('PageController#SUB:YM_ANNOTATION_TOC_TAGS_SELECTED failed to enable annotation layer');
       }
 
-      const annotationWindows = this.options.grid.getAnnotationWindows();
+      const annotationWindows = this._grid.getAnnotationWindows();
       for (let annoWin of Object.values(annotationWindows)) {
         annoWin.ignoreEvent('ANNOTATIONS_LIST_UPDATED', 35000);
       }

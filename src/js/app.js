@@ -37,8 +37,8 @@ export class App {
     this._pageController = getPageController();
     this._pageController.init({
       grid: grid,
-      settings: settings,
-      state: this._state
+      appSettings: settings,
+      appState: this._state
     });
 
     return this;
