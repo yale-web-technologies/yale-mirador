@@ -83,6 +83,7 @@ export default class ScrollHelper {
 
   scrollToElem(annoElem, yOffsetIn) {
     const yOffset = this._calcOffset(annoElem, yOffsetIn);
+    //logger.debug('ScrollHelper#scrollToElem annoElem:', annoElem, 'yOffsetIn:', yOffsetIn, 'yOffset:', yOffset);
 
     this.unbindScrollEvent();
 
@@ -106,6 +107,7 @@ export default class ScrollHelper {
     }
     const minOffset = annoElem.height() - this._rootElem.height();
     const yOffset = yOffsetIn < minOffset ? minOffset : yOffsetIn;
+    //logger.debug('ScrollHelper#_calcOffset annoElem:', annoElem, 'yOffsetIn:', yOffsetIn, 'annoElem.height:', annoElem.height(), 'rootElem.height:', this._rootElem.height(), 'yOffset:', yOffset);
     return yOffset;
   }
 
