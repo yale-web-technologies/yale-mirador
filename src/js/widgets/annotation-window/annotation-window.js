@@ -36,7 +36,6 @@ export default class AnnotationWindow {
 
     this._dom = new DomHelper(this._appendTo, this._state.getSetting('ui', 'annotationWindow', 'enableDirectionToggle'));
     this._orderConfirm = this._dom.getOrderConfirm();
-
     this._continuousPages =  this._state.getSetting('ui', 'annotationWindow', 'continuousPages');
 
     this._jQuerySubscribed = {};
@@ -211,7 +210,7 @@ export default class AnnotationWindow {
         annotationExplorer: this._explorer,
         state: getStateStore(),
         isEditor: session.isEditor(),
-        constinousPages: this._continuousPages
+        continuousPages: this._continuousPages
       });
       this._listWidget.reload(this._initialLayerId);
     }
