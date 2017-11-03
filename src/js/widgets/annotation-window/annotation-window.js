@@ -500,9 +500,13 @@ export default class AnnotationWindow {
       });
     });
 
-    this._dom.getToggleDirectionButton().click(event => {
-      this._toggleDirection();
-    });
+    const directionButton = this._dom.getToggleDirectionButton();
+
+    if (directionButton) {
+      directionButton.click(event => {
+        this._toggleDirection();
+      });
+    }
 
     this._dom.getSaveOrderButton().click(event => {
       this._saveAnnotationsOrder(this._reorderedPageElem);
