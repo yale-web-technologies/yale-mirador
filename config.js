@@ -39,7 +39,7 @@ window.yaleMiradorSettings = {
     "rootElementId": "yale-mirador",
     "annotationWindow": {
       "continuousPages": false,
-      "textDirection": "on",
+      "enableDirectionToggle": true,
       "hideTags": false,
       "hiddenLayers": []
     }
