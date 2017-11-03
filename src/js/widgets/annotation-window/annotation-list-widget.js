@@ -13,6 +13,7 @@ const logger = getLogger();
  */
 export default class AnnotationListWidget {
   constructor(options) {
+    logger.debug('AnnotationListWidget#constructor options:', options);
     this._annoWin = options.annotationWindow; // annotation window to which this widget belongs
     this._annoPageRenderer = options.annotationPageRenderer;
     this._annoExplorer = options.annotationExplorer;
@@ -241,6 +242,7 @@ export default class AnnotationListWidget {
   }
 
   select(annoElem) {
+    //logger.debug('AnnotationWindow#select annoElem:', annoElem);
     this.clearAnnotationHighlights();
     this._nav.setPageByCanvasId(annoElem.data('canvasId'));
 
@@ -251,7 +253,8 @@ export default class AnnotationListWidget {
       annotation: annoElem.data('annotation'),
       canvasId: annoElem.data('canvasId'),
       imageWindowId: this._annoWin.getImageWindowId(),
-      offset: annoElem.position().top
+      // offset: distance between the top of the container and the top of the annotation cell in focus
+      offset: annoElem.position().top - this._rootElem.scrollTop()
     }]);
   }
 
