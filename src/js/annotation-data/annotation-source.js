@@ -8,6 +8,9 @@ import getPageController from '../page-controller';
 import getStateStore from '../state-store';
 
 const logger = getLogger();
+const addAuthHeader = function (jqXHR) {
+  jqXHR.setRequestHeader('Authorization', 'Bearer ' + Cookies.get('jwtToken'));
+};
 
 // Implements inteface between Joosugi annotation explorer and the annotation server
 export default class AnnotationSource {
@@ -55,6 +58,7 @@ export default class AnnotationSource {
         type: 'GET',
         dataType: 'json',
         contentType: 'application/json; charset=utf-8',
+        beforeSend: addAuthHeader,
         success: (data, textStatus, jqXHR) => {
           logger.debug('AnnotationSource#getLayers layers: ', data);
           this._layers = data;
@@ -153,6 +157,7 @@ export default class AnnotationSource {
         type: 'GET',
         dataType: 'json',
         contentType: 'application/json; charset=utf-8',
+        beforeSend: addAuthHeader,
         success: (data, textStatus, jqXHR) => {
           logger.debug('AnnotationSource#_getRemoteAnnotations data: ', data);
           try {
@@ -200,6 +205,7 @@ export default class AnnotationSource {
         dataType: 'json',
         data: JSON.stringify(request),
         contentType: 'application/json; charset=utf-8',
+        beforeSend: addAuthHeader,
         success: async data => {
           logger.debug('AnnotationSource#createAnnotation creation successful on the annotation server:', data);
           const annotation = data;
@@ -242,6 +248,7 @@ export default class AnnotationSource {
         dataType: 'json',
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify(data),
+        beforeSend: addAuthHeader,
         success: async (data, textStatus, jqXHR) => {
             logger.debug('AnnotationSource#updateAnnotation successful', data);
             const annotation = this._toMiradorAnnotation(data);
@@ -280,6 +287,7 @@ export default class AnnotationSource {
         type: 'DELETE',
         dataType: 'json',
         contentType: 'application/json; charset=utf-8',
+        beforeSend: addAuthHeader,
         success: async (data, textStatus, jqXHR) => {
           logger.debug('AnnotationSource#deleteAnnotation success data:', data);
           if (cache) {
@@ -315,6 +323,7 @@ export default class AnnotationSource {
         dataType: 'json',
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify(data),
+        beforeSend: addAuthHeader,
         success: async (data, textStatus, jqXHR) => {
           logger.debug('AnnotationSource#updateAnnotationListOrder successful', data);
           if (cache) {
