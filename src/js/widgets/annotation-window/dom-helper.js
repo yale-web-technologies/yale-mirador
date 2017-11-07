@@ -87,7 +87,7 @@ export default class DomHelper {
 
   findAnnoElemByAnnoId(annoId) {
     for (let cell of this.getAllAnnotationCells()) {
-      let $cell = jQuery(elem);
+      let $cell = jQuery(cell);
       if ($cell.data('annotationId') === annoId) {
         return $cell;
       }
