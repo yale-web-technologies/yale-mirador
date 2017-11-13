@@ -1,3 +1,5 @@
+import getStateStore from './state-store';
+
 export default {
   serverSettings: null,
 
@@ -9,6 +11,7 @@ export default {
   },
 
   isEditor: function() {
-    return Cookies.get('isEditor') == 'true';
+    return Cookies.get('isEditor') == 'true' ||
+      getStateStore().getSetting('auth', 'isEditor');
   }
 };
