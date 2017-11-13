@@ -1,10 +1,10 @@
-import {Anno, annoUtil} from '../import';
-import getLogger from '../util/logger';
-import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
-import getPageController from '../page-controller';
-import getStateStore from '../state-store';
+import {Anno, annoUtil} from 'import';
+import getLogger from 'util/logger';
+import getMiradorProxyManager from 'mirador-proxy/mirador-proxy-manager';
+import getPageController from 'page-controller';
+import getStateStore from 'state-store';
 import LayerSelector from './layer-selector';
-import util from '../util/util';
+import util from 'util/util';
 
 const logger = getLogger();
 

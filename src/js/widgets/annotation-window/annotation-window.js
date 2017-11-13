@@ -1,15 +1,15 @@
-import {Anno, annoUtil} from '../../import';
+import {Anno, annoUtil} from 'import';
 import AnnotationListWidget from './annotation-list-widget';
 import DomHelper from './dom-helper';
-import fatalError from '../../util/fatal-error';
-import getApp from '../../app';
-import getLogger from '../../util/logger';
-import getMiradorProxyManager from '../../mirador-proxy/mirador-proxy-manager';
-import getStateStore from '../../state-store';
-import MenuTagSelector from '../menu-tag-selector';
-import LayerSelector from '../layer-selector';
-import session from '../../session';
-import WindowProxy from '../../mirador-proxy/window-proxy';
+import fatalError from 'util/fatal-error';
+import getApp from 'app';
+import getLogger from 'util/logger';
+import getMiradorProxyManager from 'mirador-proxy/mirador-proxy-manager';
+import getStateStore from 'state-store';
+import MenuTagSelector from 'widgets/menu-tag-selector';
+import LayerSelector from 'widgets/layer-selector';
+import session from 'session';
+import WindowProxy from 'mirador-proxy/window-proxy';
 
 const logger = getLogger();
 

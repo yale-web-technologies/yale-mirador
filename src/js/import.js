@@ -1,5 +1,5 @@
-require('exports-loader?joosugi!../../node_modules/joosugi/dist/joosugi.js');
-require('exports-loader?joosugiUI!../../node_modules/joosugi-semantic-ui/dist/joosugi-semantic-ui.js');
+require('exports-loader?joosugi!joosugi/dist/joosugi.js');
+require('exports-loader?joosugiUI!joosugi-semantic-ui/dist/joosugi-semantic-ui.js');
 
 const Anno = joosugi.AnnotationWrapper;
 const AnnotationExplorer = joosugi.AnnotationExplorer;

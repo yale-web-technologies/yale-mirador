@@ -1,5 +1,5 @@
-import getLogger from '../util/logger';
-import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
+import getLogger from 'util/logger';
+import getMiradorProxyManager from 'mirador-proxy/mirador-proxy-manager';
 
 const logger = getLogger();
 const proxyMgr = getMiradorProxyManager();

@@ -1,5 +1,5 @@
-import {AnnotationToc} from '../import';
-import getLogger from '../util/logger';
+import {AnnotationToc} from 'import';
+import getLogger from 'util/logger';
 
 const logger = getLogger();
 

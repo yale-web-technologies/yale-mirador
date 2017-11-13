@@ -1,5 +1,5 @@
-import getLogger from '../../../util/logger';
-import session from '../../../session';
+import getLogger from 'util/logger';
+import session from 'session';
 
 const logger = getLogger();
 

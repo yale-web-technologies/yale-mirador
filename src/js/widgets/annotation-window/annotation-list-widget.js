@@ -1,9 +1,9 @@
 import AnnotationNav from './annotation-nav';
 import AnnotationPageRenderer from './renderer/annotation-page-renderer';
-import {Anno, AnnotationToc, annoUtil} from '../../import';
-import getApp from '../../app';
-import getLogger from '../../util/logger';
-import getStateStore from '../../state-store';
+import {Anno, AnnotationToc, annoUtil} from 'import';
+import getApp from 'app';
+import getLogger from 'util/logger';
+import getStateStore from 'state-store';
 import ScrollHelper from './scroll-helper';
 
 const logger = getLogger();

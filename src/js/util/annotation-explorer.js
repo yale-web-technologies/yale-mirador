@@ -1,9 +1,9 @@
-import {AnnotationExplorerDialog} from '../import';
-import AnnotationSource from '../annotation-data/annotation-source';
-import getApp from '../app';
-import {AnnotationExplorer} from '../import';
-import getLogger from '../util/logger';
-import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
+import {AnnotationExplorerDialog} from 'import';
+import AnnotationSource from 'annotation-data/annotation-source';
+import getApp from 'app';
+import {AnnotationExplorer} from 'import';
+import getLogger from 'util/logger';
+import getMiradorProxyManager from 'mirador-proxy/mirador-proxy-manager';
 
 const logger = getLogger();
 

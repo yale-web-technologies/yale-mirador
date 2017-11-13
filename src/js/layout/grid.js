@@ -1,9 +1,9 @@
-import getApp from '../app';
-import getLogger from '../util/logger';
-import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
-import getModalAlert from '../widgets/modal-alert'
-import getStateStore from '../state-store';
-import AnnotationWindow from '../widgets/annotation-window/annotation-window';
+import getApp from 'app';
+import getLogger from 'util/logger';
+import getMiradorProxyManager from 'mirador-proxy/mirador-proxy-manager';
+import getModalAlert from 'widgets/modal-alert'
+import getStateStore from 'state-store';
+import AnnotationWindow from 'widgets/annotation-window/annotation-window';
 
 const logger = getLogger();
 

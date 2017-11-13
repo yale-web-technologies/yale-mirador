@@ -1,7 +1,7 @@
 import AnnotationRenderer from './annotation-renderer';
 import AnnotationTocRenderer from './annotation-toc-renderer';
-import getLogger from '../../../util/logger';
-import getStateStore from '../../../state-store';
+import getLogger from 'util/logger';
+import getStateStore from 'state-store';
 
 const logger = getLogger();
 

@@ -1,10 +1,10 @@
-import getLogger from '../util/logger';
+import getLogger from 'util/logger';
 
 /**
  * Overrides the same-named file in Mirador core to prevent
  * Bootstrap or Bootbox code being called, which collides with Semantic UI.
  */
- 
+
 (function ($) {
 
   var template = Handlebars.compile([
@@ -19,7 +19,7 @@ import getLogger from '../util/logger';
     '  <div class="ui cancel button">{{noLabel}}</div>',
     '</div>'
   ].join(''));
-    
+
   $.DialogBuilder = function (container) {
     this.logger = getLogger();
     var id = 'ym_dialog';
@@ -34,18 +34,18 @@ import getLogger from '../util/logger';
   };
 
   $.DialogBuilder.prototype = {
-    
+
     confirm: function (message, callback) {
       var result = window.confirm(message);
       callback(result);
     },
-    
+
     dialog: function(opts){
       this.logger.debug('DialogBuilder#dialog opts:', opts);
       var yes = opts.buttons.yes;
       var no = opts.buttons.no;
-      
-      this.elem.html(template({ 
+
+      this.elem.html(template({
         message: opts.message,
         yesLabel: yes.label,
         noLabel: no.label

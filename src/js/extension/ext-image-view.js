@@ -1,6 +1,6 @@
-import {Anno, annoUtil} from '../import';
-import getLogger from '../util/logger';
-import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
+import {Anno, annoUtil} from 'import';
+import getLogger from 'util/logger';
+import getMiradorProxyManager from 'mirador-proxy/mirador-proxy-manager';
 
 (function($) {
 

@@ -1,7 +1,7 @@
-import {Anno, annoUtil} from '../../../import';
-import AnnotationEditor from '../../annotation-editor';
-import getLogger from '../../../util/logger';
-import util from '../../../util/util';
+import {Anno, annoUtil} from 'import';
+import AnnotationEditor from 'widgets/annotation-editor';
+import getLogger from 'util/logger';
+import util from 'util/util';
 
 const logger = getLogger();
 
@@ -161,6 +161,7 @@ export default class AnnotationRenderer {
 
       annoElem.data('editing', true);
       annoElem.find('.normal_view').hide();
+
       editor.show();
     });
 

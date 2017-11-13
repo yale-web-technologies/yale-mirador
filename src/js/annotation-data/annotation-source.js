@@ -1,11 +1,11 @@
-import {Anno} from '../import';
+import {Anno} from 'import';
 import getAnnotationCache from './annotation-cache';
-import getApp from '../app';
+import getApp from 'app';
 import {getEndpoint} from './yale-endpoint';
-import getLogger from '../util/logger';
-import getModalAlert from '../widgets/modal-alert';
-import getPageController from '../page-controller';
-import getStateStore from '../state-store';
+import getLogger from 'util/logger';
+import getModalAlert from 'widgets/modal-alert';
+import getPageController from 'page-controller';
+import getStateStore from 'state-store';
 
 const logger = getLogger();
 const addAuthHeader = function (jqXHR) {

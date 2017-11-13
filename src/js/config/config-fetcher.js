@@ -1,4 +1,4 @@
-import getLogger from '../util/logger';
+import getLogger from 'util/logger';
 
 // NOTE: ConfigFetcher is no longer used as of 10/27/2017.
 // All settings are fed as arguments to App.init().

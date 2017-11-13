@@ -1,7 +1,7 @@
-import {Anno} from '../import';
-import getLogger from '../util/logger';
-import getStateStore from '../state-store';
-import util from '../util/util';
+import {Anno} from 'import';
+import getLogger from 'util/logger';
+import getStateStore from 'state-store';
+import util from 'util/util';
 
 (function($) {
 

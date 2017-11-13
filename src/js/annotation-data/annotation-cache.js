@@ -1,8 +1,8 @@
-import {Anno, annoUtil} from '../import';
+import {Anno, annoUtil} from 'import';
 import AnnotationCacheIndexeddb from './annotation-cache-indexeddb';
 import AnnotationCacheInMemory from './annotation-cache-in-memory';
-import getLogger from '../util/logger';
-import getMiradorProxyManager from '../mirador-proxy/mirador-proxy-manager';
+import getLogger from 'util/logger';
+import getMiradorProxyManager from 'mirador-proxy/mirador-proxy-manager';
 
 const logger = getLogger();
 

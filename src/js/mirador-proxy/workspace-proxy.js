@@ -1,4 +1,4 @@
-import getLogger from '../util/logger';
+import getLogger from 'util/logger';
 import WindowProxy from './window-proxy';
 
 export default class WorkspaceProxy {

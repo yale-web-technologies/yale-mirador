@@ -1,4 +1,4 @@
-import getLogger from '../util/logger';
+import getLogger from 'util/logger';
 import WorkspaceProxy from './workspace-proxy';
 import WindowProxy from './window-proxy';
 

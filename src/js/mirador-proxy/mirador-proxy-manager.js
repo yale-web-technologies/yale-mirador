@@ -1,4 +1,4 @@
-import getLogger from '../util/logger';
+import getLogger from 'util/logger';
 import MiradorProxy from './mirador-proxy';
 import WindowProxy from './window-proxy';
 

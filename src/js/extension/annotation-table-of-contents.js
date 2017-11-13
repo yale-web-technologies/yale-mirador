@@ -1,5 +1,5 @@
-import getLogger from '../util/logger';
-import getStateStore from '../state-store';
+import getLogger from 'util/logger';
+import getStateStore from 'state-store';
 
 const logger = getLogger();
 

@@ -1,4 +1,4 @@
-import getLogger from '../util/logger';
+import getLogger from 'util/logger';
 
 export default {
   mergeSvgs: function(svg1, svg2) {
@@ -16,7 +16,7 @@ export default {
     const pathNodes1 = this.getSvgPathNodes(svgNode1);
     const pathNodes2 = this.getSvgPathNodes(svgNode2);
     let group = null;
-    
+
     if (firstChild1.tagName === 'g') {
       group = firstChild1;
       for (let pathNode of pathNodes2) {
@@ -37,18 +37,18 @@ export default {
     const svg = new XMLSerializer().serializeToString(doc1.documentElement);
     return svg;
   },
-  
+
   getSvgPathNodes: function(svgNode) {
     const logger = getLogger();
     const topChildren = svgNode.childNodes;
     let pathNodes = [];
-    
+
     if (topChildren.length !== 1) {
       throw '<svg> has more than one children';
     }
-    
+
     const topChild = topChildren[0];
-    
+
     if (topChild.tagName === 'g') {
       for (let childNode of topChild.childNodes) {
         if (childNode.tagName === 'path') {
@@ -62,8 +62,8 @@ export default {
     } else {
       throw 'Child of <svg> should be <g> or <path> but found <' + topChild.tagName + '>';
     }
-    
+
     return pathNodes;
   }
-  
+
 };

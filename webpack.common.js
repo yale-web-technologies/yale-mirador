@@ -41,5 +41,11 @@ module.exports = {
   },
   plugins: [
     new ExtractTextPlugin('yale-mirador.bundle.css'),
-  ]
+  ],
+  resolve: {
+    modules: [
+      path.resolve('./src/js'),
+      path.resolve('./node_modules')
+    ]
+  }
 };

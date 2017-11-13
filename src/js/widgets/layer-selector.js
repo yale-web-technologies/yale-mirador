@@ -1,7 +1,7 @@
-import getLogger from '../util/logger';
-import getStateStore from '../state-store';
+import getLogger from 'util/logger';
+import getStateStore from 'state-store';
 import Selector from './selector';
-import session from '../session';
+import session from 'session';
 
 export default class {
   /**

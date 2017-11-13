@@ -1,6 +1,6 @@
-import getLogger from '../util/logger';
+import getLogger from 'util/logger';
 import Selector from './selector';
-import util from '../util/util';
+import util from 'util/util';
 
 const logger = getLogger();
 
