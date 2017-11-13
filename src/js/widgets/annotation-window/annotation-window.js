@@ -41,8 +41,6 @@ export default class AnnotationWindow {
     this._jQuerySubscribed = {};
     this._miradorSubscribed = {};
     this._setDirty(false);
-
-    this._flexDirection = 'column';
     this._ignoredEvents = {};
   }
 
