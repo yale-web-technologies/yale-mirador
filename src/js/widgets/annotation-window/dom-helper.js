@@ -104,11 +104,13 @@ export default class DomHelper {
       this._root.find('.fa-arrows-v').show();
       this._root.find('.order-down').attr('class', 'order-down caret left icon');
       this._root.find('.order-up').attr('class', 'order-up caret right icon');
+      this._root.find('.annowin_anno .ui.dropdown').toggleClass('right', true);
     } else {
       this._root.find('.fa-arrows-h').show();
       this._root.find('.fa-arrows-v').hide();
       this._root.find('.order-down').attr('class', 'order-down caret down icon');
       this._root.find('.order-up').attr('class', 'order-up caret up icon');
+      this._root.find('.annowin_anno .ui.dropdown').toggleClass('right', false);
     }
   }
 
