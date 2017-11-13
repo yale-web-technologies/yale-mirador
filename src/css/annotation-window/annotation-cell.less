@@ -28,6 +28,7 @@
   .normal_view {
     display: block;
     overflow-y: visible; // to make the dropdown visible
+    padding-bottom: 2px;
 
     .menu_bar {
       background-color: @light-blue;
@@ -76,13 +77,17 @@
     }
   }
 
-  .annowin_anno .tag {
+  .tag {
     font-size: @anno-tag-font-size;
     color: @tag-color;
     background-color: @tag-background-color;
     margin: 0 2px;
-    padding: 0.1rem 0.2rem;
+    padding: 0.1rem 0.25rem 0.15rem;
     border-radius: 0.2rem;
+
+    &:first-child {
+      margin-left: 25px;
+    }
   }
 }
 

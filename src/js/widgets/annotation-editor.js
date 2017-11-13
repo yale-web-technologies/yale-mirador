@@ -167,7 +167,7 @@ export default class AnnotationEditor {
 
   // Called by Mirador core
   createAnnotation(targetAnnotation) {
-    var tagText = this.element.find('.tags_editor').val().trim();
+    var tagText = this.element.find('.tags-editor').val().trim();
     var resourceText = this.getEditor().getContent();
     var tags = [];
     var motivation = [];
@@ -224,7 +224,7 @@ export default class AnnotationEditor {
 
     const tags = $anno.tags;
     if (tags.length > 0) {
-      this.element.find('.tags_editor').val(tags.join(' '));
+      this.element.find('.tags-editor').val(tags.join(' '));
     }
 
     // Prevent user from editing the merged content
@@ -234,7 +234,7 @@ export default class AnnotationEditor {
   // Called by Mirador core
   updateAnnotation(oaAnno) {
     logger.debug('AnnotationEditor#updateAnnotation oaAnno:', oaAnno);
-    var tagText = this.element.find('.tags_editor').val().trim();
+    var tagText = this.element.find('.tags-editor').val().trim();
     var resourceText = this.getEditor().getContent();
     var tags = [];
 
@@ -329,6 +329,16 @@ export default class AnnotationEditor {
   }
 
   bindEvents() {
+    const $tags = this.element.find('.tags-editor');
+
+    $tags.click(event => {
+      event.stopPropagation();
+    });
+
+    $tags.keydown(event => {
+      event.stopPropagation();
+    });
+
     this.element.find('.ym_save').click(event => {
       event.preventDefault();
       event.stopPropagation();
@@ -392,8 +402,8 @@ const template = Handlebars.compile([
   '    <span class="layer_select"></span>',
   '  </div>',
   '  <textarea></textarea>',
-  '  <input class="tags_editor" placeholder="{{t "addTagsHere"}}…" {{#if tags}}value="{{tags}}"{{/if}}/>',
-  '  {{#unless miradorDriven}}',
+  '  <input type="text" class="tags-editor" placeholder="{{t "addTagsHere"}}…" {{#if tags}}value="{{tags}}"{{/if}}/>',
+    '  {{#unless miradorDriven}}',
   '    <div class="bottom_row">',
   '        <button class="ym_save">Save</button>',
   '        <button class="ym_cancel">Cancel</button>',
