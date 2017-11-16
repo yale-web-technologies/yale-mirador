@@ -2,6 +2,7 @@ import AnnotationSource from 'annotation-data/annotation-source';
 import getLogger from 'util/logger';
 import getStateStore from 'state-store';
 import Locales from 'config/locales';
+import session from 'session';
 
 const logger = getLogger();
 
@@ -50,7 +51,7 @@ export default class MiradorConfigBuilder {
       windowSettings.sidePanelOptions.tocTabAvailable = false;
     }
 
-    if (!this._state.getSetting('auth', 'isEditor')) {
+    if (!session.isEditor()) {
       windowSettings.canvasControls.annotations.annotationCreation = false;
     }
 
