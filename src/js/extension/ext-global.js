@@ -37,8 +37,8 @@ import util from 'util/util';
     },
 
     truncate: function(html, maxLen) {
-      let text = html.replace(/<(?:.|\n)*?>/gm, '');
-      text = text.replace(/&.*?;/gm, '');
+      let text = html.replace(/<(?:.|\n)*?>/gm, ''); // remove tags
+      text = text.replace(/&.*?;/gm, ''); // remove HTML escapes
       if (text.length > maxLen) {
         return text.slice(0, maxLen-3) + '...';
       } else {
