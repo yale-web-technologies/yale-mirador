@@ -1,10 +1,16 @@
 // Karma configuration
 // Generated on Mon Aug 01 2016 09:41:41 GMT-0400 (EDT)
 
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
-var path = require('path');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const path = require('path');
 
-module.exports = function(config) {
+// A single file to test
+const singleFile = (args => {
+  lastIx = args.length - 1;
+  return args[lastIx-1] === '-f' ? args[lastIx] : null;
+})(process.argv);
+
+module.exports = function (config) {
   config.set({
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -21,8 +27,7 @@ module.exports = function(config) {
       'node_modules/js-cookie/src/js.cookie.js',
       'node_modules/semantic-ui/dist/semantic.min.js',
       'node_modules/babel-polyfill/dist/polyfill.js',
-      'test/**/*.test.js' // XXX
-      //'test/widgets/annotation-window/annotation-list-renderer.test.js'
+      singleFile || 'test/**/*.test.js'
     ],
 
     // preprocess matching files before serving them to the browser
@@ -47,7 +52,7 @@ module.exports = function(config) {
         }, {
           test: /\.js$/,
           include: [
-            path.resolve(__dirname, 'test')
+            path.resolve(__dirname, singleFile || 'test')
           ],
           use: [{
             loader: 'babel-loader',
@@ -125,7 +130,7 @@ module.exports = function(config) {
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false,
+    singleRun: true,
 
     // Concurrency level
     // how many browser should be started simultaneous

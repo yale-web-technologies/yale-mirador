@@ -4,6 +4,25 @@
 This projects embeds [Mirador](https://github.com/IIIF/mirador) and also
 contains some modifications and extensions to it.
 
+<!-- TOC -->
+
+- [Yale Mirador Extension](#yale-mirador-extension)
+  - [Definitions](#definitions)
+  - [Download and Initial Setup](#download-and-initial-setup)
+  - [Update](#update)
+  - [Bulid](#bulid)
+  - [Running the Example](#running-the-example)
+  - [Test](#test)
+  - [Deploy](#deploy)
+    - [Dependency](#dependency)
+    - [JavaScript](#javascript)
+    - [Parameters](#parameters)
+      - [Via Cookies](#via-cookies)
+      - [Via HTML](#via-html)
+      - [Via API](#via-api)
+
+<!-- /TOC -->
+
 ## Definitions
 Some clarification of the terms we will be using because
 it can get quite confusing:
@@ -13,6 +32,7 @@ it can get quite confusing:
 * **Yale Extension**: this project. It has its own project structure and includes additional JavaScript and styles added on top of "Mirador Core".
 
 ## Download and Initial Setup
+
 ```bash
 git clone --recursive git@github.com:yale-web-technologies/yale-mirador.git
 cd yale-mirador
@@ -23,7 +43,7 @@ npm install  # Install node modules for the submodule mirador
 ```
 
 Note that the "Yale Core" is defined as a git submodule of This
-project, under `submodules/mirador`. 
+project, under `submodules/mirador`.
 
 ## Update
 ```
@@ -37,7 +57,7 @@ And do `npm install` as above in case dependency changed.
 npm run build
 ```
 It runs `grunt` for Mirador and `webpack` for Yale Extension, and
-creates output files in `dist/`. 
+creates output files in `dist/`.
 
 To build them separately,
 ```
@@ -59,9 +79,15 @@ Install `karma-cli` globally so the `karma` command becomes available.
 npm install -g karma-cli
 ```
 
-Make sure to build first to populate the `dist` folder, and
+Run all tests
 ```
-npm run test
+npm test
+```
+
+Run a single test file
+```
+npm test -- -f <test-file>
+npm test -- -f test/state-store.test.js  # for example
 ```
 
 ## Deploy
@@ -72,11 +98,11 @@ See `package.json` for dependencies &ndash; note the version requirements. Notab
 * [Semantic UI](http://semantic-ui.com/)
 * [Golden Layout](https://www.golden-layout.com/)
 
-The app also depends on jQuery but it is embedded in "IIIF 
+The app also depends on jQuery but it is embedded in "IIIF
 Mirador", which may complicate the asset management.
 
 ### JavaScript
-"Golden Layout" should be included after "Yale Core" and before "Yale Extension" 
+"Golden Layout" should be included after "Yale Core" and before "Yale Extension"
 because it depends on jQuery, because "Yale Core" embeds jQuery in itself,
 and because "Yale Extension" depends on it.
 
@@ -95,7 +121,7 @@ element:
 
 * `data-settings-url`: The host site should implement an API endpoint for the JavaScript client to download server settings from. See below for the format of the payload.
 * `data-manifest-url`: This is the URL of the IIIF manifest to load. Only one manifest will be loaded into a Mirador window at a time.
-* `data-room-id`: ID of the "room" (or a project). Some settings (e.g. tagHierarchy) are defined per room. The host should 
+* `data-room-id`: ID of the "room" (or a project). Some settings (e.g. tagHierarchy) are defined per room. The host should
 figure out and manage the room IDs.
 
 Optional (only to load specific resources):
@@ -122,6 +148,6 @@ An example of the response from the API:
 }
 ```
 
-`buildPath` is the absolute URL root path under which all Yale-Mirador assets 
+`buildPath` is the absolute URL root path under which all Yale-Mirador assets
 can be referenced.
-(e.g. `/sites/all/modules/mirador-project/yale-mirador`) 
+(e.g. `/sites/all/modules/mirador-project/yale-mirador`)

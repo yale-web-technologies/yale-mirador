@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --open --config webpack.dev.js",
-    "test": "karma start --singleRun",
+    "test": "karma start",
     "build": "npm run package:mirador && npm run build:yale-mirador && ./bin/package-lib.sh",
     "package:mirador": "rm -rf dist/mirador && mkdir dist/mirador && cp -r node_modules/mirador-y/dist/mirador/* dist/mirador/",
     "prebuild:yale-mirador": "rm -rf dist/yale-mirador && mkdir -p dist/yale-mirador",
