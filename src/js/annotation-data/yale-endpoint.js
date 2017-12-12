@@ -19,170 +19,175 @@ function getEndpoint() {
 
 class YaleEndpoint {
   constructor(options) {
-    jQuery.extend(this, {
-      annotationsList: [],
-      prefix: null,
-      dfd: null
-    }, options);
-    this._explorer = getApp().getAnnotationExplorer();
+    this.dfd = options.dfd; // set also by Mirador using set(), so cannot change name
+    this._explorer = options.explorer || getApp().getAnnotationExplorer();
+    this._error = options.errorDialog || getErrorDialog();
+    this.annotationsList = []; // used by Mirador, thus public
     _instances.push(this);
   }
 
-  search(options) {
+  async search(options) {
     logger.debug('YaleEndpoint#search options:', options);
+    let error = false;
     const canvasId = options.uri;
-    const errorPane = getErrorDialog();
 
-    this._explorer.getAnnotations({ canvasId: canvasId })
-    .catch(reason => {
-      const msg = 'ERROR YaleEndpoint#search getAnnotations - ' + reason;
-      throw(msg);
-    })
-    .then(annotations => {
-      logger.debug('YaleEndpoint#search annotations:', annotations);
-      this.annotationsList = annotations;
-      try {
-        this.dfd.resolve(true);
-      } catch(e) {
-        logger.error('YaleEndpoint#search dfd.resolve failed - ', e);
+    const annotations = await this._explorer.getAnnotations({ canvasId: canvasId })
+    .catch(e => {
+      logger.error('YaleEndpoint#search', e);
+      error = true;
+      this.annotationsList = [];
+      if (e.code === 403) {
+        this._error.show(e.code, "Failed to retrieve annotations: user doesn't have permission to read");
+      } else {
+        this._error.show(e.code, 'Failed to retrieve annotations', true);
       }
-    })
-    .catch(function(reason) {
-      logger.error('YaleEndpoint#search failed - ', reason);
-      getModalAlert().hide();
-      errorPane.show('annotations');
     });
+    logger.debug('YaleEndpoint#search got annotations:', this.annotationsList);
+    if (error) {
+      this.dfd.reject();
+      return;
+    }
+
+    try {
+      this.annotationsList = annotations;
+      this.dfd.resolve(true);
+    } catch (e) {
+      logger.error('YaleEndpoint#search dfd.resolve failed - ', e);
+    }
+    getModalAlert().hide();
   }
 
-  create(oaAnnotation, successCallback, errorCallback) {
+  async create(oaAnnotation, successCallback, errorCallback) {
     const _this = this;
+    let error = false;
 
     if (this.userAuthorize('create', oaAnnotation)) {
-      this._create(oaAnnotation)
-      .catch((reason) => {
-        const msg = 'YaleEndpoint#create _create failed - ' + reason;
-        throw msg;
-      })
-      .then((anno) => {
-        logger.debug('YaleEndpoint#create successful with anno: ', anno);
-        if (typeof successCallback === 'function') {
-          successCallback(anno);
+      const annotation = await this._create(oaAnnotation)
+      .catch(e => {
+        error = true;
+        if (e.code === 403) {
+          this._error.show(e.code, "Failed to create annotation: user doesn't have permission to create")
+        } else {
+          this._error.show(e.code, 'Failed to create annotation', true);
         }
-      })
-      .catch((reason) => {
-        logger.error('ERROR YaleEndpoint#create successCallback failed');
-        errorCallback();
       });
+
+      if (error) {
+        if (typeof errorCallback === 'function') {
+          errorCallback();
+        }
+        return;
+      }
+
+      if (typeof successCallback === 'function') {
+        try {
+          successCallback(annotation);
+        } catch (e) {
+          logger.error('ERROR YaleEndpoint#create successCallback failed:', e);
+          if (typeof errorCallback === 'function') {
+            errorCallback();
+          }
+        }
+      }
     } else {
-      getErrorDialog().show('authz_create');
+      this._error.show(-1, 'Not authorized to create');
       if (typeof errorCallback === 'function') {
         errorCallback();
       }
     }
   }
 
-  _create(oaAnnotation) {
+  async _create(oaAnnotation) {
     logger.debug('YaleEndpoint#_create oaAnnotation:', oaAnnotation);
     const _this = this;
 
-    return this._explorer.createAnnotation(oaAnnotation)
-    .catch((reason) => {
-      const msg = 'YaleEndpoint#_create createAnnotation failed - ' + reason;
-      throw(msg);
-    })
-    .then((anno) => {
-      _this.annotationsList.push(anno);
-      return anno;
+    const annotation = this._explorer.createAnnotation(oaAnnotation)
+    .catch(e => {
+      logger.error('YaleEndpoint#_create createAnnotation failed', e);
+      throw e;
     });
+
+    _this.annotationsList.push(annotation);
+    return annotation
   }
 
-  update(oaAnnotation, successCallback, errorCallback) {
+  async update(oaAnnotation, successCallback, errorCallback) {
     const _this = this;
     const annotationId = oaAnnotation['@id'];
+    let error = false;
 
     if (this.userAuthorize('update', oaAnnotation)) {
-      this._update(oaAnnotation)
-      .catch((reason) => {
-        const msg = 'ERROR YaleEndpoint#update _update failed - ' + reason;
-        logger.error(msg);
-        errorCallback();
-      })
-      .then((anno) => {
-        if (typeof successCallback === 'function') {
-          successCallback(anno);
+      const annotation = await this._explorer.updateAnnotation(oaAnnotation)
+      .catch(e => {
+        error = true;
+        if (e.code === 403) {
+          this._error.show(e.code, "Failed to update annotation: user doesn't have permission to update")
+        } else {
+          this._error.show(e.code, 'Failed to update annotation', true);
         }
       });
+
+      this._attachEndpoint();
+
+      if (error) {
+        if (typeof errorCallback === 'function') {
+          errorCallback();
+        }
+        return;
+      }
+
+      _this.annotationsList.forEach((anno, index) => {
+        if (anno['@id'] === annotationId) {
+          _this.annotationsList[index] = oaAnnotation;
+        }
+      });
+
+      if (typeof successCallback === 'function') {
+        successCallback(annotation);
+      }
     } else {
-      getErrorDialog().show('authz_update');
+      this._error.show(-1, 'Not authorized to update');
       if (typeof errorCallback === 'function') {
         errorCallback();
       }
     }
   }
 
-  _update(oaAnnotation) {
-    logger.debug('YaleEndpoint#_update oaAnnotation:', oaAnnotation);
-    const _this = this;
-    const annotationId = oaAnnotation['@id'];
-
-    const promise = Promise.resolve().then(() => {
-      return this._explorer.updateAnnotation(oaAnnotation);
-    })
-    .catch((reason) => {
-      const msg = 'ERROR YaleEndpoint#_update updateAnnotation - ' + reason;
-      throw(msg);
-    })
-    .then((anno) => {
-      jQuery.each(_this.annotationsList, function(index, value) {
-        if (value['@id'] === annotationId) {
-          _this.annotationsList[index] = anno;
-          return false;
-        }
-      });
-      return anno;
-    });
-    return promise;
-  }
-
-  deleteAnnotation(annotationId, successCallback, errorCallback) {
+  async deleteAnnotation(annotationId, successCallback, errorCallback) {
     logger.debug('YaleEndpoint#deleteAnnotation annotationId: ' + annotationId);
     const _this = this;
+    let error = false;
 
     if (this.userAuthorize('delete', null)) {
-      this._deleteAnnotation(annotationId)
-      .then(() => {
-        if (typeof successCallback === 'function') {
-          successCallback();
+      await this._explorer.deleteAnnotation(annotationId)
+      .catch(e => {
+        error = true;
+        if (e.code === 403) {
+          this._error.show(e.code, "Failed to delete annotation: user doesn't have permission to delete")
+        } else {
+          this._error.show(e.code, 'Failed to delete annotation', true);
         }
-      })
-      .catch(reason => {
-        logger.error('YaleEndpoint#deleteAnnotation _deleteAnnotation failed:', reason);
-        errorCallback();
       });
+
+      if (error) {
+        if (typeof errorCallback === 'function') {
+          errorCallback();
+        }
+        return;
+      }
+
+      this.annotationsList = _this.annotationsList.filter(anno => anno['@id'] !== annotationId);
+
+      if (typeof successCallback === 'function') {
+        successCallback();
+      }
     } else {
        logger.info('YaleEndpoint#delete user not authorized');
-       getErrorDialog().show('authz_update');
+       this._error.show(-1, 'Not authorized to delete');
        if (typeof errorCallback === 'function') {
          errorCallback();
        }
     }
-  }
-
-  _deleteAnnotation(annotationId) {
-    logger.debug('YaleEndpoint#_deleteAnnotation annotationId:', annotationId);
-    const _this = this;
-
-    const promise = this._explorer.deleteAnnotation(annotationId)
-    .catch((reason) => {
-      const msg = 'ERROR YaleEndpoint#_deleteAnnotation explorer.deleteAnnotation - ' + reason;
-      throw(msg);
-    })
-    .then((anno) => {
-      _this.annotationsList = jQuery.grep(_this.annotationsList,
-        (value, index) => value['@id'] !== annotationId);
-      return anno;
-    });
-    return promise;
   }
 
   async getLayers() {
@@ -190,36 +195,38 @@ class YaleEndpoint {
     return this._explorer.getLayers();
   }
 
-  updateOrder(canvasId, layerId, annoIds, successCallback, errorCallback) {
+  async updateOrder(canvasId, layerId, annoIds, successCallback, errorCallback) {
     logger.debug('YaleEndpoint#updateOrder canvasId:', canvasId, 'layerId:', layerId, 'annoIds:', annoIds);
     const _this = this;
 
     if (this.userAuthorize('update', null)) {
-      this._updateOrder(canvasId, layerId, annoIds)
-      .catch((reason) => {
-        const msg = 'YaleEndpoint#updateOrder _upadteOrder failed: ' + reason;
-        throw msg;
-      })
-      .then(() => {
-        if (typeof successCallback === 'function') {
-          successCallback();
+      await this._explorer.updateAnnotationListOrder(canvasId, layerId, annoIds)
+      .catch(e => {
+        error = true;
+        if (e.code === 403) {
+          this._error.show(e.code, "Failed to delete annotation: user doesn't have permission to delete")
+        } else {
+          this._error.show(e.code, 'Failed to delete annotation', true);
         }
-      })
-      .catch((reason) => {
-        logger.error('YaleEndpoint#updateOrder', reason);
-        errorCallback();
       });
+
+      if (error) {
+        if (typeof errorCallback === 'function') {
+          errorCallback();
+        }
+        return;
+      }
+
+      if (typeof successCallback === 'function') {
+        successCallback();
+      }
     } else {
        logger.info('YaleEndpoint#updateOrder user not authorized');
-       getErrorDialog().show('authz_update');
+       this._error.show(-1, 'Not authorized to update');
        if (typeof errorCallback === 'function') {
          errorCallback();
        }
     }
-  }
-
-  _updateOrder(canvasId, layerId, annoIds) {
-    return this._explorer.updateAnnotationListOrder(canvasId, layerId, annoIds);
   }
 
   userAuthorize (action, annotation) {
@@ -238,8 +245,12 @@ class YaleEndpoint {
       this[prop] = value;
     }
   }
+
+  _attachEndpoint() {
+    for (let anno of this.annotationsList) {
+      anno.endpoint = this;
+    }
+  }
 }
 
 export {YaleEndpoint, getEndpoint};
-
-

@@ -6,15 +6,17 @@ import { YaleEndpoint } from 'annotation-data/yale-endpoint';
 
 describe('YaleEndpoint', () => {
   let endpoint = null;
+  let annotationExplorer = null;
 
-  beforeEach(function() {
-    const options = {};
-    endpoint = new YaleEndpoint(options);
+  beforeEach(() => {
+    annotationExplorer = {};
+    endpoint = new YaleEndpoint({
+      explorer: annotationExplorer
+    });
   });
 
-  describe('error handling', () => {
-    it('dodo', function() {
-      expect(1).to.equal(1);
+  describe('search', () => {
+    xit('handles 401 error', () => {
     });
   });
 });

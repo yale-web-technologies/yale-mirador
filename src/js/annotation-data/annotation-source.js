@@ -17,13 +17,6 @@ export default class AnnotationSource {
   constructor(options) {
     this._prefix = options.prefix;
     this._state = options.state;
-
-    /*
-    this.options = jQuery.extend({
-      prefix: null,
-      state: getStateStore()
-    }, options);
-    */
     this._layers = null;
   }
 
@@ -177,7 +170,8 @@ export default class AnnotationSource {
         },
         error: (jqXHR, textStatus, errorThrown) => {
           const msg = 'AnnotationSource#getAnnotations failed to get annotations from ' + url;
-          reject(msg);
+          logger.error(msg);
+          reject({ code: jqXHR.status, message: msg });
         }
       });
     });
@@ -224,7 +218,10 @@ export default class AnnotationSource {
         error: (jqXHR, textStatus, errorThrown) => {
           const msg = 'Failed to create annotation: ' + textStatus + ' ' + jqXHR.status + ' ' + errorThrown;
           logger.error(msg);
-          reject(msg);
+          reject({
+            code: jqXHR.status,
+            message: msg
+          });
         }
       });
     });
@@ -269,7 +266,11 @@ export default class AnnotationSource {
         },
         error: (jqXHR, textStatus, errorThrown) => {
           const msg = 'Failed to update annotation: ' + textStatus + ' ' + jqXHR.status + ' ' + errorThrown;
-          reject(msg);
+          logger.error(msg);
+          reject({
+            code: jqXHR.status,
+            message: msg
+          });
         }
       });
     });
@@ -301,7 +302,11 @@ export default class AnnotationSource {
         },
         error: (jqXHR, textStatus, errorThrown) => {
           const msg = 'AnnotationSource#deleteAnnotation failed for annotationId: ' + annotationId;
-          reject(msg);
+          logger.error(msg);
+          reject({
+            code: jqXHR.status,
+            message: msg
+          });
         }
       });
     });
@@ -338,7 +343,10 @@ export default class AnnotationSource {
         error: (jqXHR, textStatus, errorThrown) => {
           const msg = 'AnnotationSource#updateAnnotation failed: ' + textStatus + ' ' + jqXHR.status + ' ' + errorThrown;
           logger.error(msg);
-          reject(msg);
+          reject({
+            code: jqXHR.status,
+            message: msg
+          });
         }
       });
     });
