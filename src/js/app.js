@@ -1,17 +1,18 @@
 require('../css/main.less');
 
 import './extension/main';
-import {AnnotationExplorer, annoUtil} from './import';
-import AnnotationSource from './annotation-data/annotation-source';
-import AnnotationTocCache from './annotation-data/annotation-toc-cache';
+import {annoUtil} from './import';
+import AnnotationExplorer from './annotations/annotation-explorer';
+import AnnotationSource from './annotations/annotation-source';
+import AnnotationTocCache from './annotations/annotation-toc-cache';
 import fatalError from './util/fatal-error';
-import getAnnotationCache from './annotation-data/annotation-cache';
+import getAnnotationCache from './annotations/annotation-cache';
 import getConfigFetcher from './config/config-fetcher';
 import getLogger from './util/logger';
 import getPageController from './page-controller';
 import getStateStore from './state-store';
 import Grid from './layout/grid';
-//import 'util/jquery-tiny-pubsub-trace'; // import this only for debugging!
+import 'util/jquery-tiny-pubsub-trace'; // import this only for debugging!
 
 const logger = getLogger();
 let instance = null;

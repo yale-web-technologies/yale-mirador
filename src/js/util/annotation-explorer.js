@@ -1,5 +1,5 @@
 import {AnnotationExplorerDialog} from 'import';
-import AnnotationSource from 'annotation-data/annotation-source';
+import AnnotationSource from 'annotations/annotation-source';
 import getApp from 'app';
 import {AnnotationExplorer} from 'import';
 import getLogger from 'util/logger';

@@ -1,4 +1,4 @@
-import {AnnotationToc} from 'import';
+import AnnotationToc from './annotation-toc';
 import getLogger from 'util/logger';
 
 const logger = getLogger();

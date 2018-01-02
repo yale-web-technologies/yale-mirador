@@ -1,6 +1,6 @@
 import AnnotationEditor from 'widgets/annotation-editor';
 import AnnotationTableOfContents from './annotation-table-of-contents';
-import {YaleEndpoint} from 'annotation-data/yale-endpoint';
+import {YaleEndpoint} from 'annotations/yale-endpoint';
 
 import './dialog-builder';
 import './ext-global';

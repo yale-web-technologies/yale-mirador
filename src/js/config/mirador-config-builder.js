@@ -1,4 +1,4 @@
-import AnnotationSource from 'annotation-data/annotation-source';
+import AnnotationSource from 'annotations/annotation-source';
 import getLogger from 'util/logger';
 import getStateStore from 'state-store';
 import Locales from 'config/locales';
