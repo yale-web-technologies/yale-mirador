@@ -553,6 +553,7 @@ body {
 .annowin_anno .normal_view {
   display: block;
   overflow-y: visible;
+  padding-bottom: 2px;
 }
 .annowin_anno .normal_view .menu_bar {
   background-color: #76b4fc;
@@ -659,13 +660,16 @@ body {
 .annowin_anno .normal_view .content p:last-of-type {
   margin-bottom: 0;
 }
-.annowin_anno .annowin_anno .tag {
-  font-size: 0.7rem;
-  color: #eee;
-  background-color: #888;
+.annowin_anno .tag {
+  font-size: 0.9rem;
+  color: #fff;
+  background-color: #777;
   margin: 0 2px;
-  padding: 0.1rem 0.2rem;
+  padding: 0.1rem 0.25rem 0.15rem;
   border-radius: 0.2rem;
+}
+.annowin_anno .tag:first-child {
+  margin-left: 25px;
 }
 .ym_anno_selected {
   border-color: #4684cc;

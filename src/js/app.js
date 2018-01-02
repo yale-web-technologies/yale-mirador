@@ -12,13 +12,12 @@ import getLogger from './util/logger';
 import getPageController from './page-controller';
 import getStateStore from './state-store';
 import Grid from './layout/grid';
-import 'util/jquery-tiny-pubsub-trace'; // import this only for debugging!
+//import 'util/jquery-tiny-pubsub-trace'; // import this only for debugging!
 
 const logger = getLogger();
 let instance = null;
 let annotationExplorer = null;
 let annotationSource = null;
-
 
 export class App {
   constructor() {
