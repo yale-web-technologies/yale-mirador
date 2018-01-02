@@ -59,6 +59,8 @@ export default class MiradorConfigBuilder {
       windowSettings.canvasControls.annotations.annotationState = 'on';
     }
 
+    windowSettings.externalAnnotationWindowButton = this._options.mirador.externalAnnotationWindowButton;
+
     const hoverColor = this._state.getSetting('mirador', 'annotationsOverlay','hoverColor');
     const hoverWidthFactor = this._state.getSetting('mirador', 'annotationsOverlay','hoverWidthFactor');
 
