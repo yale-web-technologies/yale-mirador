@@ -42,6 +42,7 @@ module.exports = function (config) {
           test: /\.js$/,
           include: [
             path.resolve(__dirname, 'src/js'),
+            path.resolve(__dirname, 'node_modules/annocrat/src/js'),
           ],
           use: [{
             loader: 'istanbul-instrumenter-loader'

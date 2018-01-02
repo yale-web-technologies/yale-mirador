@@ -1,5 +1,5 @@
 /**
- * See /src/js/annotation-data/annotations-source.js for real implementation
+ * See /src/js/annotations/annotations-source.js for real implementation
  */
 export default class TestAnnotationSource {
   constructor(options) {

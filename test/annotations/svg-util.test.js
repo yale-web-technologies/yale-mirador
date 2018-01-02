@@ -1,4 +1,4 @@
-import svgUtil from '../../src/js/annotation-data/svg-util';
+import svgUtil from 'annotations/svg-util';
 
 import { expect } from 'chai';
 

@@ -2,7 +2,7 @@ import { expect } from 'chai';
 
 import util from '../test-helpers/test-util';
 
-import { YaleEndpoint } from 'annotation-data/yale-endpoint';
+import { YaleEndpoint } from 'annotations/yale-endpoint';
 
 describe('YaleEndpoint', () => {
   let endpoint = null;
