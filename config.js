@@ -64,11 +64,11 @@ window.yaleMiradorSettings = {
     ]
   },
   annotations: {
-    store: 'http://localhost:5000',
+    __store: 'http://localhost:5000',
+    store: 'http://mirador-annotations-tenkr-stg.herokuapp.com',
     __store: 'http://mirador-annotations-lotb-stg.herokuapp.com',
     __tocSpec: {
-      __defaultLayer: 'http://mirador-annotations-lotb.herokuapp.com/layers/English',
-      defaultLayer: 'http://mirador-annotations-lotb-stg.herokuapp.com/layers/English',
+      __defaultLayer: 'http://mirador-annotations-lotb-stg.herokuapp.com/layers/English',
       generator: [
         {tag: { prefix: 'chapter' }, label: { prefix: 'Chapter '}, max: 28,
         descriptions: [
