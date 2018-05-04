@@ -9,7 +9,6 @@ contains some modifications and extensions to it.
 - [Yale Mirador Extension](#yale-mirador-extension)
   - [Definitions](#definitions)
   - [Download and Initial Setup](#download-and-initial-setup)
-  - [Update](#update)
   - [Bulid](#bulid)
   - [Running the Example](#running-the-example)
   - [Test](#test)
@@ -17,9 +16,8 @@ contains some modifications and extensions to it.
     - [Dependency](#dependency)
     - [JavaScript](#javascript)
     - [Parameters](#parameters)
-      - [Via Cookies](#via-cookies)
-      - [Via HTML](#via-html)
-      - [Via API](#via-api)
+      - [Cookies](#cookies)
+      - [JavaScript](#javascript-1)
 
 <!-- /TOC -->
 
@@ -37,40 +35,24 @@ it can get quite confusing:
 git clone --recursive git@github.com:yale-web-technologies/yale-mirador.git
 cd yale-mirador
 npm install  # Install node modules for yale-mirador
-cd submodules/mirador
-npm install -g grunt-cli
-npm install  # Install node modules for the submodule mirador
 ```
-
-Note that the "Yale Core" is defined as a git submodule of This
-project, under `submodules/mirador`.
-
-## Update
-```
-git pull --recurse-submodules
-```
-And do `npm install` as above in case dependency changed.
 
 ## Bulid
 
 ```
 npm run build
 ```
-It runs `grunt` for Mirador and `webpack` for Yale Extension, and
+It runs `webpack` for Yale Extension and
 creates output files in `dist/`.
-
-To build them separately,
-```
-npm run build:mirador
-npm run build:yale-mirador
-```
+It also copies the Mirador-y distribution code from `node_modules/` to `dist/`.
 
 ## Running the Example
 ```
-npm run start
+npm start
 ```
 
-Then open `http://localhost:3000` from a web browser.
+It will open a browser and run the instance there. You can also
+open `http://localhost:3000` manually.
 
 ## Test
 
@@ -108,46 +90,11 @@ and because "Yale Extension" depends on it.
 
 ### Parameters
 
-#### Via Cookies
+#### Cookies
+
 * `loggedIn`: `'true'` or `'false'`
 * `isEditor`: `'true'` or `'false'`
 
-#### Via HTML
+#### JavaScript
 
-See `example/index.html` for the HTML required to run the app.
-In addition to the IDs and classes of the HTML elements,
-there are some parameters that must be passed through the `#viewer_template`
-element:
-
-* `data-settings-url`: The host site should implement an API endpoint for the JavaScript client to download server settings from. See below for the format of the payload.
-* `data-manifest-url`: This is the URL of the IIIF manifest to load. Only one manifest will be loaded into a Mirador window at a time.
-* `data-room-id`: ID of the "room" (or a project). Some settings (e.g. tagHierarchy) are defined per room. The host should
-figure out and manage the room IDs.
-
-Optional (only to load specific resources):
-* `data-canvas-id`: e.g. `"http://manifests.ydc2.yale.edu/LOTB/canvas/bv11"`
-* `data-toc-tags`: e.g. `"chapter22,scene2"`
-* `data-layer-ids`: e.g. `"http://mirador-annotations-lotb.herokuapp.com/layers/Tibetan,http://mirador-annotations-lotb.herokuapp.com/layers/English"`
-* `data-annotation-id`: ID of the annotation to load; e.g. "http://annotations.example.org/annotations/123"
-
-NOTE**(!)**: When optional parameters are passed, `data-canvas-id` is required.
-
-#### Via API
-
-The client construct a URL `API_URL?room_id=ROOM_ID`
-where `API_URL` is `data-settings-url` and `ROOM_ID` is `data-room-id` from above.
-
-An example of the response from the API:
-```
-{
-  {
-    buildPath: '/mirador',
-    tagHierarchy: null,
-    endpointUrl: 'http://mirador-annotations-lotb.herokuapp.com'
-  };
-}
-```
-
-`buildPath` is the absolute URL root path under which all Yale-Mirador assets
-can be referenced.
-(e.g. `/sites/all/modules/mirador-project/yale-mirador`)
+See `index.html` and `config.js` to see an example of initiating the app.
