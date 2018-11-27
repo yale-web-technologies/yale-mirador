@@ -1,5 +1,4 @@
 const webpack = require('webpack');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const merge = require('webpack-merge');
 const common = require('./webpack.common.js');
 
@@ -11,6 +10,7 @@ function header() {
 }
 
 module.exports = merge(common, {
+  mode: 'production',
   devtool: 'source-map',
   plugins: [
     new webpack.BannerPlugin({
@@ -23,9 +23,6 @@ module.exports = merge(common, {
       'process.env': {
         'NODE_ENV': JSON.stringify('production')
       }
-    }),
-    new UglifyJSPlugin({
-      sourceMap: true
-    }),
+    })
   ]
 });
